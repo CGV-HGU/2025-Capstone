@@ -37,6 +37,8 @@ private:
   void pose_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     latest_pose_ = *msg;
     latest_pose_available_ = true;
+    // reset_odom 호출
+    call_reset_odom();
   }
 
   // 주기적으로 tf 변환을 브로드캐스트
@@ -67,23 +69,8 @@ private:
     tf_broadcaster_->sendTransform(t);
   }
 
-  // tracking 상태 변화 콜백: false -> true (리로컬라이제이션 이벤트)일 때 reset_odom과 set_tf_only_mode 호출
   void tracking_callback(const std_msgs::msg::Bool::SharedPtr msg) {
     bool current_tracking = msg->data;
-    if (!prev_tracking_ && current_tracking) {
-      RCLCPP_INFO(this->get_logger(), "Relocalization has occurred.");
-    
-      // reset_odom 호출
-      call_reset_odom();
-      
-      // set_tf_only_mode를 true로 재설정
-      call_set_tf_only_mode(true);
-    }
-    else if (prev_tracking_ && !current_tracking) {
-      // set_tf_only_mode를 true로 재설정
-      call_set_tf_only_mode(false);
-    }
-    prev_tracking_ = current_tracking;
   }
 
   // reset_odom 서비스를 호출하여 오도메트리 초기화 (x=0, y=0, theta=0)

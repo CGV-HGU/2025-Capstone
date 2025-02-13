@@ -211,9 +211,9 @@ class OMOR1MiniNode(Node):
     odom.pose.pose.orientation.z = q[2]
     odom.pose.pose.orientation.w = q[3]
 
-    odom.twist.twist.linear.x = trans_vel
+    odom.twist.twist.linear.x = trans_vel if not self.tf_only_mode else 0.0
     odom.twist.twist.linear.y = 0.0
-    odom.twist.twist.angular.z = orient_vel
+    odom.twist.twist.angular.z = orient_vel if not self.tf_only_mode else 0.0
 
     self.pub_Odom.publish(odom)
 
@@ -309,8 +309,8 @@ class OMOR1MiniNode(Node):
     self.ph.update_battery_state()
     bat_status = self.ph.robot_state['BAT']
     if len(bat_status) == 3:
-      print("SERVICE: Battery V:%s, SOC: %s, Current %s"
-            %(bat_status[0], bat_status[1], bat_status[2]))
+      # print("SERVICE: Battery V:%s, SOC: %s, Current %s"
+      #      %(bat_status[0], bat_status[1], bat_status[2]))
       response.volt  = bat_status[0]*0.1
       response.soc = bat_status[1]
       response.current = bat_status[2]*0.001

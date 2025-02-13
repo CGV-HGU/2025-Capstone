@@ -22,12 +22,12 @@ gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
         --ros-args -p publish_tf:=false; \
     exec bash"
 
-# 세 번째 노드를 새로운 터미널에서 실행 (freespace_detection 노드)
-echo 'Launching freespace_detection in a new terminal...'
-gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
-    source ~/ros2_ws/install/setup.bash; \
-    ros2 launch freespace_detection freespace_detection_launch.py; \
-    exec bash"
+# # 세 번째 노드를 새로운 터미널에서 실행 (freespace_detection 노드)
+# echo 'Launching freespace_detection in a new terminal...'
+# gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
+#     source ~/ros2_ws/install/setup.bash; \
+#     ros2 launch freespace_detection freespace_detection_launch.py; \
+#     exec bash"
 
 # 현재 터미널을 종료하면 첫 번째 프로세스도 함께 종료되도록 설정
 trap "echo 'Terminating processes...'; kill $PID1; exit" SIGINT SIGTERM
