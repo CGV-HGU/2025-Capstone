@@ -47,7 +47,7 @@ class SupabaseManager:
         :return: 조회 결과
         """
 
-        print("Fetch request... of ROBOT_ID="+str(self.robot_id))
+        #print("Fetch request... of ROBOT_ID="+str(self.robot_id))
 
         try:
             query = (self.supabase.table("request")
@@ -60,7 +60,7 @@ class SupabaseManager:
             if "goal_position" in converted:
                 # Scale transform to match the SLAM map dimensions
                 converted["goal_position"] = [converted["goal_position"][0] / 10.0, converted["goal_position"][1] / 10.0]
-                print(converted)
+                #print(converted)
 
                 return converted
 

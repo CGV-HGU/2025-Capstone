@@ -3,6 +3,7 @@ import time
 import json
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Path  # /plan 토픽은 nav_msgs/Path 타입
 from omo_r1_interfaces.srv import Battery
 from tf2_ros import Buffer, TransformListener
 from .supabase_manager import SupabaseManager
@@ -17,6 +18,24 @@ class NetworkControl(Node):
         # TF2 Transform Listener 설정
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
+        
+        # 이전 goal_pose를 저장할 변수 (초기값: None)
+        self.last_goal = None
+
+        # Nav2가 생성한 경로를 저장할 변수
+        self.latest_path = None
+        # /plan 토픽 구독: Nav2 global planner가 생성한 경로 (nav_msgs/Path)
+        self.path_subscriber = self.create_subscription(
+            Path,
+            '/plan',
+            self.path_callback,
+            1
+        )
+
+    def path_callback(self, msg):
+        """/plan 토픽에서 수신된 경로 메시지를 저장"""
+        self.latest_path = msg
+        self.get_logger().info("Received new global plan from /plan topic")
 
     def get_battery_status(self):
         """배터리 상태를 조회하여 반환"""
@@ -54,7 +73,6 @@ class NetworkControl(Node):
         goal_msg.pose.orientation.w = 1.0  # heading은 0
         self.nav_goal_pub.publish(goal_msg)
         self.get_logger().info(f"Sent goal pose: {goal_position}")
-        print("published goal")
 
     def run(self):
         while rclpy.ok():
@@ -77,18 +95,31 @@ class NetworkControl(Node):
             # 새로운 요청 확인
             request = self.supabase_manager.fetch_request()
             if request and "goal_position" in request:
-                print("requesting")
                 goal_position = request["goal_position"]
-                self.publish_goal(goal_position)
-                
-                # 응답 데이터 생성 (예제: 생성된 경로를 가정)
-                response_data = {
-                    "robot_id": self.supabase_manager.robot_id,
-                    "complete": False,
-                    "generated_path": [goal_position]  # 실제 경로를 받아야 함
-                }
-                self.supabase_manager.create_response(response_data)
-                self.get_logger().info(f"Response created for goal {goal_position}")
+                # 이전 goal이 없거나, 현재 요청된 goal이 이전과 다를 때에만 퍼블리시
+                if self.last_goal != goal_position:
+                    self.publish_goal(goal_position)
+                    self.last_goal = goal_position  # 현재 goal 저장
+                        
+                    # Nav2에서 수신한 경로 데이터를 response_data에 포함시키기
+                    generated_path = []
+                    if self.latest_path:
+                        # 경로의 각 Pose에서 (x, y) 좌표를 추출 (필요에 따라 다른 정보를 포함할 수 있음)
+                        for pose_stamped in self.latest_path.poses:
+                            x = pose_stamped.pose.position.x
+                            y = pose_stamped.pose.position.y
+                            generated_path.append([x, y])
+                    else:
+                        self.get_logger().warn("No global plan received from /plan topic")
+                    
+                    # 응답 데이터 생성
+                    response_data = {
+                        "robot_id": self.supabase_manager.robot_id,
+                        "complete": False,
+                        "generated_path": generated_path
+                    }
+                    self.supabase_manager.create_response(response_data)
+                    self.get_logger().info(f"Response created for goal {goal_position}")
             
             time.sleep(1)  # 1초 주기로 실행
 
