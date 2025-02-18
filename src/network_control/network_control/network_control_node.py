@@ -46,6 +46,11 @@ class NetworkControl(Node):
         goal_msg.header.stamp = self.get_clock().now().to_msg()
         goal_msg.pose.position.x = goal_position[0]
         goal_msg.pose.position.y = goal_position[1]
+        goal_msg.pose.position.z = 0.0 
+
+        goal_msg.pose.orientation.x = 0.0
+        goal_msg.pose.orientation.y = 0.0
+        goal_msg.pose.orientation.z = 0.0  
         goal_msg.pose.orientation.w = 1.0  # heading은 0
         self.nav_goal_pub.publish(goal_msg)
         self.get_logger().info(f"Sent goal pose: {goal_position}")

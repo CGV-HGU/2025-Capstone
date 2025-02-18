@@ -12,13 +12,13 @@ class floorDetector(Node):
     def __init__(self):
         super().__init__('floor_detector')
 
-        # Publisher
+        # Publisher (감지 결과 퍼블리시)
         self.roi_pub = self.create_publisher(Bool, '/floor_detector', 10)
 
         # Subscriber
         self.image_sub = self.create_subscription(Image, 'camera/image_raw', self.image_callback, 10)
 
-        # YOLO model
+        # YOLO 모델 로드
         model_path = "/home/cgv/ros2_ws/src/freespace_detection/scripts/best.pt"
         try:
             self.model = YOLO(model_path)
@@ -27,60 +27,48 @@ class floorDetector(Node):
             rclpy.shutdown()
             return
 
-        # ROI Definition
-        self.roi_x_min, self.roi_y_min, self.roi_x_max, self.roi_y_max = 140, 240, 180, 250
-        self.width = self.roi_x_max - self.roi_x_min
-        self.height = self.roi_y_max - self.roi_y_min
-        self.roi_area = self.width * self.height
-        self.get_logger().info(f"ROI defined: x=({self.roi_x_min}, {self.roi_x_max}), "
-                               f"y=({self.roi_y_min}, {self.roi_y_max}), area={self.roi_area}")
-        # CV Bridge for converting ROS images to OpenCV
         self.bridge = CvBridge()
-
         self.get_logger().info("Floor Detector Node initialized.")
 
     def image_callback(self, data):
         try:
-            # Convert ROS Image message to OpenCV image
+            # ROS Image 메시지를 OpenCV 이미지로 변환
             frame = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             self.get_logger().error(f"CV Bridge error: {e}")
             return
 
-        # Run YOLO model on the frame
-        results = self.model(frame, stream=True, conf=0.5)
+        # YOLO 모델 실행
+        results = self.model(frame, stream=True, conf=0.6)
+        
+        # 원본 프레임을 복사하여 overlay 이미지 생성
+        overlay = frame.copy()
 
-        in_roi_80_percent = False  # 기본값
-
-        # Process results
+        # 결과 처리
         for result in results:
             if result.masks is not None:
-                masks = result.masks.data.cpu().numpy()
-
+                # 마스크 배열의 해상도는 원본 이미지와 다를 수 있으므로, 먼저 리사이즈합니다.
+                masks = result.masks.data.cpu().numpy()  # shape: (n, mask_h, mask_w)
                 for mask in masks:
-                    y_indices, x_indices = np.where(mask)
+                    # float 혹은 bool 배열일 수 있으므로, uint8로 변환 후 리사이즈
+                    mask_uint8 = (mask > 0.6).astype(np.uint8)
+                    # 원본 이미지 크기로 리사이즈 (최근접 보간법 사용)
+                    mask_resized = cv2.resize(mask_uint8, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_NEAREST)
+                    # boolean mask로 변환
+                    bool_mask = mask_resized.astype(bool)
 
-                    # ROI 내 mask 픽셀 개수 계산
-                    within_roi = ((x_indices >= self.roi_x_min) & (x_indices <= self.roi_x_max) &
-                                  (y_indices >= self.roi_y_min) & (y_indices <= self.roi_y_max))
-                    mask_area = within_roi.sum()
+                    # overlay 이미지에서 세그멘테이션 영역을 파란색 (BGR: [255, 0, 0])으로 채움
+                    overlay[bool_mask] = [255, 0, 0]
 
-                    # ROI 영역의 80% 이상이 마스크에 포함되면 감지로 판단
-                    if mask_area >= self.roi_area * 0.8:
-                        in_roi_80_percent = True
-                        break
+        # alpha 값을 조정하여 투명도 설정 (0.5는 50% 투명)
+        alpha = 0.5
+        blended = cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
 
-        # 결과를 퍼블리시
-        self.roi_pub.publish(Bool(data=in_roi_80_percent))
-
-        # ROI 사각형과 감지 결과 텍스트를 이미지에 표시
-        color = (0, 255, 0) if in_roi_80_percent else (0, 0, 255)
-        cv2.rectangle(frame, (self.roi_x_min, self.roi_y_min), (self.roi_x_max, self.roi_y_max), color, 2)
-        text = "Floor Detected" if in_roi_80_percent else "Floor Not Detected"
-        cv2.putText(frame, text, (self.roi_x_min, self.roi_y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        # 퍼블리시 (여기서는 단순히 True를 퍼블리시)
+        self.roi_pub.publish(Bool(data=True))
 
         # 결과 이미지 창에 표시
-        cv2.imshow("Detection Result", frame)
+        cv2.imshow("Detection Result", blended)
         cv2.waitKey(1)  # 창 업데이트를 위한 대기
 
 def main(args=None):
@@ -97,4 +85,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
