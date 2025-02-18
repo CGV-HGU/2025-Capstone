@@ -47,6 +47,8 @@ class SupabaseManager:
         :return: 조회 결과
         """
 
+        print("Fetch request... of ROBOT_ID="+str(self.robot_id))
+
         try:
             query = (self.supabase.table("request")
                      .select("*")
@@ -54,10 +56,13 @@ class SupabaseManager:
                      .order("request_time", desc=True)
                      .limit(1)
                      .execute())
-            if "goal_position" in query:
+            converted = query.data[0]
+            if "goal_position" in converted:
                 # Scale transform to match the SLAM map dimensions
-                query["goal_position"] = [query["goal_position"][0] / 10.0, query["goal_position"][1] / 10.0]
-                return query
+                converted["goal_position"] = [converted["goal_position"][0] / 10.0, converted["goal_position"][1] / 10.0]
+                print(converted)
+
+                return converted
 
         except Exception as e:
             print(f"[SupabaseManager] Request fetch error: {e}")

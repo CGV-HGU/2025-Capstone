@@ -54,6 +54,7 @@ class NetworkControl(Node):
         goal_msg.pose.orientation.w = 1.0  # heading은 0
         self.nav_goal_pub.publish(goal_msg)
         self.get_logger().info(f"Sent goal pose: {goal_position}")
+        print("published goal")
 
     def run(self):
         while rclpy.ok():
@@ -76,6 +77,7 @@ class NetworkControl(Node):
             # 새로운 요청 확인
             request = self.supabase_manager.fetch_request()
             if request and "goal_position" in request:
+                print("requesting")
                 goal_position = request["goal_position"]
                 self.publish_goal(goal_position)
                 
