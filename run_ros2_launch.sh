@@ -17,7 +17,7 @@ gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
     ros2 run stella_vslam_ros run_slam \
         -v ~/Dataset/orb_vocab.fbow \
         -c ~/Dataset/usb_webcam.yaml \
-        --map-db-in ~/Dataset/20250120_NTH4F.msg \
+        --map-db-in ~/Dataset/20250218_OH+NTH.msg \
         --disable-mapping \
         --ros-args -p publish_tf:=false; \
     exec bash"
