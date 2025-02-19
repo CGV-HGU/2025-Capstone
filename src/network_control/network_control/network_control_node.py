@@ -8,6 +8,11 @@ from omo_r1_interfaces.srv import Battery
 from tf2_ros import Buffer, TransformListener
 from .supabase_manager import SupabaseManager
 
+#test
+from rclpy.action import ActionClient
+from nav2_msgs.action import NavigateToPose
+
+
 class NetworkControl(Node):
     def __init__(self):
         super().__init__('network_control')
@@ -31,6 +36,10 @@ class NetworkControl(Node):
             self.path_callback,
             1
         )
+
+        # test: used to goal checker
+        self.navigate_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
+
 
     def path_callback(self, msg):
         """/plan 토픽에서 수신된 경로 메시지를 저장"""
@@ -74,6 +83,55 @@ class NetworkControl(Node):
         self.nav_goal_pub.publish(goal_msg)
         self.get_logger().info(f"Sent goal pose: {goal_position}")
 
+    #test
+    def _result_callback(self, future):
+        result = future.result().result
+        status = future.result().status
+
+        if status == 4:  # STATUS_SUCCEEDED
+            self.get_logger().info("Goal reached successfully!")
+            # 도착 성공 시 response의 complete를 True로 업데이트
+            if self.last_response_id is not None:
+                self.supabase_manager.update_response(self.last_response_id, {"complete": True})
+        else:
+            self.get_logger().info(f"Goal ended with status {status}")
+            # 실패나 취소인 경우에도 response를 업데이트 (필요시)
+            if self.last_response_id is not None:
+                self.supabase_manager.update_response(self.last_response_id, {"complete": False})
+
+    
+    def _goal_response_callback(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info("Goal was rejected by the action server.")
+            return
+        
+        self.get_logger().info("Goal accepted!")
+        result_future = goal_handle.get_result_async()
+        result_future.add_done_callback(self._result_callback)
+
+    def send_nav_goal(self, goal_position):
+        # 1) 액션 서버가 준비될 때까지 대기
+        if not self.navigate_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().error("NavigateToPose action server not available!")
+            return
+
+        # 2) Goal 메시지 구성
+        goal_msg = NavigateToPose.Goal()
+        goal_msg.pose.header.frame_id = 'map'
+        goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
+        goal_msg.pose.pose.position.x = goal_position[0]
+        goal_msg.pose.pose.position.y = goal_position[1]
+        goal_msg.pose.pose.orientation.w = 1.0
+
+        # 3) 액션 서버에 비동기로 목표 전송
+        send_goal_future = self.navigate_client.send_goal_async(
+            goal_msg
+        )
+        send_goal_future.add_done_callback(self._goal_response_callback)
+        self.get_logger().info(f"Sent goal to /navigate_to_pose: {goal_position}")
+
+
     def run(self):
         while rclpy.ok():
             battery_status = self.get_battery_status()
@@ -100,7 +158,10 @@ class NetworkControl(Node):
                 if self.last_goal != goal_position:
                     self.publish_goal(goal_position)
                     self.last_goal = goal_position  # 현재 goal 저장
-                        
+
+                    # === 액션 기반 목표 전송 ===
+                    self.send_nav_goal(goal_position)
+                    
                     # Nav2에서 수신한 경로 데이터를 response_data에 포함시키기
                     generated_path = []
                     if self.latest_path:
@@ -118,7 +179,9 @@ class NetworkControl(Node):
                         "complete": False,
                         "generated_path": generated_path
                     }
-                    self.supabase_manager.create_response(response_data)
+                    query_result = self.supabase_manager.create_response(response_data)
+                    if query_result and query_result.data and "id" in query_result.data[0]:
+                        self.last_response_id = query_result.data[0]["id"]
                     self.get_logger().info(f"Response created for goal {goal_position}")
             
             time.sleep(1)  # 1초 주기로 실행
