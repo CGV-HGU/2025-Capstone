@@ -167,7 +167,7 @@ class NetworkControl(Node):
                     # === 액션 기반 목표 전송 ===
                     self.send_nav_goal(goal_position)
                     self.robot_status = 3
-                    self.has_arrived = True
+                    self.has_arrived = False
                     
                     # Nav2에서 수신한 경로 데이터를 response_data에 포함시키기
                     generated_path = []
