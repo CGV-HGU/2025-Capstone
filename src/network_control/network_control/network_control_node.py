@@ -26,6 +26,10 @@ class NetworkControl(Node):
         
         # 이전 goal_pose를 저장할 변수 (초기값: None)
         self.last_goal = None
+        # 로봇 상태
+        self.robot_status = 0
+        # 목적지 도착여부
+        self.has_arrived= False
 
         # Nav2가 생성한 경로를 저장할 변수
         self.latest_path = None
@@ -92,12 +96,13 @@ class NetworkControl(Node):
             self.get_logger().info("Goal reached successfully!")
             # 도착 성공 시 response의 complete를 True로 업데이트
             if self.last_response_id is not None:
-                self.supabase_manager.update_response(self.last_response_id, {"complete": True})
+                self.has_arrived = True
+                self.robot_status = 0
         else:
             self.get_logger().info(f"Goal ended with status {status}")
             # 실패나 취소인 경우에도 response를 업데이트 (필요시)
             if self.last_response_id is not None:
-                self.supabase_manager.update_response(self.last_response_id, {"complete": False})
+                self.has_arrived= False
 
     
     def _goal_response_callback(self, future):
@@ -144,7 +149,7 @@ class NetworkControl(Node):
             # 로봇 상태 업데이트
             robot_status = {
                 "id": int(self.supabase_manager.robot_id),
-                "status": 1,  # 정상 상태
+                "status": self.robot_status,
                 "battery": int(battery_status),
                 "position": robot_position
             }
@@ -161,6 +166,8 @@ class NetworkControl(Node):
 
                     # === 액션 기반 목표 전송 ===
                     self.send_nav_goal(goal_position)
+                    self.robot_status = 3
+                    self.has_arrived = True
                     
                     # Nav2에서 수신한 경로 데이터를 response_data에 포함시키기
                     generated_path = []
@@ -172,17 +179,18 @@ class NetworkControl(Node):
                             generated_path.append([x, y])
                     else:
                         self.get_logger().warn("No global plan received from /plan topic")
-                    
-                    # 응답 데이터 생성
-                    response_data = {
-                        "robot_id": self.supabase_manager.robot_id,
-                        "complete": False,
-                        "generated_path": generated_path
-                    }
-                    query_result = self.supabase_manager.create_response(response_data)
-                    if query_result and query_result.data and "id" in query_result.data[0]:
-                        self.last_response_id = query_result.data[0]["id"]
-                    self.get_logger().info(f"Response created for goal {goal_position}")
+
+            # 응답 데이터 생성
+            response_data = {
+                "robot_id": self.supabase_manager.robot_id,
+                "complete": self.has_arrived,
+                "generated_path": generated_path
+            }
+            query_result = self.supabase_manager.create_response(response_data)
+            if query_result and query_result.data and "id" in query_result.data[0]:
+                self.last_response_id = query_result.data[0]["id"]
+            self.get_logger().info(f"Response created for goal {goal_position}")
+            
             
             time.sleep(1)  # 1초 주기로 실행
 
