@@ -89,6 +89,7 @@ class OMOR1MiniNode(Node):
         ('motor.gear_ratio', Parameter.Type.DOUBLE),
         ('motor.max_lin_vel_x', Parameter.Type.DOUBLE),
         ('sensor.enc_pulse', Parameter.Type.DOUBLE),
+        ('scale_factor', Parameter.Type.DOUBLE)  # 동적으로 수정 가능한 scale_factor
       ])
     # Get parameter values
     _port_name = self.get_parameter_or('port.name', Parameter('port.name', Parameter.Type.STRING, '/dev/ttyMotor')).get_parameter_value().string_value
@@ -102,6 +103,9 @@ class OMOR1MiniNode(Node):
     print('WHEEL SEPARATION:\t%s'%(self.wheel_separation))
     print('WHEEL RADIUS:\t\t%s'%(self.wheel_radius))
     print('ENC_PULSES:\t\t%s'%(self.enc_pulse))
+
+    # scale_factor 파라미터 초기화 (기본값 1.0)
+    self.scale_factor = 1.0
 
     self.distance_per_pulse = 2*math.pi*self.wheel_radius / self.enc_pulse / self.gear_ratio
     print('DISTANCE PER PULSE \t:%s'%(self.distance_per_pulse))
@@ -160,6 +164,13 @@ class OMOR1MiniNode(Node):
     # def __del__(self):
     #   self.destroy_timer(self.timerProc)
 
+  def parameter_callback(self, params):
+    for param in params:
+        if param.name == "scale_factor":
+            self.scale_factor = param.value
+    return rclpy.parameter.SetParametersResult(successful=True)
+
+
   def convert2odo_from_each_wheel(self, enc_l, enc_r):
     return enc_l * self.distance_per_pulse, enc_r * self.distance_per_pulse
 
@@ -186,10 +197,11 @@ class OMOR1MiniNode(Node):
       else:
           self.odom_pose.theta += orient_vel * dt
 
-      d_x = trans_vel * math.cos(self.odom_pose.theta) 
-      d_y = trans_vel * math.sin(self.odom_pose.theta) 
-      self.odom_pose.x += d_x * dt
-      self.odom_pose.y += d_y * dt
+      # 계산된 변위에 scale_factor를 반영
+      d_x = trans_vel * math.cos(self.odom_pose.theta)
+      d_y = trans_vel * math.sin(self.odom_pose.theta)
+      self.odom_pose.x += self.scale_factor * d_x * dt
+      self.odom_pose.y += self.scale_factor * d_y * dt
 
     q = quaternion_from_euler(0, 0, self.odom_pose.theta)
 
