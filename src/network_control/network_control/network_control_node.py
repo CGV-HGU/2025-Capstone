@@ -95,14 +95,14 @@ class NetworkControl(Node):
         if status == 4:  # STATUS_SUCCEEDED
             self.get_logger().info("Goal reached successfully!")
             # 도착 성공 시 response의 complete를 True로 업데이트
-            if self.last_response_id is not None:
-                self.has_arrived = True
-                self.robot_status = 0
+            # if self.last_response_id is not None:
+            #     self.has_arrived = True
+            #     self.robot_status = 0
         else:
             self.get_logger().info(f"Goal ended with status {status}")
             # 실패나 취소인 경우에도 response를 업데이트 (필요시)
-            if self.last_response_id is not None:
-                self.has_arrived= False
+            # if self.last_response_id is not None:
+            #     self.has_arrived= False
 
     
     def _goal_response_callback(self, future):
@@ -180,16 +180,16 @@ class NetworkControl(Node):
                     else:
                         self.get_logger().warn("No global plan received from /plan topic")
 
-            # 응답 데이터 생성
-            response_data = {
-                "robot_id": self.supabase_manager.robot_id,
-                "complete": self.has_arrived,
-                "generated_path": generated_path
-            }
-            query_result = self.supabase_manager.create_response(response_data)
-            if query_result and query_result.data and "id" in query_result.data[0]:
-                self.last_response_id = query_result.data[0]["id"]
-            self.get_logger().info(f"Response created for goal {goal_position}")
+                    # 응답 데이터 생성
+                    response_data = {
+                        "robot_id": self.supabase_manager.robot_id,
+                        "complete": self.has_arrived,
+                        "generated_path": generated_path
+                    }
+                    query_result = self.supabase_manager.create_response(response_data)
+                    # if query_result and query_result.data and "id" in query_result.data[0]:
+                    #     self.last_response_id = query_result.data[0]["id"]
+                    # self.get_logger().info(f"Response created for goal {goal_position}")
             
             
             time.sleep(1)  # 1초 주기로 실행

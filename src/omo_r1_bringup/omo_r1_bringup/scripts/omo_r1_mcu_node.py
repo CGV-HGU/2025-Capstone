@@ -89,7 +89,7 @@ class OMOR1MiniNode(Node):
         ('motor.gear_ratio', Parameter.Type.DOUBLE),
         ('motor.max_lin_vel_x', Parameter.Type.DOUBLE),
         ('sensor.enc_pulse', Parameter.Type.DOUBLE),
-        ('scale_factor', Parameter.Type.DOUBLE)  # 동적으로 수정 가능한 scale_factor
+        ('scale_factor', Parameter.Type.DOUBLE) 
       ])
     # Get parameter values
     _port_name = self.get_parameter_or('port.name', Parameter('port.name', Parameter.Type.STRING, '/dev/ttyMotor')).get_parameter_value().string_value
@@ -105,7 +105,7 @@ class OMOR1MiniNode(Node):
     print('ENC_PULSES:\t\t%s'%(self.enc_pulse))
 
     # scale_factor 파라미터 초기화 (기본값 1.0)
-    self.scale_factor = 1.0
+    self.scale_factor = 2.625
 
     self.distance_per_pulse = 2*math.pi*self.wheel_radius / self.enc_pulse / self.gear_ratio
     print('DISTANCE PER PULSE \t:%s'%(self.distance_per_pulse))
@@ -164,11 +164,11 @@ class OMOR1MiniNode(Node):
     # def __del__(self):
     #   self.destroy_timer(self.timerProc)
 
-  def parameter_callback(self, params):
-    for param in params:
-        if param.name == "scale_factor":
-            self.scale_factor = param.value
-    return rclpy.parameter.SetParametersResult(successful=True)
+  # def parameter_callback(self, params):
+  #   for param in params:
+  #       if param.name == "scale_factor":
+  #           self.scale_factor = param.value
+  #   return rclpy.parameter.SetParametersResult(successful=True)
 
 
   def convert2odo_from_each_wheel(self, enc_l, enc_r):
@@ -332,8 +332,8 @@ class OMOR1MiniNode(Node):
     self.odom_pose.x = request.x
     self.odom_pose.y = request.y
     self.odom_pose.theta = request.theta
-    print("SERVICE: RESET ODOM X:%s, Y:%s, Theta:%s"%
-        (request.x, request.y, request.theta))
+    # print("SERVICE: RESET ODOM X:%s, Y:%s, Theta:%s"%
+    #     (request.x, request.y, request.theta))
     return response
   
   def cbSrv_setBuzzer(self, request, response):

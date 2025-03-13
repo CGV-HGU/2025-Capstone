@@ -5,3 +5,5 @@ negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196
 
+# 4F origin: [-118.8, -108, 0.000000]
+# 3F origin: [-223.8, -64.2, 0.000000]

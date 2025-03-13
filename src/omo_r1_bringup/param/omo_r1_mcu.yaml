@@ -10,8 +10,8 @@ omo_r1_mcu_node:
 
     motor:
       gear_ratio: 15.0
-      max_lin_vel_x: 0.6
-      max_rot_vel_z: 0.5
+      max_lin_vel_x: 1.2
+      max_rot_vel_z: 0.6
       
     sensor:
       enc_pulse: 60000.0

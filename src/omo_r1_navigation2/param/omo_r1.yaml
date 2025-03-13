@@ -23,11 +23,11 @@ amcl:
     odom_frame_id: "odom"
     pf_err: 0.05
     pf_z: 0.99
-    recovery_alpha_fast: 0.0
-    recovery_alpha_slow: 0.0
-    resample_interval: 1
+    recovery_alpha_fast: 0.0 # 로봇이 갑자기 위치가 헷갈릴 때, 빠르게 또는 천천히 과거 정보를 반영해서 새 위치를 추정하는 데 사용
+    recovery_alpha_slow: 0.0 # 로봇이 갑자기 위치가 헷갈릴 때, 빠르게 또는 천천히 과거 정보를 반영해서 새 위치를 추정하는 데 사용
+    resample_interval: 1 # 로봇이 위치를 재평가(재샘플링)하는 주기
     robot_model_type: "nav2_amcl::DifferentialMotionModel"
-    save_pose_rate: 0.5
+    save_pose_rate: 0.5 # 로봇이 자신의 위치 정보를 저장하는 속도
     sigma_hit: 0.2
     tf_broadcast: true
     transform_tolerance: 1.0
@@ -111,42 +111,42 @@ controller_server:
     # Progress checker parameters
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
-      required_movement_radius: 0.3 # 기존의 값: 0.5
-      movement_time_allowance: 25.0 # 가존의 값: 10.0
+      required_movement_radius: 0.1 # 기존의 값: 0.5, robot know that i have to move at least 10cm 
+      movement_time_allowance: 50.0 # 가존의 값: 10.0
     
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
       
       #목적지 도착 판정 범위
-      xy_goal_tolerance: 1.0 # 목표 도착 시 x-y 평면에서 허용하는 오차 범위(미터) 0.25
+      xy_goal_tolerance: 2.0 # 목표 도착 시 x-y 평면에서 허용하는 오차 범위(미터) 0.25
       yaw_goal_tolerance: 1.0 # 회전(heading) 오차 0.25
 
     # DWB parameters
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: True
-      min_vel_x: -0.1 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
+      min_vel_x: 1.0 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
       min_vel_y: 0.0
-      max_vel_x: 1.2 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
+      max_vel_x: 1.0 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
       max_vel_y: 0.0
-      max_vel_theta: 0.8 # 최대 회전 속도(라디안/초)를 설정/ 기존: 3.4
+      max_vel_theta: 1.0 # 최대 회전 속도(라디안/초)를 설정/ 기존: 3.4
       min_speed_xy: 0.0
-      max_speed_xy: 1.20 # x-y 평면에서의 최대 선형 속도를 제한
+      max_speed_xy: 1.2 #형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다. # x-y 평면에서의 최대 선형 속도를 제한
       min_speed_theta: 0.0
       # Add high threshold velocity for turtlebot 3 issue.
       # https://github.com/ROBOTIS-GIT/turtlebot3_simulations/issues/75
-      acc_lim_x: 0.05 # 선형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다.
+      acc_lim_x: 0.01 # 선형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다.
       acc_lim_y: 0.0
       acc_lim_theta: 0.5 # 회전 가속 제한
-      decel_lim_x: -0.05 # 선형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다.
+      decel_lim_x: -0.01 # 선형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다.
       decel_lim_y: 0.0
       decel_lim_theta: -0.5 # 회전 감속 제한
       vx_samples: 20
       vy_samples: 5
       vtheta_samples: 20
-      sim_time: 2.2
-      linear_granularity: 0.3 # 체크 포인트(경로 포인트) 간격 기존 0.05
+      sim_time: 1.0
+      linear_granularity: 0.45 # 체크 포인트(경로 포인트) 간격 기존 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.1 #0.2
       xy_goal_tolerance: 0.10 # 기존: 0.05
@@ -156,14 +156,14 @@ controller_server:
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"] # "RotateToGoal" 일단 제거
       BaseObstacle.scale: 0.02
       PathAlign.scale: 20.0
-      PathAlign.forward_point_distance: 0.4
+      PathAlign.forward_point_distance: 1.2
       GoalAlign.scale: 16.0
-      GoalAlign.forward_point_distance: 0.4
+      GoalAlign.forward_point_distance: 0.7
       PathDist.scale: 32.0
       GoalDist.scale: 24.0
       RotateToGoal:
         scale: 10.0 # 회전에 대한 영향 감소/ 기존 값: 32.0
-        slowing_factor: 6.0 # 회전 시 서서히 감속하도록 조정
+        slowing_factor: 8.0 # 회전 시 서서히 감속하도록 조정
       RotateToGoal.slowing_factor: 5.0
       RotateToGoal.lookahead_time: -1.0
 
@@ -180,14 +180,14 @@ local_costmap:
       robot_base_frame: base_link
       use_sim_time: False
       rolling_window: true
-      width: 3
-      height: 3
+      width: 5
+      height: 5
       resolution: 0.1
       robot_radius: 1.0 # 실제 로봇 반지름 / 기존 0.15
       plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 2.0 # 높을 수록 장애물에 더 떨어져서 주행함 0.5
+        inflation_radius: 1.5 # 높을 수록 장애물에 더 떨어져서 주행함 0.5
         cost_scaling_factor: 2.0
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -281,7 +281,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 2.0
-        inflation_radius: 3.0 # 0.3
+        inflation_radius: 5.0 # 0.3
       always_send_full_costmap: True
   global_costmap_client:
     ros__parameters:
@@ -342,9 +342,9 @@ planner_server:
       smooth_path: True                   # For Lattice/Hybrid nodes: Whether or not to smooth the path, always true for 2D nodes.
       debug_visualizations: True                # For Hybrid/Lattice nodes: Whether to publish expansions on the /expansions topic as an array of poses (the orientation has no meaning) and the path's footprints on the /planned_footprints topic. WARNING: heavy to compute and to display, for debug only as it degrades the performance.
       smoother:
-        max_iterations: 1000
-        w_smooth: 0.3
-        w_data: 0.2
+        max_iterations: 1500 # 1500~2000
+        w_smooth: 0.7 # 0.5~0.7
+        w_data: 0.1  # 0.1~0.15
         tolerance: 1.0e-10
         do_refinement: true               # Whether to recursively run the smoother 3 times on the results from prior runs to refine the results further
 
