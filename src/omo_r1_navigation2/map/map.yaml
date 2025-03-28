@@ -1,6 +1,6 @@
-image: map2.png
+image: map3.png
 resolution: 0.1
-origin: [-223.8, -64.2, 0.000000] #origin: 지도에서 왼쪽 하단 픽셀의 좌표. 2D 좌표(x, y)로 주어집니다. 세 번째 값은 회전을 나타냅니다. 지금은 회전이 없으므로 0입니다.
+origin: [-275.0, -67.6, 0.000000] #origin: 지도에서 왼쪽 하단 픽셀의 좌표. 2D 좌표(x, y)로 주어집니다. 세 번째 값은 회전을 나타냅니다. 지금은 회전이 없으므로 0입니다.
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196

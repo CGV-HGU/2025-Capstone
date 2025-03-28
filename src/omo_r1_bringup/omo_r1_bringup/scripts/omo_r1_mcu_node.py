@@ -200,8 +200,8 @@ class OMOR1MiniNode(Node):
       # 계산된 변위에 scale_factor를 반영
       d_x = trans_vel * math.cos(self.odom_pose.theta)
       d_y = trans_vel * math.sin(self.odom_pose.theta)
-      self.odom_pose.x += self.scale_factor * d_x * dt
-      self.odom_pose.y += self.scale_factor * d_y * dt
+      self.odom_pose.x += d_x * dt
+      self.odom_pose.y += d_y * dt
 
     q = quaternion_from_euler(0, 0, self.odom_pose.theta)
 
@@ -278,7 +278,7 @@ class OMOR1MiniNode(Node):
     self.ph.read_packet()
     odo_l = self.ph._wodom[0]
     odo_r = self.ph._wodom[1]
-    trans_vel = self.ph._vel[0]
+    trans_vel = self.ph._vel[0] * self.scale_factor
     orient_vel = self.ph._vel[1]
     vel_z = self.ph._gyro[2]
     roll_imu = self.ph._imu[0]

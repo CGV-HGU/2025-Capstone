@@ -15,9 +15,9 @@ echo 'Launching run_slam in a new terminal...'
 gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
     source ~/ros2_ws/install/setup.bash; \
     ros2 run stella_vslam_ros run_slam \
-        -v ~/Dataset/orb_vocab.fbow \
+        -v ~/Dataset/custom_vocab2.fbow \
         -c ~/Dataset/usb_webcam.yaml \
-        --map-db-in ~/Dataset/20250218_OH+NTH.msg \
+        --map-db-in ~/Dataset/20250317_OH+NTH.msg \
         --disable-mapping \
         --ros-args -p publish_tf:=false; \
     exec bash"

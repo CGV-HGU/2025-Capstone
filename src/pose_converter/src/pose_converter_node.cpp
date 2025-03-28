@@ -75,8 +75,6 @@ private:
       t.transform.rotation.z = 0.0;
       t.transform.rotation.w = 1.0;
     }
-
-    tf_broadcaster_->sendTransform(t);
     
     if(current_tracking) {
       // 0.5초 전과 현재의 이동량(변위) 계산 (평면상의 Euclidean 거리)
@@ -88,11 +86,12 @@ private:
       RCLCPP_INFO(this->get_logger(), "Calculated scale_factor (delta ratio): %.2f", scale_factor);
 
       call_reset_odom();
+      //리셋 대신 map->odom 변환에서 좌표 수정
     }
 
     prev_odom_position = curr_odom_position;
     prev_map_position = curr_map_position;
-
+    tf_broadcaster_->sendTransform(t);
   }
 
   void tracking_callback(const std_msgs::msg::Bool::SharedPtr msg) {
@@ -100,10 +99,10 @@ private:
   }
 
   void call_reset_odom() {
-    if (!reset_odom_client_->wait_for_service(std::chrono::seconds(1))) {
-      RCLCPP_ERROR(this->get_logger(), "reset_odom service not available");
-      return;
-    }
+    // if (!reset_odom_client_->wait_for_service(std::chrono::seconds(1))) {
+    //   RCLCPP_ERROR(this->get_logger(), "reset_odom service not available");
+    //   return;
+    // }
     auto request = std::make_shared<omo_r1_interfaces::srv::ResetOdom::Request>();
     request->x = 0.0;
     request->y = 0.0;
