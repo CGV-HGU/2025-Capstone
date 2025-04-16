@@ -1,3 +1,51 @@
+amcl:
+  ros__parameters:
+    use_sim_time: False
+    alpha1: 0.2
+    alpha2: 0.2
+    alpha3: 0.2
+    alpha4: 0.2
+    alpha5: 0.2
+    base_frame_id: "base_footprint"
+    beam_skip_distance: 0.5
+    beam_skip_error_threshold: 0.9
+    beam_skip_threshold: 0.3
+    do_beamskip: false
+    global_frame_id: "map"
+    lambda_short: 0.1
+    laser_likelihood_max_dist: 2.0
+    laser_max_range: 16.0
+    laser_min_range: 0.1
+    laser_model_type: "likelihood_field"
+    max_beams: 60
+    max_particles: 2000
+    min_particles: 500
+    odom_frame_id: "odom"
+    pf_err: 0.05
+    pf_z: 0.99
+    recovery_alpha_fast: 0.0 # 로봇이 갑자기 위치가 헷갈릴 때, 빠르게 또는 천천히 과거 정보를 반영해서 새 위치를 추정하는 데 사용
+    recovery_alpha_slow: 0.0 # 로봇이 갑자기 위치가 헷갈릴 때, 빠르게 또는 천천히 과거 정보를 반영해서 새 위치를 추정하는 데 사용
+    resample_interval: 1 # 로봇이 위치를 재평가(재샘플링)하는 주기
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    save_pose_rate: 0.5 # 로봇이 자신의 위치 정보를 저장하는 속도
+    sigma_hit: 0.2
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    update_min_a: 0.2
+    update_min_d: 0.25
+    z_hit: 0.5
+    z_max: 0.05
+    z_rand: 0.5
+    z_short: 0.05
+    scan_topic: scan
+
+amcl_map_client:
+  ros__parameters:
+    use_sim_time: False
+
+amcl_rclcpp_node:
+  ros__parameters:
+    use_sim_time: False
 
 bt_navigator:
   ros__parameters:
@@ -93,7 +141,7 @@ controller_server:
       max_vel_y: 0.0
       max_vel_theta: 3.4 # 최대 회전 속도(라디안/초)를 설정/ 기존: 3.4
       min_speed_xy: 0.0
-      max_speed_xy: 1.2 #형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다. # x-y 평면에서의 최대 선형 속도를 제한
+      max_speed_xy: 1.0 #형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다. # x-y 평면에서의 최대 선형 속도를 제한
       min_speed_theta: 0.1
       # Add high threshold velocity for turtlebot 3 issue.
       # https://github.com/ROBOTIS-GIT/turtlebot3_simulations/issues/75
@@ -145,42 +193,41 @@ local_costmap:
       height: 7
       resolution: 0.1
       robot_radius: 1.0 # 실제 로봇 반지름 / 기존 0.15
-      plugins: ["obstacle_layer", "inflation_layer"]
+      plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         inflation_radius: 1.0 # 높을 수록 장애물에 더 떨어져서 주행함 0.5
         cost_scaling_factor: 2.0
-
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
-
-        enabled: true  # 장애물 레이어 사용 여부
-        footprint_clearing_enabled: true  # 로봇 발 밑 장애물 제거
-        combination_method: 1  # 0: 덮어쓰기, 1: 최대값 사용, 2: unknown만 덮기
-
-        observation_sources: scan  # 사용 센서 이름 (공백 없이 나열)
-        
+        enabled: True
+        observation_sources: scan
         scan:
-          topic: /scan  # 센서 데이터 토픽 이름
-          sensor_frame: lidar_link  # 비워두면 메시지에서 frame_id 사용
-          observation_persistence: 0.5  # 센서 데이터 유지 시간 (s)
-          expected_update_rate: 10.0  # 예상 갱신 주기 (s)
-          data_type: "LaserScan"  # LaserScan 또는 PointCloud2
-
-          min_obstacle_height: 0.0  # 최소 장애물 높이
-          max_obstacle_height: 2.0  # 최대 장애물 높이
-
-          ###### Try point!!!!!!!
-          inf_is_valid: True  # inf 값을 유효한 거리로 인정할지
-          marking: True  # 장애물로 마킹할지
-          clearing: True  # 자유 공간으로 클리어할지
-
-          obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
-          obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
-
-          raytrace_max_range: 9.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
-          raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
-    
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
       static_layer:
         map_subscribe_transient_local: True
       always_send_full_costmap: True
@@ -202,38 +249,41 @@ global_costmap:
       robot_radius: 1.0 # 0.5
       resolution: 0.1
       track_unknown_space: true
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]   
-
+      plugins: ["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
-
-        enabled: true  # 장애물 레이어 사용 여부
-        footprint_clearing_enabled: true  # 로봇 발 밑 장애물 제거
-        combination_method: 1  # 0: 덮어쓰기, 1: 최대값 사용, 2: unknown만 덮기
-
-        observation_sources: scan  # 사용 센서 이름 (공백 없이 나열)
-        
+        enabled: True
+        observation_sources: scan
         scan:
-          topic: /scan  # 센서 데이터 토픽 이름
-          sensor_frame: lidar_link  # 비워두면 메시지에서 frame_id 사용
-          observation_persistence: 0.5  # 센서 데이터 유지 시간 (s)
-          expected_update_rate: 10.0  # 예상 갱신 주기 (s)
-          data_type: "LaserScan"  # LaserScan 또는 PointCloud2
-
-          min_obstacle_height: 0.0  # 최소 장애물 높이
-          max_obstacle_height: 2.0  # 최대 장애물 높이
-
-          ###### Try point!!!!!!!
-          inf_is_valid: True  # inf 값을 유효한 거리로 인정할지
-          marking: True  # 장애물로 마킹할지
-          clearing: True  # 자유 공간으로 클리어할지
-
-          obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
-          obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
-
-          raytrace_max_range: 9.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
-          raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
-
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True

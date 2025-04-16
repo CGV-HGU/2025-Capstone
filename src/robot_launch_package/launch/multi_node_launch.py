@@ -24,6 +24,12 @@ def generate_launch_description():
         'navigation2_rviz.launch.py'
     )
 
+    freespace_detection = os.path.join(
+        get_package_share_directory('freespace_detection'),
+        'launch',
+        'freespace_detection_launch.py'
+    )
+
     return LaunchDescription([
         # cam2image 노드
         Node(
@@ -55,13 +61,15 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(omo_r1_navigation2_rviz)
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(freespace_detection)
+        ),
 
-        # freespace_detection 패키지의 노드 실행
-        # Node(
-        #     package='freespace_detection',  # 패키지 이름
-        #     executable='floor_detection',    # 실행 파일 이름 (freespace_detection의 노드 실행 파일)
-        #     name='freespace_detector',      # 런치 시 사용할 노드 이름
-        #     output='screen'                 # 출력 형식
-        # ),
+        # fake_lidar_with_tf 노드
+        Node(
+            package='fake_lidar_with_tf',
+            executable='fake_lidar_with_tf',
+            name='fake_lidar_node',
+        ),
 
     ])
