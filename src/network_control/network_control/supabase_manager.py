@@ -28,7 +28,7 @@ class SupabaseManager:
         try:
             # Scale transform to match the 2D map dimensions
             if "position" in data:
-                data["position"] = [data["position"][0] * 10.0, data["position"][1] * 10.0]
+                data["position"] = [data["position"][0] * 3.0, data["position"][1] * 3.0]
 
             query = (self.supabase.table("robots")
                      .update(data)
@@ -59,7 +59,7 @@ class SupabaseManager:
             converted = query.data[0]
             if "goal_position" in converted:
                 # Scale transform to match the SLAM map dimensions
-                converted["goal_position"] = [converted["goal_position"][0] / 10.0, converted["goal_position"][1] / 10.0]
+                converted["goal_position"] = [converted["goal_position"][0] / 3.0, converted["goal_position"][1] / 3.0]
                 #print(converted)
 
                 return converted
@@ -78,9 +78,6 @@ class SupabaseManager:
 
         try:
             data["robot_id"] = self.robot_id
-            if "generated_path" in data:
-                # Scale transform to match the 2D map dimensions
-                data["generated_path"] = [[element * 10.0 for element in row] for row in data["generated_path"]]
             query = (self.supabase.table("response")
                      .insert(data)
                      .execute())

@@ -41,3 +41,4 @@ trap "echo 'Terminating processes...'; kill $PID1; exit" SIGINT SIGTERM
 
 # 첫 번째 프로세스가 종료될 때까지 대기
 wait
+
