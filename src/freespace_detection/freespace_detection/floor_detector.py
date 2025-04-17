@@ -31,31 +31,28 @@ class RoiChecker(Node):
         self.get_logger().info("Floor Detector Node initialized.")
 
     def image_callback(self, data):
-        # a) ROS Image → OpenCV
+        #  ROS Image → OpenCV
         try:
             frame = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             self.get_logger().error(f"CV Bridge error: {e}")
             return
 
-        # b) 프레임 크기
+        # YOLO 추론
+        results = self.model(frame, stream=True, conf=0.1)
+        in_roi = False
+
+        # 프레임 크기
         h, w, _ = frame.shape
 
-        # c) ROI 크기 & 위치 (하단 중앙)
-        roi_w, roi_h = 40, 10
+        # ROI 크기 & 위치 (하단 중앙)
+        roi_w, roi_h = 100, 20
         x_c = w // 2
-        y_off = 50
+        y_off = 20
         x_min = x_c - roi_w // 2
         x_max = x_c + roi_w // 2
         y_max = h - y_off
         y_min = y_max - roi_h
-
-        # d) ROI 테두리 그리기
-        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
-
-        # e) YOLO 추론
-        results = self.model(frame, stream=True, conf=0.4)
-        in_roi = False
 
         for res in results:
             if res.masks is None:
@@ -78,15 +75,18 @@ class RoiChecker(Node):
                 in_roi = True
             break  # 첫 번째 마스크만 사용
 
-        # f) 결과 퍼블리시
+        # 결과 퍼블리시
         self.roi_pub.publish(Bool(data=in_roi))
 
-        # g) 디버깅 텍스트
+        # ROI 테두리 그리기
+        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
+
+        # 디버깅 텍스트
         col = (0,255,0) if in_roi else (0,0,255)
         cv2.putText(frame, f"In ROI ≥80%: {in_roi}",
                     (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, col, 2)
 
-        # h) 화면 출력
+        # 화면 출력
         cv2.imshow("Segmentation Result", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             rclpy.shutdown()

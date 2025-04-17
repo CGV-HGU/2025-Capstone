@@ -216,7 +216,7 @@ global_costmap:
         scan:
           topic: /scan  # 센서 데이터 토픽 이름
           sensor_frame: lidar_link  # 비워두면 메시지에서 frame_id 사용
-          observation_persistence: 0.5  # 센서 데이터 유지 시간 (s)
+          observation_persistence: 3.0  # 센서 데이터 유지 시간 (s)
           expected_update_rate: 10.0  # 예상 갱신 주기 (s)
           data_type: "LaserScan"  # LaserScan 또는 PointCloud2
 
