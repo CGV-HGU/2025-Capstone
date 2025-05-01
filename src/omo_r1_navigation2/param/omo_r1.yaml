@@ -1,3 +1,7 @@
+amcl:
+  ros__parameters:
+    use_sim_time: False
+    tf_broadcast: False   
 
 bt_navigator:
   ros__parameters:
@@ -51,7 +55,7 @@ bt_navigator_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: False
-    controller_frequency: 20.0
+    controller_frequency: 10.0
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5
     min_theta_velocity_threshold: 0.001
@@ -81,20 +85,20 @@ controller_server:
       angular_dist_threshold: 0.785
       forward_sampling_distance: 0.5
       angular_disengage_threshold: 0.3925
-      rotate_to_heading_angular_vel: 1.8
-      max_angular_accel: 3.2
+      rotate_to_heading_angular_vel: 0.3
+      max_angular_accel: 0.3
       simulate_ahead_time: 1.0
       rotate_to_goal_heading: True
     
       debug_trajectory_details: True
-      min_vel_x: 0.1 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
+      min_vel_x: 0.01 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
       min_vel_y: 0.0
-      max_vel_x: 1.0 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
+      max_vel_x: 0.3 # 로봇의 x축(전진/후진) 최소/최대 속도를 지정
       max_vel_y: 0.0
-      max_vel_theta: 3.4 # 최대 회전 속도(라디안/초)를 설정/ 기존: 3.4
+      max_vel_theta: 0.3 # 최대 회전 속도(라디안/초)를 설정/ 기존: 3.4
       min_speed_xy: 0.0
-      max_speed_xy: 1.2 #형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다. # x-y 평면에서의 최대 선형 속도를 제한
-      min_speed_theta: 0.1
+      max_speed_xy: 0.3 #형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다. # x-y 평면에서의 최대 선형 속도를 제한
+      min_speed_theta: 0.01
       # Add high threshold velocity for turtlebot 3 issue.
       # https://github.com/ROBOTIS-GIT/turtlebot3_simulations/issues/75
       acc_lim_x: 0.01 # 선형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다.
@@ -114,7 +118,10 @@ controller_server:
       trans_stopped_velocity: 0.25
       short_circuit_trajectory_evaluation: True
       stateful: True
-      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"] # "RotateToGoal" 일단 제거
+      critics: ["ObstacleFootprint", "RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"] # "RotateToGoal" 일단 제거
+      ObstacleFootprint:
+        plugin: "dwb_critics::ObstacleFootprintCritic"
+        scale: 1.0
       BaseObstacle.scale: 0.02
       PathAlign.scale: 20.0
       PathAlign.forward_point_distance: 1.2 #0.85
@@ -148,7 +155,7 @@ local_costmap:
       plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 1.0 # 높을 수록 장애물에 더 떨어져서 주행함 0.5
+        inflation_radius: 1.0 # 높을 수록 장애물에 더 떨어져서 주행함 fixed value: 1.0
         cost_scaling_factor: 2.0
 
       obstacle_layer:
@@ -173,7 +180,7 @@ local_costmap:
           ###### Try point!!!!!!!
           inf_is_valid: True  # inf 값을 유효한 거리로 인정할지
           marking: True  # 장애물로 마킹할지
-          clearing: True  # 자유 공간으로 클리어할지
+          clearing: False  # 자유 공간으로 클리어할지
 
           obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
@@ -199,7 +206,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: True
-      robot_radius: 1.0 # 0.5
+      robot_radius: 0.8 # 0.5
       resolution: 0.1
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]   
@@ -216,7 +223,7 @@ global_costmap:
         scan:
           topic: /scan  # 센서 데이터 토픽 이름
           sensor_frame: lidar_link  # 비워두면 메시지에서 frame_id 사용
-          observation_persistence: 3.0  # 센서 데이터 유지 시간 (s)
+          observation_persistence: 0.5  # 센서 데이터 유지 시간 (s)
           expected_update_rate: 10.0  # 예상 갱신 주기 (s)
           data_type: "LaserScan"  # LaserScan 또는 PointCloud2
 
@@ -226,7 +233,7 @@ global_costmap:
           ###### Try point!!!!!!!
           inf_is_valid: True  # inf 값을 유효한 거리로 인정할지
           marking: True  # 장애물로 마킹할지
-          clearing: True  # 자유 공간으로 클리어할지
+          clearing: False  # 자유 공간으로 클리어할지
 
           obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
@@ -240,7 +247,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 2.0
-        inflation_radius: 5.0 # 0.3
+        inflation_radius: 4.0 # 0.3
       always_send_full_costmap: True
   global_costmap_client:
     ros__parameters:

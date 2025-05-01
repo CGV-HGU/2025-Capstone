@@ -13,16 +13,21 @@ using namespace std::chrono_literals;
 class PoseConverter : public rclcpp::Node {
 public:
   PoseConverter() : Node("pose_converter") {
+    prev_map_position_.x = prev_map_position_.y = prev_map_position_.z = 0.0;
+    prev_odom_position_.x = prev_odom_position_.y = prev_odom_position_.z = 0.0;
+    latest_pose_available_ = false;
+    first_pose_received_ = false;
+    prev_tracking_ = false;
+    current_tracking_ = false;
+    scale_factor_ = 10.0; //Fixed to 10.0
+
     vslam_pose_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
       "/run_slam/camera_pose", 10,
-      std::bind(&PoseConverter:: vslam_pose_callback, this, std::placeholders::_1));
+      std::bind(&PoseConverter::vslam_pose_callback, this, std::placeholders::_1));
 
-    // /odom 토픽에서 Odometry 메시지를 구독합니다.
     odom_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
       "odom", 10,
-      std::bind(&PoseConverter::odom_callback, this, std::placeholders::_1)
-    );
-    
+      std::bind(&PoseConverter::odom_callback, this, std::placeholders::_1));
 
     tracking_subscription_ = this->create_subscription<std_msgs::msg::Bool>(
       "/run_slam/tracking_status", 10,
@@ -34,20 +39,35 @@ public:
       50ms,
       std::bind(&PoseConverter::publish_transform, this));
 
-    latest_pose_available_ = false;
-    prev_tracking_ = false;
-    current_tracking = false;
-    scale_factor = 1.0;
-
     reset_odom_client_ = this->create_client<omo_r1_interfaces::srv::ResetOdom>("reset_odom");
     set_tf_only_mode_client_ = this->create_client<omo_r1_interfaces::srv::Onoff>("set_tf_only_mode");
-
   }
 
 private:
-  void  vslam_pose_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-    latest_pose_ = *msg;
-    latest_pose_available_ = true;
+  void vslam_pose_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+    if (!first_pose_received_) {
+      curr_pose_ = *msg;
+      curr_map_position_.x = curr_pose_.pose.pose.position.x * scale_factor_;
+      curr_map_position_.y = curr_pose_.pose.pose.position.y * scale_factor_;
+      prev_map_position_ = curr_map_position_;
+      prev_odom_position_ = curr_odom_position_;
+      first_pose_received_ = true;
+      latest_pose_available_ = true;
+      return;
+    }
+
+    if (current_tracking_) {
+      latest_pose_ = *msg;
+      latest_pose_available_ = true;
+      double delta_map = std::hypot(
+        latest_pose_.pose.pose.position.x * scale_factor_ - prev_map_position_.x,
+        latest_pose_.pose.pose.position.y * scale_factor_ - prev_map_position_.y);
+      if (delta_map < 1.0) {
+        curr_pose_ = *msg;
+      }
+    } else {
+      curr_pose_ = *msg;
+    }
   }
 
   void publish_transform() {
@@ -57,15 +77,15 @@ private:
     t.child_frame_id = "odom";
     
     if (latest_pose_available_) {
-      curr_map_position.x = latest_pose_.pose.pose.position.x * 10.0;
-      curr_map_position.y = latest_pose_.pose.pose.position.y * 10.0;
-      t.transform.translation.x = curr_map_position.x;
-      t.transform.translation.y = curr_map_position.y;
+      curr_map_position_.x = curr_pose_.pose.pose.position.x * scale_factor_;
+      curr_map_position_.y = curr_pose_.pose.pose.position.y * scale_factor_;
+      t.transform.translation.x = curr_map_position_.x;
+      t.transform.translation.y = curr_map_position_.y;
       t.transform.translation.z = 0.0;
-      t.transform.rotation.x = latest_pose_.pose.pose.orientation.x;
-      t.transform.rotation.y = latest_pose_.pose.pose.orientation.y * -1;
-      t.transform.rotation.z = latest_pose_.pose.pose.orientation.z;
-      t.transform.rotation.w = latest_pose_.pose.pose.orientation.w;
+      t.transform.rotation.x = curr_pose_.pose.pose.orientation.x;
+      t.transform.rotation.y = curr_pose_.pose.pose.orientation.y * -1;
+      t.transform.rotation.z = curr_pose_.pose.pose.orientation.z;
+      t.transform.rotation.w = curr_pose_.pose.pose.orientation.w;
     } else {
       t.transform.translation.x = 0.0;
       t.transform.translation.y = 0.0;
@@ -74,32 +94,25 @@ private:
       t.transform.rotation.y = 0.0;
       t.transform.rotation.z = 0.0;
       t.transform.rotation.w = 1.0;
+      call_reset_odom();
     }
     
-    if(current_tracking) {
-      // 0.5초 전과 현재의 이동량(변위) 계산 (평면상의 Euclidean 거리)
-      double delta_map = std::sqrt(std::pow(curr_map_position.x - prev_map_position.x, 2) + std::pow(curr_map_position.y - prev_map_position.y, 2));
-      double delta_odom_base = std::sqrt(std::pow(curr_odom_position.x - prev_odom_position.x, 2) + std::pow(curr_odom_position.y - prev_odom_position.y, 2));
-
-      // 두 변위의 비율 계산 (분모가 0이면 1.0으로 설정)
-      scale_factor = (delta_odom_base > 1e-6) ? (delta_map / delta_odom_base) : 1.0;
-      RCLCPP_INFO(this->get_logger(), "Calculated scale_factor (delta ratio): %.2f", scale_factor);
-
+    if(current_tracking_) {
       call_reset_odom();
-      //리셋 대신 map->odom 변환에서 좌표 수정
     }
 
-    prev_odom_position = curr_odom_position;
-    prev_map_position = curr_map_position;
+    prev_odom_position_ = curr_odom_position_;
+    prev_map_position_ = curr_map_position_;
     tf_broadcaster_->sendTransform(t);
   }
 
   void tracking_callback(const std_msgs::msg::Bool::SharedPtr msg) {
-    current_tracking = msg->data;
+    prev_tracking_ = current_tracking_;
+    current_tracking_ = msg->data;
   }
 
   void call_reset_odom() {
-    // if (!reset_odom_client_->wait_for_service(std::chrono::seconds(1))) {
+    // if (!reset_odom_client_->wait_for_service(1s)) {
     //   RCLCPP_ERROR(this->get_logger(), "reset_odom service not available");
     //   return;
     // }
@@ -107,48 +120,48 @@ private:
     request->x = 0.0;
     request->y = 0.0;
     request->theta = 0.0;
-    //RCLCPP_INFO(this->get_logger(), "Calling reset_odom service with x=0, y=0, theta=0");
-    auto result_future = reset_odom_client_->async_send_request(request);
+    reset_odom_client_->async_send_request(request);
   }
 
   void call_set_tf_only_mode(bool enable) {
-    if (!set_tf_only_mode_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!set_tf_only_mode_client_->wait_for_service(1s)) {
       RCLCPP_ERROR(this->get_logger(), "set_tf_only_mode service not available");
       return;
     }
     auto request = std::make_shared<omo_r1_interfaces::srv::Onoff::Request>();
     request->set = enable;
-    RCLCPP_INFO(this->get_logger(), "Calling set_tf_only_mode service with value: %s", enable ? "true" : "false");
-    auto result_future = set_tf_only_mode_client_->async_send_request(request);
+    RCLCPP_INFO(this->get_logger(), "Calling set_tf_only_mode: %s", enable ? "true" : "false");
+    set_tf_only_mode_client_->async_send_request(request);
   }
 
-  void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
-  {
-    curr_odom_position = msg->pose.pose.position;
+  void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+    curr_odom_position_ = msg->pose.pose.position;
   }
 
+  // Subscriptions, timers, broadcasters, clients
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr vslam_pose_subscription_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscription_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr tracking_subscription_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::TimerBase::SharedPtr param_timer_;
+
+  // State
   nav_msgs::msg::Odometry latest_pose_;
-  geometry_msgs::msg::Point curr_odom_position;
-  geometry_msgs::msg::Point prev_odom_position;
-  geometry_msgs::msg::Point curr_map_position;
-  geometry_msgs::msg::Point prev_map_position;
+  nav_msgs::msg::Odometry curr_pose_;
+  geometry_msgs::msg::Point curr_odom_position_;
+  geometry_msgs::msg::Point prev_odom_position_;
+  geometry_msgs::msg::Point curr_map_position_;
+  geometry_msgs::msg::Point prev_map_position_;
   bool latest_pose_available_;
+  bool first_pose_received_;
   bool prev_tracking_;
-  bool current_tracking;
-  double scale_factor;
+  bool current_tracking_;
+  double scale_factor_;
+
+  // Service clients
   rclcpp::Client<omo_r1_interfaces::srv::ResetOdom>::SharedPtr reset_odom_client_;
   rclcpp::Client<omo_r1_interfaces::srv::Onoff>::SharedPtr set_tf_only_mode_client_;
-  std::shared_ptr<rclcpp::AsyncParametersClient> param_client_;
-
 };
-
-
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);

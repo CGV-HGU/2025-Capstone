@@ -83,7 +83,7 @@ class FakeLidarWithTF(Node):
             start_idx = int((start_angle - self.angle_min) / self.angle_increment)
             end_idx = int((end_angle - self.angle_min) / self.angle_increment)
             for i in range(start_idx, end_idx + 1):
-                scan.ranges[i] = 2.0 # 정면 장애물 거리를 2m로 설정
+                scan.ranges[i] = 1.8 # 정면 장애물 거리를 1.8m로 설정
 
         self.scan_pub.publish(scan)
 
