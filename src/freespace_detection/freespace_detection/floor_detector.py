@@ -42,17 +42,17 @@ class RoiChecker(Node):
         # 2) true 지속 시간 추적 변수
         self.true_since = None
         self.cleared_once = False
-        self.costmap_obstacle_duration = 5.0 #3 sec
+        self.costmap_obstacle_duration = 10.0 #
 
         # 3) CV Bridge 초기화
         self.bridge = CvBridge()
         self.get_logger().info("Floor Detector Node initialized.")
 
-        self.inference_interval = 0.0  # 원하는 inference 주기 (초)
+        self.inference_interval = 10.0  # 원하는 inference 주기 (초)
         self.last_inference_time = self.get_clock().now()
 
         self.in_roi_history = deque(maxlen=5)
-        self.confirmed_roi = False  # 5회 중 3회 이상 in_roi이면 True
+        self.confirmed_roi = False  # 5회 중 2회 이상 in_roi이면 True
 
     def image_callback(self, data):
         now = self.get_clock().now()
@@ -76,9 +76,9 @@ class RoiChecker(Node):
         h, w, _ = frame.shape
 
         # ROI 크기 & 위치 (하단 중앙)
-        roi_w, roi_h = 180, 20
+        roi_w, roi_h = 220, 20
         x_c = w // 2
-        y_off = 20
+        y_off = 50
         x_min = x_c - roi_w // 2
         x_max = x_c + roi_w // 2
         y_max = h - y_off
@@ -126,7 +126,8 @@ class RoiChecker(Node):
 
 
         # 결과 퍼블리시
-        self.roi_pub.publish(Bool(data=self.confirmed_roi))
+        #self.roi_pub.publish(Bool(data=self.confirmed_roi))
+        self.roi_pub.publish(True)
 
         # ROI 테두리 그리기
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)

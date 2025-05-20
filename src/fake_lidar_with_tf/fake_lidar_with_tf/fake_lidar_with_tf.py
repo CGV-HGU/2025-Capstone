@@ -33,7 +33,7 @@ class FakeLidarWithTF(Node):
         self.parent_frame = 'base_link'
         self.angle_min = -math.pi/2.0
         self.angle_max = math.pi/2.0
-        self.angle_increment = math.radians(1.0)
+        self.angle_increment = math.radians(0.5)
         self.range_min = 0.1
         self.range_max = 10.0  # 라이다 최대 감지거리
 
@@ -77,13 +77,13 @@ class FakeLidarWithTF(Node):
 
         # floor_state가 False일 때만 정면에 장애물이 있다고 가정하여 값을 변경
         if not self.floor_state:
-            # 정면 각도 범위: -15° ~ +15°
-            start_angle = math.radians(-15)
-            end_angle = math.radians(15)
+            # 정면 각도 범위: -10° ~ +5°
+            start_angle = math.radians(-12)
+            end_angle = math.radians(12)
             start_idx = int((start_angle - self.angle_min) / self.angle_increment)
             end_idx = int((end_angle - self.angle_min) / self.angle_increment)
             for i in range(start_idx, end_idx + 1):
-                scan.ranges[i] = 1.8 # 정면 장애물 거리를 1.8m로 설정
+                scan.ranges[i] = 3.0 # 정면 장애물 거리 설정
 
         self.scan_pub.publish(scan)
 

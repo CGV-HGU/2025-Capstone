@@ -11,12 +11,14 @@ class SupabaseManager:
     url: str = None
     key: str = None
     supabase: Client = None
+    res_scale_factor = None
 
     def __init__(self):
         self.robot_id = os.environ.get("ROBOT_ID")     # 환경변수 ROBOT_ID를 읽어옴
         self.url      = os.environ.get("SUPABASE_URL") # 환경변수 SUPABASE_URL을 읽어옴
         self.key      = os.environ.get("SUPABASE_KEY") # 환경변수 SUPABASE_KEY를 읽어옴
         self.supabase = create_client(self.url, self.key)
+        self.res_scale_factor = 20.0 
     
     def update_robot_status(self, data: dict):
         """
@@ -28,7 +30,7 @@ class SupabaseManager:
         try:
             # Scale transform to match the 2D map dimensions
             if "position" in data:
-                data["position"] = [data["position"][0] * 3.0, data["position"][1] * 3.0]
+                data["position"] = [data["position"][0] * self.res_scale_factor, data["position"][1] * self.res_scale_factor]
 
             query = (self.supabase.table("robots")
                      .update(data)
@@ -59,7 +61,7 @@ class SupabaseManager:
             converted = query.data[0]
             if "goal_position" in converted:
                 # Scale transform to match the SLAM map dimensions
-                converted["goal_position"] = [converted["goal_position"][0] / 3.0, converted["goal_position"][1] / 3.0]
+                converted["goal_position"] = [converted["goal_position"][0] / self.res_scale_factor, converted["goal_position"][1] / self.res_scale_factor]
                 #print(converted)
 
                 return converted
