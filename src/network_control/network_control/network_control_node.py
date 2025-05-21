@@ -168,25 +168,41 @@ class NetworkControl(Node):
     def run(self):
         while rclpy.ok():
             rclpy.spin_once(self, timeout_sec=0.1)
-            # … battery check, status update, etc …
 
+            # 1) Check battery
+            bat = self.get_battery_status()
+            if bat is None:
+                time.sleep(1)
+                continue
+
+            # 2) Get current pose and push status → this is what was missing
+            pos = self.get_robot_position()
+            try:
+                self.supabase_manager.update_robot_status({
+                    'status': self.robot_status,
+                    'battery': int(bat),
+                    'position': pos
+                })
+            except Exception as e:
+                self.get_logger().error(f"Status update error: {e}")
+
+            # 3) Fetch the newest request (will ignore any ≤ min_request_id)
             req = self.supabase_manager.fetch_request()
             if not req or req['id'] <= self.min_request_id:
                 time.sleep(1)
                 continue
 
-            # bump watermark
+            # 4) Got a brand-new request: bump the watermark
             self.min_request_id = req['id']
             self.get_logger().info(f"Processing new request {self.min_request_id}")
 
-            # emergency stop: drive==False
+            # 5) drive==False → emergency stop
             if req.get("drive") is False:
                 self.emergency_stop()
 
-            # navigation goal: only if goal_position is not None
+            # 6) goal_position present → publish & send nav goal
             elif req.get("goal_position") is not None:
                 gp = req["goal_position"]
-                # now guaranteed to be a two‐element list
                 self.publish_and_log_goal(gp, self.min_request_id)
                 sent = self.send_nav_goal(gp)
                 if sent:
@@ -194,11 +210,12 @@ class NetworkControl(Node):
                     self.has_arrived = False
                     self.last_goal = gp
 
-            # anything else (e.g. a weird row with drive=True but no goal) we just ignore
+            # 7) anything else → ignore
             else:
                 self.get_logger().warn(f"Ignoring request {self.min_request_id}: no actionable fields")
-            
+
             time.sleep(1)
+
 
 
 def main(args=None):
