@@ -1,14 +1,15 @@
+# network_control/network_control.py
+# 2025 CGV Capstone
+# Author: 22100600 이현서 <hslee@handong.ac.kr>
+
 import rclpy
 import time
-import json
 from rclpy.node import Node
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path  # /plan 토픽은 nav_msgs/Path 타입
+from geometry_msgs.msg import PoseStamped, Twist
+from nav_msgs.msg import Path
 from omo_r1_interfaces.srv import Battery
 from tf2_ros import Buffer, TransformListener
 from .supabase_manager import SupabaseManager
-
-#test
 from rclpy.action import ActionClient
 from nav2_msgs.action import NavigateToPose
 
@@ -19,180 +20,178 @@ class NetworkControl(Node):
         self.supabase_manager = SupabaseManager()
         self.battery_client = self.create_client(Battery, 'check_battery')
         self.nav_goal_pub = self.create_publisher(PoseStamped, '/goal_pose', 10)
-        
-        # TF2 Transform Listener 설정
+        self.cmd_vel_pub   = self.create_publisher(Twist, '/cmd_vel', 10)
+
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        
-        # 이전 goal_pose를 저장할 변수 (초기값: None)
+
         self.last_goal = None
-        # 로봇 상태
+        self.last_request_id = None                   # 2. 중복 요청 방지용
         self.robot_status = 0
-        # 목적지 도착여부
-        self.has_arrived= False
-
-        # Nav2가 생성한 경로를 저장할 변수
+        self.has_arrived = False                       # 8. 도착 플래그
         self.latest_path = None
-        # /plan 토픽 구독: Nav2 global planner가 생성한 경로 (nav_msgs/Path)
-        self.path_subscriber = self.create_subscription(
-            Path,
-            '/plan',
-            self.path_callback,
-            1
-        )
 
-        # test: used to goal checker
+        self.path_subscriber = self.create_subscription(Path, '/plan', self.path_callback, 1)
         self.navigate_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
-
+        self.current_goal_handle = None
+        self.last_publish_response_id = None           # 3. publish 시 response ID 저장
+        self.last_arrival_response_id = None           # 3. arrival 시 response ID 저장
 
     def path_callback(self, msg):
-        """/plan 토픽에서 수신된 경로 메시지를 저장"""
         self.latest_path = msg
         self.get_logger().info("Received new global plan from /plan topic")
 
     def get_battery_status(self):
-        """배터리 상태를 조회하여 반환"""
-        if not self.battery_client.wait_for_service(timeout_sec=2.0):
-            self.get_logger().error("Battery service not available")
+        try:
+            if not self.battery_client.wait_for_service(timeout_sec=2.0):
+                self.get_logger().error("Battery service not available, retrying...")
+                return None
+            req = Battery.Request()
+            future = self.battery_client.call_async(req)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+            return future.result().soc if future.result() else None
+        except Exception as e:
+            self.get_logger().error(f"Battery check error: {e}")
             return None
-        req = Battery.Request()
-        future = self.battery_client.call_async(req)
-        rclpy.spin_until_future_complete(self, future)
-        if future.result():
-            return future.result().soc  # 배터리 잔량 반환
-        return None
 
     def get_robot_position(self):
-        """TF2를 이용하여 로봇의 현재 위치 조회"""
         try:
-            transform = self.tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
-            return [transform.transform.translation.x, transform.transform.translation.y]
+            tf = self.tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
+            return [tf.transform.translation.x, tf.transform.translation.y]
         except Exception as e:
-            self.get_logger().error(f"Failed to get robot position: {e}")
-            return [0.0, 0.0]  # 기본값 반환
+            self.get_logger().error(f"TF lookup failed: {e}")
+            return [0.0, 0.0]
 
-    def publish_goal(self, goal_position):
-        """Nav2에 목표 위치 전달"""
-        goal_msg = PoseStamped()
-        goal_msg.header.frame_id = "map"
-        goal_msg.header.stamp = self.get_clock().now().to_msg()
-        goal_msg.pose.position.x = goal_position[0]
-        goal_msg.pose.position.y = goal_position[1]
-        goal_msg.pose.position.z = 0.0 
-
-        goal_msg.pose.orientation.x = 0.0
-        goal_msg.pose.orientation.y = 0.0
-        goal_msg.pose.orientation.z = 0.0  
-        goal_msg.pose.orientation.w = 1.0  # heading은 0
-        self.nav_goal_pub.publish(goal_msg)
+    def publish_and_log_goal(self, goal_position, request_id):
+        # publish goal
+        msg = PoseStamped()
+        msg.header.frame_id = "map"
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.pose.position.x, msg.pose.position.y = goal_position
+        msg.pose.orientation.w = 1.0
+        self.nav_goal_pub.publish(msg)
         self.get_logger().info(f"Sent goal pose: {goal_position}")
 
-    #test
-    def _result_callback(self, future):
-        result = future.result().result
-        status = future.result().status
+        # log to DB as incomplete response
+        path = []
+        if self.latest_path:
+            path = [[p.pose.position.x, p.pose.position.y] for p in self.latest_path.poses]
+            self.latest_path = None          # 7. 경로 클리어
+        try:
+            response_id = self.supabase_manager.create_response({
+                'complete': False,
+                'generated_path': path
+            })
+            self.last_publish_response_id = response_id
+        except Exception as e:
+            self.get_logger().error(f"Failed to log publish-response: {e}")
 
+    def _result_callback(self, future):
+        status = future.result().status
+        # 4. 완료 시 handle 리셋
+        self.current_goal_handle = None
         if status == 4:  # STATUS_SUCCEEDED
             self.get_logger().info("Goal reached successfully!")
-            # 도착 성공 시 response의 complete를 True로 업데이트
-            # if self.last_response_id is not None:
-            #     self.has_arrived = True
-            #     self.robot_status = 0
+            self.has_arrived = True
+            self.robot_status = 0
+
+            # log arrival as new response entry
+            try:
+                arrival_id = self.supabase_manager.create_response({
+                    'complete': True,
+                    'generated_path': []
+                })
+                self.last_arrival_response_id = arrival_id
+            except Exception as e:
+                self.get_logger().error(f"Failed to log arrival-response: {e}")
+
+            # 7. 경로 클리어 & has_arrived 활용
+            self.latest_path = None
         else:
             self.get_logger().info(f"Goal ended with status {status}")
-            # 실패나 취소인 경우에도 response를 업데이트 (필요시)
-            # if self.last_response_id is not None:
-            #     self.has_arrived= False
 
-    
     def _goal_response_callback(self, future):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
-            self.get_logger().info("Goal was rejected by the action server.")
+        gh = future.result()
+        if not gh.accepted:
+            self.get_logger().warn("Goal rejected by action server.")
             return
-        
-        self.get_logger().info("Goal accepted!")
-        result_future = goal_handle.get_result_async()
-        result_future.add_done_callback(self._result_callback)
+        self.get_logger().info("Goal accepted.")
+        self.current_goal_handle = gh
+        gh.get_result_async().add_done_callback(self._result_callback)
 
     def send_nav_goal(self, goal_position):
-        # 1) 액션 서버가 준비될 때까지 대기
-        if not self.navigate_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().error("NavigateToPose action server not available!")
-            return
+        try:
+            if not self.navigate_client.wait_for_server(timeout_sec=5.0):
+                self.get_logger().error("NavigateToPose server not available, retry soon.")
+                return False
+            goal = NavigateToPose.Goal()
+            goal.pose.header.frame_id = 'map'
+            goal.pose.header.stamp = self.get_clock().now().to_msg()
+            goal.pose.pose.position.x, goal.pose.pose.position.y = goal_position
+            goal.pose.pose.orientation.w = 1.0
+            future = self.navigate_client.send_goal_async(goal)
+            future.add_done_callback(self._goal_response_callback)
+            self.get_logger().info(f"Sent goal to Nav2: {goal_position}")
+            return True
+        except Exception as e:
+            self.get_logger().error(f"Failed to send nav goal: {e}")
+            return False
 
-        # 2) Goal 메시지 구성
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose.header.frame_id = 'map'
-        goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
-        goal_msg.pose.pose.position.x = goal_position[0]
-        goal_msg.pose.pose.position.y = goal_position[1]
-        goal_msg.pose.pose.orientation.w = 1.0
+    def emergency_stop(self):
+        # 5. 속도 0 명령 퍼블리시
+        twist = Twist()
+        twist.linear.x = 0.0
+        twist.angular.z = 0.0
+        self.cmd_vel_pub.publish(twist)
+        self.get_logger().info("Emergency stop: cmd_vel zeroed.")
 
-        # 3) 액션 서버에 비동기로 목표 전송
-        send_goal_future = self.navigate_client.send_goal_async(
-            goal_msg
-        )
-        send_goal_future.add_done_callback(self._goal_response_callback)
-        self.get_logger().info(f"Sent goal to /navigate_to_pose: {goal_position}")
-
+        # cancel action
+        if self.current_goal_handle:
+            self.current_goal_handle.cancel_goal_async()
+            self.get_logger().info("Emergency stop: nav goal cancelled.")
+            self.current_goal_handle = None  # 4. handle 리셋
+        self.robot_status = 1
 
     def run(self):
         while rclpy.ok():
-            battery_status = self.get_battery_status()
-            if battery_status is None:
+            bat = self.get_battery_status()
+            if bat is None:
+                time.sleep(1)
                 continue
-            
-            # 로봇 위치 가져오기
-            robot_position = self.get_robot_position()
 
-            # 로봇 상태 업데이트
-            robot_status = {
-                "id": int(self.supabase_manager.robot_id),
-                "status": self.robot_status,
-                "battery": int(battery_status),
-                "position": robot_position
-            }
-            self.supabase_manager.update_robot_status(robot_status)
-            
-            # 새로운 요청 확인
-            request = self.supabase_manager.fetch_request()
-            if request and "goal_position" in request:
-                goal_position = request["goal_position"]
-                # 이전 goal이 없거나, 현재 요청된 goal이 이전과 다를 때에만 퍼블리시
-                if self.last_goal != goal_position:
-                    self.publish_goal(goal_position)
-                    self.last_goal = goal_position  # 현재 goal 저장
+            pos = self.get_robot_position()
+            # 10. 예외 안전 처리
+            try:
+                self.supabase_manager.update_robot_status({
+                    'status': self.robot_status,
+                    'battery': int(bat),
+                    'position': pos
+                })
+            except Exception as e:
+                self.get_logger().error(f"Status update error: {e}")
 
-                    # === 액션 기반 목표 전송 ===
-                    self.send_nav_goal(goal_position)
-                    self.robot_status = 3
-                    self.has_arrived = False
-                    
-                    # Nav2에서 수신한 경로 데이터를 response_data에 포함시키기
-                    generated_path = []
-                    if self.latest_path:
-                        # 경로의 각 Pose에서 (x, y) 좌표를 추출 (필요에 따라 다른 정보를 포함할 수 있음)
-                        for pose_stamped in self.latest_path.poses:
-                            x = pose_stamped.pose.position.x
-                            y = pose_stamped.pose.position.y
-                            generated_path.append([x, y])
-                    else:
-                        self.get_logger().warn("No global plan received from /plan topic")
+            req = self.supabase_manager.fetch_request()
+            if req:
+                req_id = req.get('id')
+                # 2. 중복 요청 방지
+                if req_id == self.last_request_id:
+                    time.sleep(1)
+                    continue
+                self.last_request_id = req_id
 
-                    # 응답 데이터 생성
-                    response_data = {
-                        "robot_id": self.supabase_manager.robot_id,
-                        "complete": self.has_arrived,
-                        "generated_path": generated_path
-                    }
-                    query_result = self.supabase_manager.create_response(response_data)
-                    # if query_result and query_result.data and "id" in query_result.data[0]:
-                    #     self.last_response_id = query_result.data[0]["id"]
-                    # self.get_logger().info(f"Response created for goal {goal_position}")
-            
-            
-            time.sleep(1)  # 1초 주기로 실행
+                if req.get('emergency_stop', False):
+                    self.emergency_stop()
+                elif 'goal_position' in req:
+                    gp = req['goal_position']
+                    # 새 목표가 기존과 같아도 요청별로 처리
+                    self.publish_and_log_goal(gp, req_id)
+                    sent = self.send_nav_goal(gp)
+                    if sent:
+                        self.robot_status = 3
+                        self.has_arrived = False  # 8. 도착 플래그 리셋
+                        self.last_goal = gp
+            time.sleep(1)
+
 
 def main(args=None):
     rclpy.init(args=args)
