@@ -139,6 +139,33 @@ class NetworkControl(Node):
 
     def emergency_stop(self):
         # 5. 속도 0 명령 퍼블리시
+        self.get_logger().info("Emergency stop triggered!")
+        twist = Twist()
+        twist.linear.x = 0.0
+        twist.angular.z = 0.0
+        self.cmd_vel_pub.publish(twist)
+
+        # cancel action
+        if self.current_goal_handle:
+            self.get_logger().info("Cancelling current Nav2 goal...")
+            self.current_goal_handle.cancel_goal_async()
+            self.current_goal_handle = None
+        else:
+            self.get_logger().warn("No current goal handle to cancel!")
+
+        self.robot_status = 1
+
+    def run(self):
+        while rclpy.ok():
+            rclpy.spin_once(self, timeout_sec=0.1)
+
+            bat = self.get_battery_status()
+            if bat is None:
+                time.sleep(1)
+                continue    def emergency_stop(self):
+        # 5. 속도 0 명령 퍼블리시
+        self.get_logger().info("Emergency stop triggered.")
+
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = 0.0
@@ -151,13 +178,6 @@ class NetworkControl(Node):
             self.get_logger().info("Emergency stop: nav goal cancelled.")
             self.current_goal_handle = None  # 4. handle 리셋
         self.robot_status = 1
-
-    def run(self):
-        while rclpy.ok():
-            bat = self.get_battery_status()
-            if bat is None:
-                time.sleep(1)
-                continue
 
             pos = self.get_robot_position()
             # 10. 예외 안전 처리
