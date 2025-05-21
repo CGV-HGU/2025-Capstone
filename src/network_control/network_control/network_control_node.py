@@ -162,22 +162,7 @@ class NetworkControl(Node):
             bat = self.get_battery_status()
             if bat is None:
                 time.sleep(1)
-                continue    def emergency_stop(self):
-        # 5. 속도 0 명령 퍼블리시
-        self.get_logger().info("Emergency stop triggered.")
-
-        twist = Twist()
-        twist.linear.x = 0.0
-        twist.angular.z = 0.0
-        self.cmd_vel_pub.publish(twist)
-        self.get_logger().info("Emergency stop: cmd_vel zeroed.")
-
-        # cancel action
-        if self.current_goal_handle:
-            self.current_goal_handle.cancel_goal_async()
-            self.get_logger().info("Emergency stop: nav goal cancelled.")
-            self.current_goal_handle = None  # 4. handle 리셋
-        self.robot_status = 1
+                continue
 
             pos = self.get_robot_position()
             # 10. 예외 안전 처리
