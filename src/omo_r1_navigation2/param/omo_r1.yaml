@@ -83,7 +83,7 @@ controller_server:
       plugin: "nav2_rotation_shim_controller::RotationShimController"
       primary_controller: "dwb_core::DWBLocalPlanner"  
       angular_dist_threshold: 0.785
-      forward_sampling_distance: 0.5
+      forward_sampling_distance: 2.4
       angular_disengage_threshold: 0.3925
       rotate_to_heading_angular_vel: 0.3
       max_angular_accel: 0.3
@@ -111,7 +111,7 @@ controller_server:
       vy_samples: 5
       vtheta_samples: 20
       sim_time: 1.0
-      linear_granularity: 0.5 # 체크 포인트(경로 포인트) 간격 기존 0.05
+      linear_granularity: 50.0 # 체크 포인트(경로 포인트) 간격 기존 0.05
       angular_granularity: 0.05
       transform_tolerance: 0.1 #0.2
       xy_goal_tolerance: 0.20 # 기존: 0.05
@@ -276,8 +276,8 @@ planner_server:
     GridBased:
       plugin: "nav2_smac_planner/SmacPlanner2D"
       tolerance: 0.5                      # tolerance for planning if unable to reach exact pose, in meters
-      downsample_costmap: false           # whether or not to downsample the map
-      downsampling_factor: 1              # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
+      downsample_costmap: true           # whether or not to downsample the map
+      downsampling_factor: 3              # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
       allow_unknown: false                # allow traveling in unknown space
       max_iterations: 1000000             # maximum total iterations to search for before failing (in case unreachable), set to -1 to disable
       max_on_approach_iterations: 1000    # maximum number of iterations to attempt to reach goal once in tolerance
@@ -311,7 +311,7 @@ planner_server:
         max_iterations: 1500 # 1500~2000
         w_smooth: 0.7 # 0.5~0.7
         w_data: 0.1  # 0.1~0.15
-        tolerance: 1.0e-10
+        tolerance: 1.0e-1
         do_refinement: true               # Whether to recursively run the smoother 3 times on the results from prior runs to refine the results further
 
 

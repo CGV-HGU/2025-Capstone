@@ -30,7 +30,7 @@ echo 'Launching run_slam in a new terminal...'
 gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
     source ~/ros2_ws/install/setup.bash; \
     ros2 run stella_vslam_ros run_slam \
-        -v ~/Dataset/custom_vocab_final.fbow \
+        -v ~/Dataset/final_vocab_5.fbow \
         -c ~/Dataset/usb_webcam.yaml \
         --map-db-in ~/Dataset/20250519_OH+NTH_marker.msg \
         --disable-mapping \

@@ -36,6 +36,9 @@ class NetworkControl(Node):
         self.current_goal_handle = None
         self.last_publish_response_id = None           # 3. publish 시 response ID 저장
         self.last_arrival_response_id = None           # 3. arrival 시 response ID 저장
+        initial = self.supabase_manager.fetch_request()
+        self.min_request_id = initial['id'] if initial else 0
+        self.get_logger().info(f"Ignoring any request id ≤ {self.min_request_id}")
 
     def path_callback(self, msg):
         self.latest_path = msg
@@ -79,8 +82,7 @@ class NetworkControl(Node):
             self.latest_path = None          # 7. 경로 클리어
         try:
             response_id = self.supabase_manager.create_response({
-                'complete': False,
-                'generated_path': path
+                'complete': False
             })
             self.last_publish_response_id = response_id
         except Exception as e:
@@ -98,8 +100,7 @@ class NetworkControl(Node):
             # log arrival as new response entry
             try:
                 arrival_id = self.supabase_manager.create_response({
-                    'complete': True,
-                    'generated_path': []
+                    'complete': True
                 })
                 self.last_arrival_response_id = arrival_id
             except Exception as e:
@@ -115,8 +116,18 @@ class NetworkControl(Node):
         if not gh.accepted:
             self.get_logger().warn("Goal rejected by action server.")
             return
+
         self.get_logger().info("Goal accepted.")
         self.current_goal_handle = gh
+
+        # If we're in emergency-stop mode, cancel immediately
+        if self.robot_status == 1:
+            self.get_logger().info("Emergency ongoing at goal-acceptance → cancelling goal")
+            gh.cancel_goal_async()
+            # Do not register the normal result callback
+            return
+
+        # Normal operation: watch for result
         gh.get_result_async().add_done_callback(self._result_callback)
 
     def send_nav_goal(self, goal_position):
@@ -138,63 +149,55 @@ class NetworkControl(Node):
             return False
 
     def emergency_stop(self):
-        # 5. 속도 0 명령 퍼블리시
         self.get_logger().info("Emergency stop triggered!")
         twist = Twist()
         twist.linear.x = 0.0
         twist.angular.z = 0.0
         self.cmd_vel_pub.publish(twist)
 
-        # cancel action
+        # Cancel any in-flight goal
         if self.current_goal_handle:
             self.get_logger().info("Cancelling current Nav2 goal...")
             self.current_goal_handle.cancel_goal_async()
             self.current_goal_handle = None
         else:
-            self.get_logger().warn("No current goal handle to cancel!")
+            self.get_logger().info("No accepted goal yet, will cancel upon acceptance.")
 
         self.robot_status = 1
 
     def run(self):
         while rclpy.ok():
             rclpy.spin_once(self, timeout_sec=0.1)
+            # … battery check, status update, etc …
 
-            bat = self.get_battery_status()
-            if bat is None:
+            req = self.supabase_manager.fetch_request()
+            if not req or req['id'] <= self.min_request_id:
                 time.sleep(1)
                 continue
 
-            pos = self.get_robot_position()
-            # 10. 예외 안전 처리
-            try:
-                self.supabase_manager.update_robot_status({
-                    'status': self.robot_status,
-                    'battery': int(bat),
-                    'position': pos
-                })
-            except Exception as e:
-                self.get_logger().error(f"Status update error: {e}")
+            # bump watermark
+            self.min_request_id = req['id']
+            self.get_logger().info(f"Processing new request {self.min_request_id}")
 
-            req = self.supabase_manager.fetch_request()
-            if req:
-                req_id = req.get('id')
-                # 2. 중복 요청 방지
-                if req_id == self.last_request_id:
-                    time.sleep(1)
-                    continue
-                self.last_request_id = req_id
+            # emergency stop: drive==False
+            if req.get("drive") is False:
+                self.emergency_stop()
 
-                if req.get('emergency_stop', False):
-                    self.emergency_stop()
-                elif 'goal_position' in req:
-                    gp = req['goal_position']
-                    # 새 목표가 기존과 같아도 요청별로 처리
-                    self.publish_and_log_goal(gp, req_id)
-                    sent = self.send_nav_goal(gp)
-                    if sent:
-                        self.robot_status = 3
-                        self.has_arrived = False  # 8. 도착 플래그 리셋
-                        self.last_goal = gp
+            # navigation goal: only if goal_position is not None
+            elif req.get("goal_position") is not None:
+                gp = req["goal_position"]
+                # now guaranteed to be a two‐element list
+                self.publish_and_log_goal(gp, self.min_request_id)
+                sent = self.send_nav_goal(gp)
+                if sent:
+                    self.robot_status = 3
+                    self.has_arrived = False
+                    self.last_goal = gp
+
+            # anything else (e.g. a weird row with drive=True but no goal) we just ignore
+            else:
+                self.get_logger().warn(f"Ignoring request {self.min_request_id}: no actionable fields")
+            
             time.sleep(1)
 
 

@@ -32,6 +32,8 @@ class SupabaseManager:
             if "position" in data:
                 data["position"] = [data["position"][0] * self.res_scale_factor, data["position"][1] * self.res_scale_factor]
 
+            data["battery"] = 100
+
             query = (self.supabase.table("robots")
                      .update(data)
                      .eq("id", self.robot_id)
@@ -44,37 +46,41 @@ class SupabaseManager:
     def fetch_request(self):
         """
         DB에서 새로운 명령(목표지점, 비상정지 등)을 받아온다.
-        :param table_name: "request" (fixed)
-        :param data: {"id": Sequential Number (for Primary Key), "robot_id": robot_id, "status": 0, "battery": 100, "position": [pos_x, pos_y]}
-        :return: 조회 결과
+        :return: dict or None
         """
-
-        #print("Fetch request... of ROBOT_ID="+str(self.robot_id))
-
         try:
-            query = (self.supabase.table("request")
-                     .select("*")
-                     .eq("robot_id", self.robot_id)
-                     .order("request_time", desc=True)
-                     .limit(1)
-                     .execute())
-            converted = query.data[0]
-            if "goal_position" in converted:
-                # Scale transform to match the SLAM map dimensions
-                converted["goal_position"] = [converted["goal_position"][0] / self.res_scale_factor, converted["goal_position"][1] / self.res_scale_factor]
-                #print(converted)
+            result = (
+                self.supabase
+                    .table("request")
+                    .select("*")
+                    .eq("robot_id", self.robot_id)
+                    .order("request_time", desc=True)
+                    .limit(1)
+                    .execute()
+            )
+            if not result.data:
+                return None
 
-                return converted
+            req = result.data[0]
+
+            # Scale only if goal_position is actually an array
+            gp = req.get("goal_position")
+            if gp is not None:
+                req["goal_position"] = [gp[0] / self.res_scale_factor,
+                                        gp[1] / self.res_scale_factor]
+
+            return req
 
         except Exception as e:
             print(f"[SupabaseManager] Request fetch error: {e}")
             return None
+
         
     def create_response(self, data: dict):
         """
         받은 명령에 대한 응답을 DB에 업로드한다.
         :param table_name: response (fixed)
-        :param data: {"id": Sequential Number (for Primary Key), "robot_id": robot_id, "complete": FALSE, "geterated_path": [[pos_x1, pos_y1], [pos_x2, pos_y2], ...]}
+        :param data: {"id": Sequential Number (for Primary Key), "robot_id": robot_id, "complete": FALSE}
         :return: 조회 결과 목록
         """
 

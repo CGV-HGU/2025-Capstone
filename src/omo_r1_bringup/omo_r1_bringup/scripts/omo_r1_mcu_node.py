@@ -105,7 +105,7 @@ class OMOR1MiniNode(Node):
     print('ENC_PULSES:\t\t%s'%(self.enc_pulse))
 
     # scale_factor 파라미터 초기화 (기본값 1.0)
-    self.scale_factor = 2.4
+    self.scale_factor = 3.0 #2.4
 
     self.distance_per_pulse = 2*math.pi*self.wheel_radius / self.enc_pulse / self.gear_ratio
     print('DISTANCE PER PULSE \t:%s'%(self.distance_per_pulse))
