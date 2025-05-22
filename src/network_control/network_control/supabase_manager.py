@@ -18,7 +18,7 @@ class SupabaseManager:
         self.url      = os.environ.get("SUPABASE_URL") # 환경변수 SUPABASE_URL을 읽어옴
         self.key      = os.environ.get("SUPABASE_KEY") # 환경변수 SUPABASE_KEY를 읽어옴
         self.supabase = create_client(self.url, self.key)
-        self.res_scale_factor = 20.0 
+        self.res_scale_factor = 41.5 #20.0
     
     def update_robot_status(self, data: dict):
         """
