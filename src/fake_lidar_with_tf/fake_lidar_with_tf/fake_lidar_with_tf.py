@@ -65,7 +65,7 @@ class FakeLidarWithTF(Node):
         t.header.stamp = now
         t.header.frame_id = 'base_link'
         t.child_frame_id = 'lidar_link'
-        t.transform.translation.x = 0.0
+        t.transform.translation.x = -0.55
         t.transform.translation.y = 0.0
         t.transform.translation.z = 0.0
         t.transform.rotation.w = 1.0
@@ -79,6 +79,8 @@ class FakeLidarWithTF(Node):
         scan.angle_increment = self.angle_increment
         scan.range_min = self.range_min
         scan.range_max = self.range_max
+        scan.scan_time       = 1.0 / 10.0      # <- 추가
+        scan.time_increment  = scan.scan_time / self.num_readings  # <- 추가
 
         if not self.floor_state:
             # 장애물 있을 때: LUT 기반 거리 사용

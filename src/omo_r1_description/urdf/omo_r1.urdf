@@ -63,6 +63,14 @@
                izz="2.0064271e-02"/>
     </inertial>
   </link>
+  <link name="camera_link"/>
+
+  <joint name="camera_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="camera_link"/>
+    <!-- x=-0.5 m (뒤), y=0, z=0.2 m (높이) -->
+    <origin xyz="-0.5 0 0.2" rpy="0 0 0"/>
+  </joint>
 
   <joint name="wheel_left_joint" type="fixed">
     <parent link="base_link"/>

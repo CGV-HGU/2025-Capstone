@@ -50,7 +50,7 @@ class RoiChecker(Node):
         # ROI 설정 (고정 크기 프레임 기준)
         self.target_w = 320
         self.target_h = 256
-        roi_w, roi_h, y_off = 320, 10, 20
+        roi_w, roi_h, y_off = 180, 50, 0
         x_c = self.target_w // 2
         y_max = self.target_h - y_off
         y_min = y_max - roi_h
@@ -62,7 +62,7 @@ class RoiChecker(Node):
         # Costmap clear 조건
         self.true_since = None
         self.cleared_once = False
-        self.costmap_obstacle_duration = 10.0  # seconds
+        self.costmap_obstacle_duration = 5.0  # seconds
 
         # --- 채널 거리 퍼블리셔 & LUT 초기화 ---
         # 1) 퍼블리셔
@@ -126,7 +126,7 @@ class RoiChecker(Node):
             # ROI 내부 채움 비율 계산
             roi_mask = mask[self.roi_slice]
             cnt = cv2.countNonZero(roi_mask)
-            if cnt >= self.roi_area * 0.8:
+            if cnt >= self.roi_area * 0.9:
                 in_roi = True
             break
 
