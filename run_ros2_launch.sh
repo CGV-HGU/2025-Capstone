@@ -30,9 +30,9 @@ echo 'Launching run_slam in a new terminal...'
 gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
     source ~/ros2_ws/install/setup.bash; \
     ros2 run stella_vslam_ros run_slam \
-        -v ~/Dataset/final_vocab_5.fbow \
+        -v ~/Dataset/NTH_4F_vocap.fbow \
         -c ~/Dataset/usb_webcam.yaml \
-        --map-db-in ~/Dataset/20250519_OH+NTH_marker.msg \
+        --map-db-in ~/Dataset/NTH_4F.msg \
         --disable-mapping \
         --ros-args \
           -p publish_tf:=false \
@@ -43,11 +43,11 @@ gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
 
 
 # 세 번째 노드를 새로운 터미널에서 실행 (네트워크 노드)
-echo 'Launching network_control in a new terminal...'
-gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
-    source ~/ros2_ws/install/setup.bash; \
-    ros2 run network_control network_control_node; \
-    exec bash"
+# echo 'Launching network_control in a new terminal...'
+# gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
+#     source ~/ros2_ws/install/setup.bash; \
+#     ros2 run network_control network_control_node; \
+#     exec bash"
 
 # # 4 번째 노드를 새로운 터미널에서 실행 (freespace_detection 노드)
 # echo 'Launching freespace_detection in a new terminal...'

@@ -98,7 +98,7 @@ controller_server:
       max_vel_theta: 0.3 # 최대 회전 속도(라디안/초)를 설정/ 기존: 3.4
       min_speed_xy: 0.0
       max_speed_xy: 0.3 #형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다. # x-y 평면에서의 최대 선형 속도를 제한
-      min_speed_theta: 0.01
+      min_speed_theta: 0.0
       # Add high threshold velocity for turtlebot 3 issue.
       # https://github.com/ROBOTIS-GIT/turtlebot3_simulations/issues/75
       acc_lim_x: 0.01 # 선형 가속/감속 한계로, 값을 높이면 더 빠른 속도 변화가 가능해집니다.
@@ -142,7 +142,7 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
+      update_frequency: 10.0
       publish_frequency: 5.0
       global_frame: odom
       robot_base_frame: base_link
@@ -182,10 +182,10 @@ local_costmap:
           marking: True  # 장애물로 마킹할지
           clearing: True  # 자유 공간으로 클리어할지
 
-          obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
+          obstacle_max_range: 10.0  # 장애물 마킹 최대 거리
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
-          raytrace_max_range: 9.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
+          raytrace_max_range: 10.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
           raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
     
       static_layer:
@@ -201,7 +201,7 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 5.0
+      update_frequency: 10.0
       publish_frequency: 5.0
       global_frame: map
       robot_base_frame: base_link
@@ -238,7 +238,7 @@ global_costmap:
           obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
-          raytrace_max_range: 9.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
+          raytrace_max_range: 10.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
           raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
 
       static_layer:

@@ -20,7 +20,7 @@ public:
     prev_tracking_ = false;
     current_tracking_ = false;
     // scale_factor_ = 10.0; //Fixed to 10.0
-    scale_factor_ = 5.0; // when the resolution is 0.05, scale_factor = 100 * 0.05 
+    scale_factor_ = 2.5; // when the resolution is 0.05, scale_factor = 100 * 0.05 
 
     vslam_pose_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
       "/run_slam/camera_pose", 10,
