@@ -50,7 +50,7 @@ class RoiChecker(Node):
         # ROI 설정 (고정 크기 프레임 기준)
         self.target_w = 320
         self.target_h = 256
-        roi_w, roi_h, y_off = 180, 50, 0
+        roi_w, roi_h, y_off = 180, 50, 5
         x_c = self.target_w // 2
         y_max = self.target_h - y_off
         y_min = y_max - roi_h
@@ -62,7 +62,7 @@ class RoiChecker(Node):
         # Costmap clear 조건
         self.true_since = None
         self.cleared_once = False
-        self.costmap_obstacle_duration = 5.0  # seconds
+        self.costmap_obstacle_duration = 15.0  # seconds
 
         # --- 채널 거리 퍼블리셔 & LUT 초기화 ---
         # 1) 퍼블리셔
@@ -126,7 +126,7 @@ class RoiChecker(Node):
             # ROI 내부 채움 비율 계산
             roi_mask = mask[self.roi_slice]
             cnt = cv2.countNonZero(roi_mask)
-            if cnt >= self.roi_area * 0.9:
+            if cnt >= self.roi_area * 0.95:
                 in_roi = True
             break
 
@@ -191,40 +191,40 @@ class RoiChecker(Node):
         cv2.destroyAllWindows()
         self.get_logger().info("Resources cleaned up.")
 
-
     def publish_channel_distances(self, mask: np.ndarray):
         """
         mask: H×W binary mask (1=floor, 0=non-floor)
-        Reads precomputed LUTs: self.col_to_ch_lut (shape W,), self.distance_lut (shape H,)
-        Publishes Float32MultiArray of size self.num_channels
+        Only within ROI columns/rows do we compute distances via LUT;
+        other channels remain at self.range_max (inf).
         """
         H, W = mask.shape
-        assert W == self.col_to_ch_lut.shape[0], f"Width mismatch: {W} vs {self.col_to_ch_lut.shape[0]}"
-        assert H == self.distance_lut.shape[0], f"Height mismatch: {H} vs {self.distance_lut.shape[0]}"
+        # ROI 경계
+        y_start, y_stop = self.roi_slice[0].start, self.roi_slice[0].stop
+        x_start, x_stop = self.roi_slice[1].start, self.roi_slice[1].stop
 
-        # Initialize channel distances to max range
+        # 채널 거리 초기화 (inf)
         channel_dist = np.full(self.num_channels, self.range_max, dtype=float)
 
-        # Scan each column for the lowest non-floor pixel
-        for x in range(W):
-            ys = np.where(mask[:, x] == 0)[0]
-            if ys.size > 0:
-                y_bot = ys.max()
+        # ROI 내부 컬럼에 대해서만 스캔
+        for x in range(x_start, x_stop):
+            # ROI 행 범위 내에서 non-floor 픽셀 검색
+            ys_roi = np.where(mask[y_start:y_stop, x] == 0)[0]
+            if ys_roi.size > 0:
+                # ROI 로컬 인덱스를 전체 프레임 인덱스로 변환
+                y_bot = ys_roi.max() + y_start
                 dist = float(self.distance_lut[y_bot])
                 ch = int(self.col_to_ch_lut[x])
-                # Keep the minimum distance for each channel
+                # 더 짧은 거리만 갱신
                 if dist < channel_dist[ch]:
                     channel_dist[ch] = dist
 
-        # Build Float32MultiArray message
+        # 메시지 빌드 및 퍼블리시
         msg = Float32MultiArray()
         dim = MultiArrayDimension(label='channels',
-                                  size=self.num_channels,
-                                  stride=self.num_channels)
+                                size=self.num_channels,
+                                stride=self.num_channels)
         msg.layout.dim.append(dim)
         msg.data = channel_dist.tolist()
-
-        # Publish
         self.channel_pub.publish(msg)
 
 def main(args=None):
