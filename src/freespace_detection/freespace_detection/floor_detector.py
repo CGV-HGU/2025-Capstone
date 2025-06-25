@@ -42,7 +42,7 @@ class RoiChecker(Node):
         self.global_service_ready = False
 
         # Debounce & 타이밍 변수
-        self.inference_interval = 0.5  # seconds
+        self.inference_interval = 0.2  # seconds
         self.last_time = time.time()
         self.in_roi_history = deque(maxlen=5)
         self.confirmed_roi = False
