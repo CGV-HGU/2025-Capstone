@@ -106,7 +106,7 @@ class RoiChecker(Node):
         )
 
         # YOLO 추론
-        results = self.model(small_frame, stream=True, conf=0.4)
+        results = self.model(small_frame, stream=False, conf=0.4)
         in_roi = False
 
         # 첫 번째 마스크 결과 사용
@@ -174,7 +174,9 @@ class RoiChecker(Node):
                 self.get_logger().warn('local clear service unavailable')
         if self.local_service_ready:
             req = ClearEntireCostmap.Request()
-            self.clear_local_cli.call_async(req)
+            fut = self.clear_local_cli.call_async(req)
+            # Release the Future immediately when done
+            fut.add_done_callback(lambda f: None)
 
         # global service
         if not self.global_service_ready:
@@ -184,7 +186,9 @@ class RoiChecker(Node):
                 self.get_logger().warn('global clear service unavailable')
         if self.global_service_ready:
             req = ClearEntireCostmap.Request()
-            self.clear_global_cli.call_async(req)
+            fut = self.clear_global_cli.call_async(req)
+            fut.add_done_callback(lambda f: None)
+
 
     def destroy_node(self):
         super().destroy_node()
