@@ -24,12 +24,6 @@ def generate_launch_description():
         'navigation2_rviz.launch.py'
     )
 
-    freespace_detection = os.path.join(
-        get_package_share_directory('freespace_detection'),
-        'launch',
-        'freespace_detection_launch.py'
-    )
-
     return LaunchDescription([
         # cam2image 노드
         Node(
@@ -43,12 +37,6 @@ def generate_launch_description():
                 {'height': 480}
             ],
         ),
-        # pose_converter
-        Node(
-            package='pose_converter',
-            executable='pose_converter_node',
-            name='pose_converter_node'
-        ),
         #omo_r1_bringup
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(omo_r1_bringup)
@@ -60,16 +48,6 @@ def generate_launch_description():
         #omo_r1_navigation2_rviz
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(omo_r1_navigation2_rviz)
-        ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(freespace_detection)
-        ),
-
-        # fake_lidar_with_tf 노드
-        Node(
-            package='fake_lidar_with_tf',
-            executable='fake_lidar_with_tf',
-            name='fake_lidar_node',
         ),
 
     ])
