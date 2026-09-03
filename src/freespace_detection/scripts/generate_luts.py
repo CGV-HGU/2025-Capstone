@@ -29,20 +29,30 @@ pixel_angles = np.degrees(np.arctan((u - cx) / fx))
 col_to_ch_lut = np.round((pixel_angles - theta_min) / step).astype(int)
 col_to_ch_lut = np.clip(col_to_ch_lut, 0, num_channels - 1)
 
-# 2) distance_lut: y 픽셀 → 지면까지 거리 (m), tilt 반영
+# 2) distance_lut: y 픽셀 → 지면까지 수평 거리 X (m), tilt 반영
 rows = np.arange(H)
 # optical axis 대비 픽셀 빔 각도 φ(y)
 phi = np.arctan2(rows - cy, fy)       # rad
 # 피치 tilt γ 만큼 더해서 지면까지 수평거리 계산
-dist = cam_height / np.tan(phi + gamma)
+dist_x = cam_height / np.tan(phi + gamma)
 # 위쪽(φ+γ ≤ 0) 이나 tan이 0에 가까운 경우는 무한대로 처리
 invalid = (phi + gamma) <= 0
-dist[invalid] = np.inf
-distance_lut = dist
+dist_x[invalid] = np.inf
+distance_lut = dist_x
 
-# 3) .npy 파일로 저장
+# 3) distance_lut_2d: (H, W) 유클리드 방사 거리 r (m)
+# LaserScan ranges[i]에 필요한 실제 2D 방사 거리: r = X / cos(theta)
+# 이 보정을 통해 35도 화각 양끝단의 18% (0.26m) 거리 왜곡을 완벽히 제거
+theta_rad = np.arctan((u - cx) / fx)  # shape (W,)
+cos_theta = np.cos(theta_rad)         # shape (W,)
+distance_lut_2d = dist_x[:, np.newaxis] / cos_theta[np.newaxis, :]  # shape (H, W)
+distance_lut_2d[invalid, :] = np.inf
+
+# 4) .npy 파일로 저장
 np.save('col_to_ch_lut.npy', col_to_ch_lut)
 np.save('distance_lut.npy', distance_lut)
+np.save('distance_lut_2d.npy', distance_lut_2d)
 
 print(f"Saved col_to_ch_lut.npy (shape {col_to_ch_lut.shape})")
 print(f"Saved distance_lut.npy (shape {distance_lut.shape})")
+print(f"Saved distance_lut_2d.npy (shape {distance_lut_2d.shape}) - Euclidean range corrected!")

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  v_lidar:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: v_lidar_research:latest
+    container_name: v_lidar_container
+    network_mode: host
+    ipc: host
+    privileged: true
+    stdin_open: true
+    tty: true
+
+    # Intel Arc iGPU 하드웨어 가속 접근 권한 그룹
+    group_add:
+      - video
+      - render
+
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - ROS_DOMAIN_ID=0
+
+    devices:
+      # Intel Core Ultra 7 (Meteor Lake) 내장 Intel Arc GPU
+      - /dev/dri:/dev/dri
+
+    volumes:
+      # 1. 워크스페이스 소스코드 마운트
+      - .:/root/ros2_ws
+      # 2. X11 GUI 디스플레이 소켓 마운트 (RViz & PangolinViewer)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # 3. 데이터 디렉터리 마운트 (어휘집, 맵 DB, 카메라 설정)
+      - ~/data:/root/data
+      # 4. 하드웨어 장치 마운트 (USB 웹캠 및 로봇 MCU 시리얼 포트)
+      - /dev:/dev
+
+    command: >
+      bash -c "
+      colcon build --symlink-install --allow-overriding image_tools &&
+      source install/setup.bash &&
+      bash
+      "

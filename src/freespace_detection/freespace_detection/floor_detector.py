@@ -28,10 +28,31 @@ class RoiChecker(Node):
         if not os.path.exists(self.scripts_dir):
             self.scripts_dir = os.path.expanduser('~/data/fsd')
 
-        # YOLO 모델 로드
-        model_path = os.path.join(self.scripts_dir, "best.pt")
+        # GUI 활성화 파라미터 및 Headless 환경 자동 감지
+        self.declare_parameter('enable_gui', True)
+        self.enable_gui = self.get_parameter('enable_gui').get_parameter_value().bool_value
+        if not os.environ.get('DISPLAY'):
+            self.enable_gui = False
+            self.get_logger().info("No DISPLAY detected. Running in headless mode.")
+
+        # YOLO 모델 로드 (Intel NUC 최적화: OpenVINO -> ONNX -> Engine -> PyTorch .pt)
+        openvino_dir = os.path.join(self.scripts_dir, "best_openvino_model")
+        onnx_path = os.path.join(self.scripts_dir, "best.onnx")
+        engine_path = os.path.join(self.scripts_dir, "best.engine")
+        pt_path = os.path.join(self.scripts_dir, "best.pt")
+
+        if os.path.exists(openvino_dir):
+            model_path = openvino_dir
+        elif os.path.exists(onnx_path):
+            model_path = onnx_path
+        elif os.path.exists(engine_path):
+            model_path = engine_path
+        else:
+            model_path = pt_path
+
         try:
-            self.model = YOLO(model_path)
+            self.model = YOLO(model_path, task='segment')
+            self.get_logger().info(f"Loaded YOLO model from: {model_path}")
         except Exception as e:
             self.get_logger().error(f"YOLO load failed: {e}")
             rclpy.shutdown()
@@ -89,7 +110,14 @@ class RoiChecker(Node):
         #    col_to_ch_lut.npy: shape (W,), dtype=int
         #    distance_lut.npy:  shape (H,), dtype=float
         self.col_to_ch_lut = np.load(os.path.join(self.scripts_dir, 'col_to_ch_lut.npy'))
-        self.distance_lut  = np.load(os.path.join(self.scripts_dir, 'distance_lut.npy'))
+        dist_2d_path = os.path.join(self.scripts_dir, 'distance_lut_2d.npy')
+        if os.path.exists(dist_2d_path):
+            self.distance_lut = np.load(dist_2d_path)
+            self.is_2d_lut = True
+            self.get_logger().info("Using 2D Euclidean distance LUT (range corrected).")
+        else:
+            self.distance_lut = np.load(os.path.join(self.scripts_dir, 'distance_lut.npy'))
+            self.is_2d_lut = False
 
         self.bridge = CvBridge()
         self.get_logger().info("Floor Detector Node initialized.")
@@ -124,6 +152,10 @@ class RoiChecker(Node):
 
             mask = res.masks.data.cpu().numpy()[0].astype(np.uint8)
 
+            # 반사광 및 그림자로 인한 마스크 구멍 보정 (Morphological Close)
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+
             self.publish_channel_distances(mask)
             
             # 세그멘테이션 오버레이 (복사 최소화)
@@ -153,25 +185,26 @@ class RoiChecker(Node):
             self.true_since = None
             self.cleared_once = False
 
-        # 결과 퍼블리시data=self.confirmed_roi))
+        # 결과 퍼블리시
         self.roi_pub.publish(Bool(data=self.confirmed_roi))
 
-        # 디버깅 시각화
-        cv2.rectangle(
-            small_frame,
-            (self.roi_slice[1].start, self.roi_slice[0].start),
-            (self.roi_slice[1].stop-1, self.roi_slice[0].stop-1),
-            (255, 0, 0), 2
-        )
-        col = (0, 255, 0) if in_roi else (0, 0, 255)
-        cv2.putText(
-            small_frame, f"In ROI: {in_roi}",
-            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, col, 2
-        )
+        # 디버깅 시각화 (GUI 활성화 시에만 실행)
+        if self.enable_gui:
+            cv2.rectangle(
+                small_frame,
+                (self.roi_slice[1].start, self.roi_slice[0].start),
+                (self.roi_slice[1].stop-1, self.roi_slice[0].stop-1),
+                (255, 0, 0), 2
+            )
+            col = (0, 255, 0) if in_roi else (0, 0, 255)
+            cv2.putText(
+                small_frame, f"In ROI: {in_roi}",
+                (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, col, 2
+            )
 
-        cv2.imshow("Segmentation Result", small_frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            rclpy.shutdown()
+            cv2.imshow("Segmentation Result", small_frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                rclpy.shutdown()
 
     def clear_all_costmaps(self):
         # local service
@@ -200,7 +233,8 @@ class RoiChecker(Node):
 
     def destroy_node(self):
         super().destroy_node()
-        cv2.destroyAllWindows()
+        if self.enable_gui:
+            cv2.destroyAllWindows()
         self.get_logger().info("Resources cleaned up.")
 
     def publish_channel_distances(self, mask: np.ndarray):
@@ -224,7 +258,10 @@ class RoiChecker(Node):
             if ys_roi.size > 0:
                 # ROI 로컬 인덱스를 전체 프레임 인덱스로 변환
                 y_bot = ys_roi.max() + y_start
-                dist = float(self.distance_lut[y_bot])
+                if self.is_2d_lut:
+                    dist = float(self.distance_lut[y_bot, x])
+                else:
+                    dist = float(self.distance_lut[y_bot])
                 ch = int(self.col_to_ch_lut[x])
                 # 더 짧은 거리만 갱신
                 if dist < channel_dist[ch]:
