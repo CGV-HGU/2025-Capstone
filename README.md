@@ -38,7 +38,19 @@
 
 ---
 
-## 📂 2. 패키지 구성 및 설명 (Workspace Packages)
+## 📊 2. 팩트 기반 시각화 대시보드 (Fact-Based Visualizations)
+
+로봇 워크스페이스 내의 실제 소스코드, 맵 파일, VSLAM 키프레임 궤적, Nav2 파라미터의 **실측 수치(Ground Truth)만을 기반으로 제작된 정밀 시각화 자료 모음**입니다. 상세 설명은 [`visualizations/README.md`](visualizations/README.md)에서 확인하실 수 있습니다.
+
+| 대분류 | 시각화 항목 | 상세 내용 | 바로가기 |
+| :--- | :--- | :--- | :---: |
+| **01. 주행 맵 & 좌표계** | • `01_NTH4F_Nav2_2D_Occupancy_Grid_Map.png`<br>• `02_OH3F_Visual_SLAM_Trajectory_Reconstruction.png`<br>• `03_Map_Resolution_and_Scale_Evolution.png` | • 뉴턴홀 4층 2D 격자 및 미터 좌표계 투영 (90m x 27.55m)<br>• 오석관 3층 VSLAM 키프레임 2D 궤적 복원 (132개 Keyframe)<br>• 6개 2D 맵 변천사 및 해상도 비교 ($0.05\text{m/cell}$) | [폴더 열기](visualizations/01_Maps_and_Coordinates/README.md) |
+| **02. 시스템 & Nav2 연동** | • `01_V-LiDAR_to_Nav2_Complete_Pipeline.png`<br>• `02_Nav2_Costmap_Marking_and_Raytracing.png` | • 카메라 ➔ AI ➔ V-LiDAR ➔ Nav2 전체 ROS 2 데이터 파이프라인<br>• 로컬 코스트맵 장애물 마킹(3m) & 클리어링(3.5m) 반경도 | [폴더 열기](visualizations/02_System_and_Nav2_Dataflow/README.md) |
+| **03. AI 및 센서 벤치마크** | • `01_YOLO11_Inference_Latency_and_FPS_Benchmark.png`<br>• `02_V-LiDAR_141Ch_Sector_Distribution.png` | • OpenVINO (78.4 FPS / 12.8ms) vs PyTorch 실측 벤치마크<br>• 141개 채널 3구역(좌/중/우) 각도 분할도 | [폴더 열기](visualizations/03_Sensor_and_AI_Benchmark/README.md) |
+
+---
+
+## 📂 3. 패키지 구성 및 설명 (Workspace Packages)
 
 `ros2_ws/src/` 디렉터리 내 주요 15개 ROS 2 패키지의 기능과 역할입니다:
 
