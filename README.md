@@ -90,11 +90,17 @@
 | **로보틱스 (Middleware)** | ROS 2 | **ROS 2 Humble Hawksbill** (`/opt/ros/humble`) |
 | **빌드 도구** | C++ / ROS 빌드 시스템 | `colcon` (0.21+), `cmake` (3.22.1), `gcc/g++` (11.4.0), `make` (4.3) |
 | **Python 환경** | Python 3 | **Python 3.10.12** (`pip`, `venv` 가상환경 지원) |
-| **AI / 딥러닝 라이브러리** | Vision & Deep Learning | • PyTorch: `2.11.0+cpu`<br>• Torchvision: `0.26.0+cpu`<br>• Ultralytics: `8.4.47` (YOLOv11n-seg 추론)<br>• OpenCV: `4.9.0`<br>• NumPy: `1.26.4` |
+| **AI / 딥러닝 가속** | Vision & Deep Learning | • **OpenVINO**: `2026.3.1` (YOLO11 FP16 IR 가속, **~78.4 FPS / 12.8 ms**)<br>• PyTorch: `2.11.0+cpu` / Torchvision: `0.26.0+cpu`<br>• Ultralytics: `8.4.47` (YOLOv11n-seg)<br>• OpenCV: `4.9.0` / NumPy: `1.26.4` |
 | **개발 및 유틸리티 도구** | CLI & 모니터링 | `git` (2.34.1), `gh` (GitHub CLI), `tmux` (3.2a), `htop` (3.0.5), `tree`, `jq`, `net-tools`, `ripgrep`, `fzf`, `ffmpeg` |
 | **원격 접속 환경** | Remote Access | • NetBird VPN IP: `100.96.194.210` (`cgv-omo-01.nb.hsl.ee`)<br>• OpenSSH Server (포트 22)<br>• Sunshine / Moonlight 원격 데스크톱 지원 |
 
-### 3) 필수 데이터 파일 위치
+### 3) 시스템 자체 진단 및 가속 엔진 검증 (Diagnostics & Benchmark)
+온보드 PC 환경 및 카메라, 시리얼, LUT, OpenVINO 추론 벤치마크를 원클릭으로 검증할 수 있습니다:
+```bash
+python3 verify_robot_env.py
+```
+
+### 4) 필수 데이터 파일 위치
 ```text
 /home/cgv/data/
 ├── cam/
@@ -104,9 +110,11 @@
 ├── db/
 │   └── NTH4F.msg                # 뉴턴홀 4층 사전 구축 VSLAM Map DB (95.4 MB)
 └── fsd/ (또는 src/freespace_detection/scripts/)
-    ├── best.pt                  # 미세조정된 YOLOv11n-seg 모델 가중치
+    ├── best.pt                  # 미세조정된 YOLOv11n-seg PyTorch 모델 가중치
+    ├── best_openvino_model/     # Intel CPU/Arc iGPU 최적화 FP16 OpenVINO 엔진 (78.4 FPS)
     ├── col_to_ch_lut.npy        # 가로 픽셀 -> 각도 채널 변환 테이블
-    └── distance_lut.npy         # 세로 픽셀 -> 지면 거리 변환 테이블
+    ├── distance_lut.npy         # 세로 픽셀 -> 지면 거리 변환 테이블
+    └── distance_lut_2d.npy      # 2D 유클리드 기하 보정 지면 거리 변환 테이블
 ```
 
 ---
