@@ -35,6 +35,10 @@ class RoiChecker(Node):
             self.enable_gui = False
             self.get_logger().info("No DISPLAY detected. Running in headless mode.")
 
+        # 추론 디바이스 파라미터 (Intel Arc iGPU: 'GPU', NPU: 'NPU', CPU: 'CPU')
+        self.declare_parameter('inference_device', 'GPU')
+        self.inference_device = self.get_parameter('inference_device').get_parameter_value().string_value
+
         # YOLO 모델 로드 (Intel NUC 최적화: OpenVINO -> ONNX -> Engine -> PyTorch .pt)
         openvino_dir = os.path.join(self.scripts_dir, "best_openvino_model")
         onnx_path = os.path.join(self.scripts_dir, "best.onnx")
@@ -141,8 +145,11 @@ class RoiChecker(Node):
             interpolation=cv2.INTER_LINEAR
         )
 
-        # YOLO 추론
-        results = self.model(small_frame, stream=False, conf=0.4)
+        # YOLO 추론 (OpenVINO iGPU/NPU 가속 시도 후 fallback)
+        try:
+            results = self.model(small_frame, stream=False, conf=0.4, device=self.inference_device)
+        except Exception:
+            results = self.model(small_frame, stream=False, conf=0.4)
         in_roi = False
 
         # 첫 번째 마스크 결과 사용

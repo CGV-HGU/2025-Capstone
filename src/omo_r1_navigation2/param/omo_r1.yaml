@@ -147,7 +147,7 @@ local_costmap:
       publish_frequency: 5.0
       global_frame: map
       robot_base_frame: base_link
-      use_sim_time: True
+      use_sim_time: False
       rolling_window: true
       width: 7
       height: 7
@@ -178,15 +178,15 @@ local_costmap:
           min_obstacle_height: 0.0  # 최소 장애물 높이
           max_obstacle_height: 10.0 # 최대 장애물 높이
 
-          ###### Try point!!!!!!!
-          inf_is_valid: False  # inf 값을 유효한 거리로 인정할지
-          marking: True  # 장애물로 마킹할지
-          clearing: False  # 자유 공간으로 클리어할지
+          ###### Raytracing & Real-time Clearing Active
+          inf_is_valid: True  # inf 광선을 자유 공간(Free Space)으로 인정하여 클리어
+          marking: True       # 장애물 마킹
+          clearing: True      # 장애물이 치워졌을 때 실시간으로 코스트맵 클리어
 
           obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
-          raytrace_max_range: 0.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
+          raytrace_max_range: 3.5  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
           raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
     
       static_layer:
@@ -207,7 +207,7 @@ global_costmap:
       publish_frequency: 5.0
       global_frame: map
       robot_base_frame: base_link
-      use_sim_time: True
+      use_sim_time: False
       robot_radius: 0.6 # 0.5
       resolution: 0.1
       track_unknown_space: true
@@ -232,15 +232,15 @@ global_costmap:
           min_obstacle_height: 0.0  # 최소 장애물 높이
           max_obstacle_height: 10.0  # 최대 장애물 높이
 
-          ###### Try point!!!!!!!
-          inf_is_valid: False  # inf 값을 유효한 거리로 인정할지
-          marking: True  # 장애물로 마킹할지
-          clearing: False  # 자유 공간으로 클리어할지
+          ###### Raytracing & Real-time Clearing Active
+          inf_is_valid: True  # inf 광선을 자유 공간(Free Space)으로 인정하여 클리어
+          marking: True       # 장애물 마킹
+          clearing: True      # 장애물이 치워졌을 때 실시간으로 코스트맵 클리어
 
           obstacle_max_range: 3.0  # 장애물 마킹 최대 거리
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
-          raytrace_max_range: 0.0  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
+          raytrace_max_range: 3.5  # 레이 트레이싱 최대 거리 (자유 공간 탐색)
           raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
 
       static_layer:

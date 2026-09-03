@@ -82,12 +82,8 @@ class FakeLidarWithTF(Node):
         scan.scan_time       = 1.0 / 10.0      # <- 추가
         scan.time_increment  = scan.scan_time / self.num_readings  # <- 추가
 
-        if not self.floor_state:
-            # 장애물 있을 때: LUT 기반 거리 사용
-            scan.ranges = self.channel_distances[::-1].tolist()
-        else:
-            # 장애물 없을 때: 모두 inf
-            scan.ranges = [float('inf')] * self.num_readings
+        # 채널별 거리 데이터 직접 반영 (장애물 없는 채널은 이미 inf)
+        scan.ranges = self.channel_distances[::-1].tolist()
 
         scan.intensities = [0.0] * self.num_readings
 
