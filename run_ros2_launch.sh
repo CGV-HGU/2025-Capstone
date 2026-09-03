@@ -25,10 +25,23 @@ PID1=$!
 #           -p odom2d:=false; \
 #     exec bash"
 
-# version 2
-echo 'Launching run_slam in a new terminal...'
-gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
-    source ~/ros2_ws/install/setup.bash; \
+# version 2: GUI 터미널이 있으면 gnome-terminal, 없으면(SSH/Headless) 백그라운드 구동
+if [ -n "$DISPLAY" ] && command -v gnome-terminal &> /dev/null; then
+    echo 'Launching run_slam in a new terminal window...'
+    gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
+        source ~/ros2_ws/install/setup.bash; \
+        ros2 run stella_vslam_ros run_slam \
+            -v ~/data/vocab/orb_vocab.fbow \
+            -c ~/data/cam/usb_webcam.yaml \
+            --map-db-in ~/data/db/NTH4F.msg \
+            --disable-mapping \
+            --ros-args \
+              -p publish_tf:=false \
+              -p publish_keyframes:=false \
+              -p odom2d:=false; \
+        exec bash"
+else
+    echo 'Launching run_slam in background (SSH / Headless mode)...'
     ros2 run stella_vslam_ros run_slam \
         -v ~/data/vocab/orb_vocab.fbow \
         -c ~/data/cam/usb_webcam.yaml \
@@ -37,8 +50,9 @@ gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
         --ros-args \
           -p publish_tf:=false \
           -p publish_keyframes:=false \
-          -p odom2d:=false; \
-    exec bash"
+          -p odom2d:=false &
+    PID2=$!
+fi
 
 
 
@@ -56,9 +70,8 @@ gnome-terminal -- bash -c "source /opt/ros/humble/setup.bash; \
 #     ros2 launch freespace_detection freespace_detection_launch.py; \
 #     exec bash"
 
-# 현재 터미널을 종료하면 첫 번째 프로세스도 함께 종료되도록 설정
-trap "echo 'Terminating processes...'; kill $PID1; exit" SIGINT SIGTERM
+# Ctrl+C 입력 시 구동된 모든 백그라운드 프로세스 종료
+trap "echo 'Terminating processes...'; kill $PID1 $PID2 2>/dev/null; exit" SIGINT SIGTERM
 
-# 첫 번째 프로세스가 종료될 때까지 대기
+# 프로세스 유지
 wait
-
