@@ -21,7 +21,7 @@ def generate_launch_description():
 
     omo_r1_description_dir = LaunchConfiguration(
         'omo_r1_description_dir',
-        default=os.path.join(get_package_share_directory('omo_r1_description'), 'launch')))
+        default=os.path.join(get_package_share_directory('omo_r1_description'), 'launch'))
 
     # lidar_pkg_dir = LaunchConfiguration(
     #     'lidar_pkg_dir',

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import time
 import rclpy
 from rclpy.node import Node
@@ -20,8 +21,15 @@ class RoiChecker(Node):
         self.image_sub = self.create_subscription(
             Image, 'camera/image_raw', self.image_callback, 1)
 
+        # scripts 디렉토리 경로 (동적 탐색 및 fallback)
+        self.scripts_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+        if not os.path.exists(self.scripts_dir):
+            self.scripts_dir = os.path.expanduser('~/ros2_ws/src/freespace_detection/scripts')
+        if not os.path.exists(self.scripts_dir):
+            self.scripts_dir = os.path.expanduser('~/data/fsd')
+
         # YOLO 모델 로드
-        model_path = "/home/cgv-02/ros2_ws/src/freespace_detection/scripts/best.pt"
+        model_path = os.path.join(self.scripts_dir, "best.pt")
         try:
             self.model = YOLO(model_path)
         except Exception as e:
@@ -80,8 +88,8 @@ class RoiChecker(Node):
         # 3) 외부에서 생성한 LUT 파일 로드
         #    col_to_ch_lut.npy: shape (W,), dtype=int
         #    distance_lut.npy:  shape (H,), dtype=float
-        self.col_to_ch_lut = np.load('/home/cgv-02/ros2_ws/src/freespace_detection/scripts/col_to_ch_lut.npy')
-        self.distance_lut  = np.load('/home/cgv-02/ros2_ws/src/freespace_detection/scripts/distance_lut.npy')
+        self.col_to_ch_lut = np.load(os.path.join(self.scripts_dir, 'col_to_ch_lut.npy'))
+        self.distance_lut  = np.load(os.path.join(self.scripts_dir, 'distance_lut.npy'))
 
         self.bridge = CvBridge()
         self.get_logger().info("Floor Detector Node initialized.")

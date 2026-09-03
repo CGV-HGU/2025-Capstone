@@ -12,7 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*')), # add
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')), # add
         (os.path.join('share', package_name, 'meshes/bases'), glob('meshes/bases/*')), # add
         (os.path.join('share', package_name, 'meshes/sensors'), glob('meshes/sensors/*')), # add
         (os.path.join('share', package_name, 'meshes/wheels'), glob('meshes/wheels/*')), # add
