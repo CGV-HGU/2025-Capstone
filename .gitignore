@@ -3,3 +3,12 @@
 /log
 
 **/__pycache__/
+*.bag
+*.db3
+
+# Data directory symlink
+/data
+
+# Experiment logs (keep folder structure via .gitkeep)
+/experiments/logs/*
+!/experiments/logs/.gitkeep

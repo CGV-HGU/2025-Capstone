@@ -187,6 +187,26 @@ ros2 run omo_r1_teleop teleop_keyboard
 
 ---
 
+### 🔹 [실험 D] 자율주행 주행 로그 수집 및 평가 리포트 자동 생성
+주행 실험 시 백그라운드에서 실시간 이동 궤적, 속도, VSLAM 추적 상태, 최소 장애물 거리를 5Hz로 기록하고 종합 리포트(`summary_report.md`)를 생성합니다:
+```bash
+# 기본 실행 (맵: NTH4F)
+python3 experiments/run_experiment.py --scenario corridor_box_avoidance_trial1
+
+# 실험 종료(Ctrl+C) 시 experiments/logs/ 하위에 metadata.json, driving_log.csv, summary_report.md 자동 저장
+```
+
+---
+
+### 🔹 [실험 E] Freespace Detection 바닥 세그멘테이션 정밀 벤치마크
+로봇을 주행시키지 않고도, 다양한 조명/바닥 환경에서 YOLO 바닥 분할의 실시간 FPS, 지연 시간, 바닥 인식 면적, V-LiDAR 3구역(좌/중/우) 거리 품질을 정량 측정합니다:
+```bash
+python3 experiments/evaluate_freespace.py --duration 15 --scenario glossy_floor_eval
+# 결과 리포트 및 프레임별 CSV가 experiments/logs/ 에 저장됩니다.
+```
+
+---
+
 ## 📚 6. 학술 인용 (Citation)
 
 본 코드를 연구에 활용하실 경우 아래 논문을 인용해 주시기 바랍니다:
