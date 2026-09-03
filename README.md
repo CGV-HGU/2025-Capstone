@@ -62,13 +62,39 @@
 
 ---
 
-## ⚙️ 3. 하드웨어 및 데이터 파일 구성 (Hardware & Data Files)
+## ⚙️ 3. 시스템 사양 및 데이터 파일 구성 (System Specifications & Data Files)
 
-### 1) 하드웨어 구성
-- **Mobile Robot**: OMORobot R1 Mini (시리얼 포트 `/dev/ttyUSB0` 또는 `/dev/ttyMCU`)
-- **Camera**: 일반 USB 웹캠 (전방 장착, 지면 높이 1.05m, 아래쪽 틸트 2.0°)
+### 1) 로봇 및 센서 구성 (Robot & Sensor Hardware)
+- **모바일 로봇 플랫폼**: OMORobot R1 Mini (차동 구동 모바일 로봇, 시리얼 포트 `/dev/ttyUSB0` ➔ `/dev/ttyMCU`, `/dev/ttyMotor`)
+- **비전 센서**: Realtek HD USB 웹캠 (`/dev/video0`, 전방 장착, 지면 높이 1.05m, 아래쪽 틸트 2.0°)
 
-### 2) 필수 데이터 파일 위치
+### 2) 온보드 제어 PC 사양 (On-board Computer Specifications)
+
+#### 🖥️ 하드웨어 사양 (Hardware Specs)
+| 구분 | 상세 사양 | 비고 |
+| :--- | :--- | :--- |
+| **디바이스 호스트명** | `cgv-omor1v2-01` | 로봇 탑재 온보드 PC |
+| **프로세서 (CPU)** | **Intel® Core™ Ultra 7 155H** (Meteor Lake) | 16코어 / 22스레드 (6P + 8E + 2LPE), 최대 4.80 GHz, 24MB L3 캐시 |
+| **AI 가속기 (NPU)** | **Intel® AI Boost NPU** (Device `7d1d`) | 온디바이스 AI NPU 가속 지원 |
+| **메모리 (RAM)** | **32 GB** (가용 약 26 GiB) + Swap 2.0 GiB | 멀티 노드 및 AI 추론 여유 공간 확보 |
+| **저장 장치 (Storage)** | **256 GB NVMe SSD** (WD PC SN740 NVMe 256GB, PCIe Gen4) | 가용 여유 공간 ~181 GB (사용률 19%) |
+| **그래픽 (GPU)** | **Intel® Arc™ Graphics** (Integrated GT2, Device `7d55`) | 8 Xe-Cores |
+| **네트워크 (Network)** | • Wi-Fi: Intel Wi-Fi 6E/7 (`wlo1`)<br>• Ethernet: Intel 2.5GbE LAN (`enp86s0`)<br>• VPN: NetBird Mesh VPN (`wt0`, IP: `100.96.194.210`) | 원격 제어 및 원격 모니터링 연동 |
+| **주변기기 인터페이스** | • USB-UART Bridge: Silicon Labs CP210x (`10c4:ea60`, MCU/모터 제어)<br>• USB Webcam: Realtek HD Camera (`0bda:5856`) | udev rules 자동 심볼릭 링크 지원 |
+
+#### 🐧 소프트웨어 및 런타임 환경 (Software Specs)
+| 구분 | 세부 환경 | 상세 버전 / 설명 |
+| :--- | :--- | :--- |
+| **운영체제 (OS)** | Ubuntu Linux | **Ubuntu 22.04.5 LTS** (Jammy Jellyfish, 64-bit x86_64) |
+| **커널 (Kernel)** | Linux Kernel | `6.8.0-124-generic` |
+| **로보틱스 (Middleware)** | ROS 2 | **ROS 2 Humble Hawksbill** (`/opt/ros/humble`) |
+| **빌드 도구** | C++ / ROS 빌드 시스템 | `colcon` (0.21+), `cmake` (3.22.1), `gcc/g++` (11.4.0), `make` (4.3) |
+| **Python 환경** | Python 3 | **Python 3.10.12** (`pip`, `venv` 가상환경 지원) |
+| **AI / 딥러닝 라이브러리** | Vision & Deep Learning | • PyTorch: `2.11.0+cpu`<br>• Torchvision: `0.26.0+cpu`<br>• Ultralytics: `8.4.47` (YOLOv11n-seg 추론)<br>• OpenCV: `4.9.0`<br>• NumPy: `1.26.4` |
+| **개발 및 유틸리티 도구** | CLI & 모니터링 | `git` (2.34.1), `gh` (GitHub CLI), `tmux` (3.2a), `htop` (3.0.5), `tree`, `jq`, `net-tools`, `ripgrep`, `fzf`, `ffmpeg` |
+| **원격 접속 환경** | Remote Access | • NetBird VPN IP: `100.96.194.210` (`cgv-omo-01.nb.hsl.ee`)<br>• OpenSSH Server (포트 22)<br>• Sunshine / Moonlight 원격 데스크톱 지원 |
+
+### 3) 필수 데이터 파일 위치
 ```text
 /home/cgv/data/
 ├── cam/
