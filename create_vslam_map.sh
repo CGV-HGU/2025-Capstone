@@ -49,7 +49,7 @@ ros2 run stella_vslam_ros run_slam \
     -o "$OUTPUT_MAP_PATH" \
     --viewer pangolin_viewer \
     --ros-args \
-      -p publish_tf:=true \
+      -p publish_tf:=false \
       -p publish_keyframes:=true
 
 cleanup
