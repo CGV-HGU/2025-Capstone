@@ -123,6 +123,16 @@ class RoiChecker(Node):
             self.distance_lut = np.load(os.path.join(self.scripts_dir, 'distance_lut.npy'))
             self.is_2d_lut = False
 
+        # V-LiDAR 스캔 및 벡터 연산용 파라미터
+        self.y_min_scan = 120  # 수평선(지평선) 인덱스 (y < 120은 거리 무한대)
+        self.row_indices = np.arange(self.y_min_scan, self.target_h)[:, None]
+
+        # Temporal EMA & Persistence 필터 (바닥 반사광 떨림 제거)
+        self.alpha = 0.6
+        self.clear_persist_frames = 2
+        self.filtered_dist = np.full(self.num_channels, float('inf'), dtype=np.float32)
+        self.inf_counter = np.zeros(self.num_channels, dtype=int)
+
         self.bridge = CvBridge()
         self.get_logger().info("Floor Detector Node initialized.")
 
@@ -150,32 +160,35 @@ class RoiChecker(Node):
             results = self.model(small_frame, stream=False, conf=0.4, device=self.inference_device)
         except Exception:
             results = self.model(small_frame, stream=False, conf=0.4)
-        in_roi = False
 
-        # 첫 번째 마스크 결과 사용
+        # YOLO 마스크 추출
+        mask = None
         for res in results:
-            if res.masks is None:
-                continue
+            if res.masks is not None and len(res.masks.data) > 0:
+                mask = res.masks.data.cpu().numpy()[0].astype(np.uint8)
+                break
 
-            mask = res.masks.data.cpu().numpy()[0].astype(np.uint8)
+        if mask is None:
+            # 바닥이 전혀 감지되지 않은 경우 (카메라가 손/장애물/벽 등으로 완전히 가려짐)
+            # 100% 장애물(전체 0)로 처리
+            mask = np.zeros((self.target_h, self.target_w), dtype=np.uint8)
 
-            # 반사광 및 그림자로 인한 마스크 구멍 보정 (Morphological Close)
-            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        # 반사광 및 그림자로 인한 마스크 구멍 보정 (Morphological Close)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
-            self.publish_channel_distances(mask)
-            
-            # 세그멘테이션 오버레이 (복사 최소화)
-            colored = np.zeros_like(small_frame)
-            colored[mask == 1] = (255, 0, 0)
-            small_frame = cv2.addWeighted(colored, 0.3, small_frame, 0.7, 0)
+        # V-LiDAR 141채널 거리 계산 & 퍼블리시
+        self.publish_channel_distances(mask)
 
-            # ROI 내부 채움 비율 계산
-            roi_mask = mask[self.roi_slice]
-            cnt = cv2.countNonZero(roi_mask)
-            if cnt >= self.roi_area * 0.95:
-                in_roi = True
-            break
+        # 세그멘테이션 오버레이 (복사 최소화)
+        colored = np.zeros_like(small_frame)
+        colored[mask == 1] = (255, 0, 0)
+        small_frame = cv2.addWeighted(colored, 0.3, small_frame, 0.7, 0)
+
+        # ROI 내부 채움 비율 계산 (/floor_detector 및 Costmap clearing용)
+        roi_mask = mask[self.roi_slice]
+        cnt = cv2.countNonZero(roi_mask)
+        in_roi = (cnt >= self.roi_area * 0.95)
 
         # Debounce
         self.in_roi_history.append(in_roi)
@@ -246,33 +259,29 @@ class RoiChecker(Node):
 
     def publish_channel_distances(self, mask: np.ndarray):
         """
-        mask: H×W binary mask (1=floor, 0=non-floor)
-        Only within ROI columns/rows do we compute distances via LUT;
-        other channels remain at self.range_max (inf).
+        mask: H×W binary mask (1=floor, 0=non-floor/obstacle)
+        전체 가로 폭(x in [0, W))에 대해 수평선부터 로봇 최하단까지 스캔하여 장애물 거리를 계산합니다.
         """
-        H, W = mask.shape
-        # ROI 경계
-        y_start, y_stop = self.roi_slice[0].start, self.roi_slice[0].stop
-        x_start, x_stop = self.roi_slice[1].start, self.roi_slice[1].stop
+        channel_dist = np.full(self.num_channels, self.range_max, dtype=np.float32)
 
-        # 채널 거리 초기화 (inf)
-        channel_dist = np.full(self.num_channels, self.range_max, dtype=float)
+        # 수평선(y_min_scan)부터 바닥 최하단(target_h)까지 스캔
+        sub_mask = mask[self.y_min_scan:, :]
+        obs_rows = np.where(sub_mask == 0, self.row_indices, -1)
+        max_y = obs_rows.max(axis=0)  # shape (W,), 각 열별 최하단(로봇에 가장 가까운) 장애물 픽셀 행
 
-        # ROI 내부 컬럼에 대해서만 스캔
-        for x in range(x_start, x_stop):
-            # ROI 행 범위 내에서 non-floor 픽셀 검색
-            ys_roi = np.where(mask[y_start:y_stop, x] == 0)[0]
-            if ys_roi.size > 0:
-                # ROI 로컬 인덱스를 전체 프레임 인덱스로 변환
-                y_bot = ys_roi.max() + y_start
-                if self.is_2d_lut:
-                    dist = float(self.distance_lut[y_bot, x])
-                else:
-                    dist = float(self.distance_lut[y_bot])
-                ch = int(self.col_to_ch_lut[x])
-                # 더 짧은 거리만 갱신
-                if dist < channel_dist[ch]:
-                    channel_dist[ch] = dist
+        valid_cols = np.where(max_y >= 0)[0]
+        if valid_cols.size > 0:
+            y_pts = max_y[valid_cols]
+            if self.is_2d_lut:
+                dists = self.distance_lut[y_pts, valid_cols]
+            else:
+                dists = self.distance_lut[y_pts]
+            chs = self.col_to_ch_lut[valid_cols]
+            # 각 채널별 최소 거리 집계
+            np.minimum.at(channel_dist, chs, dists)
+
+        # Temporal EMA & Persistence 필터 적용 (바닥 반사광 떨림 방지)
+        filtered_dist = self.apply_temporal_filter(channel_dist)
 
         # 메시지 빌드 및 퍼블리시
         msg = Float32MultiArray()
@@ -280,8 +289,43 @@ class RoiChecker(Node):
                                 size=self.num_channels,
                                 stride=self.num_channels)
         msg.layout.dim.append(dim)
-        msg.data = channel_dist.tolist()
+        msg.data = filtered_dist.tolist()
         self.channel_pub.publish(msg)
+
+    def apply_temporal_filter(self, raw_dist: np.ndarray) -> np.ndarray:
+        """
+        시간적 EMA 필터 및 지속성 검증으로 반사광 노이즈 제거:
+        1. 신규 장애물 진입 (raw=유한, prev=inf): 충돌 방지 위해 즉각 반응
+        2. 장애물 추적 (raw=유한, prev=유한): EMA 스무딩 (alpha=0.6)
+        3. 장애물 소멸 (raw=inf, prev=유한): 2연속 프레임 확인 후 inf 전환 (플리커 제거)
+        4. 지속적 Freespace (raw=inf, prev=inf): inf 유지
+        """
+        raw_finite = np.isfinite(raw_dist)
+        prev_finite = np.isfinite(self.filtered_dist)
+
+        # 1) 추적 중인 장애물 -> EMA 스무딩
+        both_finite = raw_finite & prev_finite
+        self.filtered_dist[both_finite] = (
+            self.alpha * raw_dist[both_finite] + (1.0 - self.alpha) * self.filtered_dist[both_finite]
+        )
+        self.inf_counter[raw_finite] = 0
+
+        # 2) 신규 장애물 등장 -> 즉각 반영
+        new_obs = raw_finite & (~prev_finite)
+        self.filtered_dist[new_obs] = raw_dist[new_obs]
+        self.inf_counter[new_obs] = 0
+
+        # 3) 장애물 소멸 감지 -> Persistence 체크
+        disappeared = (~raw_finite) & prev_finite
+        self.inf_counter[disappeared] += 1
+        to_clear = disappeared & (self.inf_counter >= self.clear_persist_frames)
+        self.filtered_dist[to_clear] = float('inf')
+
+        # 4) 빈 공간 유지
+        both_inf = (~raw_finite) & (~prev_finite)
+        self.filtered_dist[both_inf] = float('inf')
+
+        return self.filtered_dist.copy()
 
 def main(args=None):
     rclpy.init(args=args)
