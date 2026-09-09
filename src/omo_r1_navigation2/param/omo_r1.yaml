@@ -210,8 +210,11 @@ global_costmap:
       use_sim_time: False
       robot_radius: 0.6 # 0.5
       resolution: 0.1
-      track_unknown_space: true
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]   
+      rolling_window: true
+      width: 25
+      height: 25
+      track_unknown_space: false
+      plugins: ["obstacle_layer", "inflation_layer"]   
 
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -280,7 +283,7 @@ planner_server:
       tolerance: 0.5                      # tolerance for planning if unable to reach exact pose, in meters
       downsample_costmap: true           # whether or not to downsample the map
       downsampling_factor: 3              # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
-      allow_unknown: false                # allow traveling in unknown space
+      allow_unknown: true                 # allow traveling in unknown space
       max_iterations: 1000000             # maximum total iterations to search for before failing (in case unreachable), set to -1 to disable
       max_on_approach_iterations: 1000    # maximum number of iterations to attempt to reach goal once in tolerance
       terminal_checking_interval: 5000     # number of iterations between checking if the goal has been cancelled or planner timed out
