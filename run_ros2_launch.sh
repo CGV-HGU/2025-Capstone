@@ -33,7 +33,7 @@ if [ -n "$DISPLAY" ] && command -v gnome-terminal &> /dev/null; then
         ros2 run stella_vslam_ros run_slam \
             -v ~/data/vocab/orb_vocab.fbow \
             -c ~/data/cam/usb_webcam.yaml \
-            --map-db-in ~/data/db/NTH4F.msg \
+            --map-db-in ~/data/db/OH3F.msg \
             --disable-mapping \
             --ros-args \
               -p publish_tf:=false \
@@ -45,7 +45,7 @@ else
     ros2 run stella_vslam_ros run_slam \
         -v ~/data/vocab/orb_vocab.fbow \
         -c ~/data/cam/usb_webcam.yaml \
-        --map-db-in ~/data/db/NTH4F.msg \
+        --map-db-in ~/data/db/OH3F.msg \
         --disable-mapping \
         --ros-args \
           -p publish_tf:=false \
