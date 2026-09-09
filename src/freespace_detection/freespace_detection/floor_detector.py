@@ -39,24 +39,18 @@ class RoiChecker(Node):
         self.declare_parameter('inference_device', 'GPU')
         self.inference_device = self.get_parameter('inference_device').get_parameter_value().string_value
 
-        # YOLO 모델 로드 (Intel NUC 최적화: OpenVINO -> ONNX -> Engine -> PyTorch .pt)
-        openvino_dir = os.path.join(self.scripts_dir, "best_openvino_model")
-        onnx_path = os.path.join(self.scripts_dir, "best.onnx")
-        engine_path = os.path.join(self.scripts_dir, "best.engine")
+        # YOLO 모델 로드 (안정적인 PyTorch .pt 모델 사용)
         pt_path = os.path.join(self.scripts_dir, "best.pt")
+        if not os.path.exists(pt_path):
+            pt_path = "/home/cgv/data/fsd/best.pt"
 
-        if os.path.exists(openvino_dir):
-            model_path = openvino_dir
-        elif os.path.exists(onnx_path):
-            model_path = onnx_path
-        elif os.path.exists(engine_path):
-            model_path = engine_path
-        else:
-            model_path = pt_path
+        # YOLO Confidence threshold 파라미터 (기본 0.25)
+        self.declare_parameter('conf_threshold', 0.25)
+        self.conf_threshold = self.get_parameter('conf_threshold').get_parameter_value().double_value
 
         try:
-            self.model = YOLO(model_path, task='segment')
-            self.get_logger().info(f"Loaded YOLO model from: {model_path}")
+            self.model = YOLO(pt_path, task='segment')
+            self.get_logger().info(f"Loaded YOLO model from: {pt_path} (conf={self.conf_threshold})")
         except Exception as e:
             self.get_logger().error(f"YOLO load failed: {e}")
             rclpy.shutdown()
@@ -75,7 +69,7 @@ class RoiChecker(Node):
         self.global_service_ready = False
 
         # Debounce & 타이밍 변수
-        self.inference_interval = 0.2  # seconds
+        self.inference_interval = 0.1  # 10Hz 추론
         self.last_time = time.time()
         self.in_roi_history = deque(maxlen=5)
         self.confirmed_roi = False
@@ -155,17 +149,26 @@ class RoiChecker(Node):
             interpolation=cv2.INTER_LINEAR
         )
 
-        # YOLO 추론 (OpenVINO iGPU/NPU 가속 시도 후 fallback)
+        # YOLO 추론
         try:
-            results = self.model(small_frame, stream=False, conf=0.4, device=self.inference_device)
-        except Exception:
-            results = self.model(small_frame, stream=False, conf=0.4)
+            results = self.model(small_frame, stream=False, conf=self.conf_threshold, verbose=False)
+        except Exception as e:
+            self.get_logger().error(f"Inference error: {e}")
+            results = []
 
-        # YOLO 마스크 추출
+        # YOLO 마스크 추출 (floor 클래스 = 1)
         mask = None
         for res in results:
             if res.masks is not None and len(res.masks.data) > 0:
-                mask = res.masks.data.cpu().numpy()[0].astype(np.uint8)
+                if res.boxes is not None and len(res.boxes) > 0:
+                    for i, box in enumerate(res.boxes):
+                        cls_id = int(box.cls.item())
+                        cls_name = res.names.get(cls_id, '')
+                        if cls_id == 1 or cls_name == 'floor':
+                            mask = res.masks.data[i].cpu().numpy().astype(np.uint8)
+                            break
+                if mask is None:
+                    mask = res.masks.data[0].cpu().numpy().astype(np.uint8)
                 break
 
         if mask is None:
