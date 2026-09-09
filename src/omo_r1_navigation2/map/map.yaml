@@ -1,6 +1,6 @@
 image: map3.png
 resolution: 0.05
-origin: [-275.0, -67.6, 0.0] # 3F origin
+origin: [-82.5, -78.3, 0.0] # 3F center origin (3299x3133 map)
 
 negate: 0
 occupied_thresh: 0.65
