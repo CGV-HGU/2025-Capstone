@@ -97,7 +97,8 @@ private:
       t.transform.rotation.y = 0.0;
       t.transform.rotation.z = 0.0;
       t.transform.rotation.w = 1.0;
-      call_reset_odom();
+      // VSLAM이 오프라인일 때 바퀴 오도메트리가 정상 누적되도록 지속적 리셋 중단
+      // call_reset_odom();
     }
     
     if(current_tracking_) {
