@@ -11,18 +11,20 @@ from tf2_ros import Buffer, TransformListener
 import math
 
 class AvoidanceGoalSender(Node):
-    def __init__(self, forward_dist=5.0):
+    def __init__(self, rel_x=5.0, rel_y=0.0, rel_yaw_deg=0.0):
         super().__init__('avoidance_goal_sender')
         self._action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.init_pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
-        self.forward_dist = forward_dist
+        self.rel_x = rel_x
+        self.rel_y = rel_y
+        self.rel_yaw_rad = math.radians(rel_yaw_deg)
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
     def initialize_and_send_goal(self):
         # 1) Publish initial pose to map (0, 0, 0)
-        self.get_logger().info('Initializing robot pose at (0, 0, 0)...')
+        self.get_logger().info('Checking robot pose initialization...')
         init_msg = PoseWithCovarianceStamped()
         init_msg.header.frame_id = 'map'
         init_msg.header.stamp = self.get_clock().now().to_msg()
@@ -35,7 +37,7 @@ class AvoidanceGoalSender(Node):
 
         for _ in range(3):
             self.init_pose_pub.publish(init_msg)
-            rclpy.spin_once(self, timeout_sec=0.2)
+            rclpy.spin_once(self, timeout_sec=0.1)
 
         # 2) Wait for action server
         self.get_logger().info('Waiting for /navigate_to_pose action server...')
@@ -48,7 +50,7 @@ class AvoidanceGoalSender(Node):
 
         # 3) Spin to fill TF buffer
         t_start = time.time()
-        while time.time() - t_start < 1.5:
+        while time.time() - t_start < 1.0:
             rclpy.spin_once(self, timeout_sec=0.1)
 
         # Current robot pose lookup
@@ -71,8 +73,12 @@ class AvoidanceGoalSender(Node):
             self.get_logger().warn(f'TF lookup: {e}, using origin (0, 0).')
             cur_x, cur_y, yaw = 0.0, 0.0, 0.0
 
-        target_x = cur_x + self.forward_dist * math.cos(yaw)
-        target_y = cur_y + self.forward_dist * math.sin(yaw)
+        # Relative transformation to map frame
+        cos_yaw = math.cos(yaw)
+        sin_yaw = math.sin(yaw)
+        target_x = cur_x + self.rel_x * cos_yaw - self.rel_y * sin_yaw
+        target_y = cur_y + self.rel_x * sin_yaw + self.rel_y * cos_yaw
+        target_yaw = yaw + self.rel_yaw_rad
 
         goal_msg = NavigateToPose.Goal()
         goal_msg.pose = PoseStamped()
@@ -82,11 +88,12 @@ class AvoidanceGoalSender(Node):
         goal_msg.pose.pose.position.y = target_y
         goal_msg.pose.pose.position.z = 0.0
 
-        goal_msg.pose.pose.orientation.z = math.sin(yaw / 2.0)
-        goal_msg.pose.pose.orientation.w = math.cos(yaw / 2.0)
+        goal_msg.pose.pose.orientation.z = math.sin(target_yaw / 2.0)
+        goal_msg.pose.pose.orientation.w = math.cos(target_yaw / 2.0)
 
         self.get_logger().info(
-            f'Sending Nav2 Goal: Forward {self.forward_dist:.1f}m -> Target (x={target_x:.2f}, y={target_y:.2f})'
+            f'Sending Nav2 Goal: Relative (dx={self.rel_x:.2f}m, dy={self.rel_y:.2f}m, d_yaw={math.degrees(self.rel_yaw_rad):.1f} deg) '
+            f'-> Target Map Pose (x={target_x:.2f}, y={target_y:.2f}, yaw={math.degrees(target_yaw):.1f} deg)'
         )
 
         send_goal_future = self._action_client.send_goal_async(
@@ -120,12 +127,35 @@ class AvoidanceGoalSender(Node):
         rclpy.shutdown()
 
 def main():
-    parser = argparse.ArgumentParser(description='Send relative forward navigation goal for avoidance test.')
-    parser.add_argument('-d', '--distance', type=float, default=5.0, help='Forward distance in meters (default: 5.0m)')
+    parser = argparse.ArgumentParser(description='Send relative navigation goal (straight or cornering) for avoidance test.')
+    parser.add_argument('-d', '--distance', type=float, default=None, help='Straight distance in meters (shortcut for -x)')
+    parser.add_argument('-x', type=float, default=5.0, help='Forward distance in meters (default: 5.0m)')
+    parser.add_argument('-y', type=float, default=0.0, help='Lateral distance in meters (+: left, -: right, default: 0.0m)')
+    parser.add_argument('-a', '--angle', type=float, default=0.0, help='Heading angle in degrees (+: left/CCW, -: right/CW, default: 0.0)')
+    parser.add_argument('--corner', choices=['left', 'right'], default=None, help='Preset corner turn (e.g. --corner left sets x=4.0, y=3.0, a=90)')
+
     args, _ = parser.parse_known_args()
 
+    rel_x = args.x
+    rel_y = args.y
+    rel_angle = args.angle
+
+    if args.distance is not None:
+        rel_x = args.distance
+        rel_y = 0.0
+        rel_angle = 0.0
+
+    if args.corner == 'left':
+        rel_x = 4.0
+        rel_y = 3.0
+        rel_angle = 90.0
+    elif args.corner == 'right':
+        rel_x = 4.0
+        rel_y = -3.0
+        rel_angle = -90.0
+
     rclpy.init()
-    sender = AvoidanceGoalSender(forward_dist=args.distance)
+    sender = AvoidanceGoalSender(rel_x=rel_x, rel_y=rel_y, rel_yaw_deg=rel_angle)
     if sender.initialize_and_send_goal():
         try:
             rclpy.spin(sender)
