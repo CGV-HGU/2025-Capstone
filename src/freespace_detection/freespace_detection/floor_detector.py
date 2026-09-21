@@ -156,24 +156,32 @@ class RoiChecker(Node):
             self.get_logger().error(f"Inference error: {e}")
             results = []
 
-        # YOLO 마스크 추출 (floor 클래스 = 1)
-        mask = None
+        # YOLO 마스크 추출 (장애물로 쪼개진 모든 바닥 인스턴스를 합집합(OR)으로 결합)
+        floor_masks = []
         for res in results:
             if res.masks is not None and len(res.masks.data) > 0:
                 if res.boxes is not None and len(res.boxes) > 0:
+                    # 1) 우선 'floor' (cls_id == 1) 인스턴스 탐색 및 수집
                     for i, box in enumerate(res.boxes):
                         cls_id = int(box.cls.item())
                         cls_name = res.names.get(cls_id, '')
                         if cls_id == 1 or cls_name == 'floor':
-                            mask = res.masks.data[i].cpu().numpy().astype(np.uint8)
-                            break
-                if mask is None:
-                    mask = res.masks.data[0].cpu().numpy().astype(np.uint8)
+                            floor_masks.append(res.masks.data[i].cpu().numpy().astype(np.uint8))
+                    
+                    # 2) 만약 cls_id == 1이 없다면 모델의 모든 검출 마스크를 바닥으로 취합
+                    if not floor_masks:
+                        for i in range(len(res.boxes)):
+                            floor_masks.append(res.masks.data[i].cpu().numpy().astype(np.uint8))
+                else:
+                    for m in res.masks.data:
+                        floor_masks.append(m.cpu().numpy().astype(np.uint8))
                 break
 
-        if mask is None:
-            # 바닥이 전혀 감지되지 않은 경우 (카메라가 손/장애물/벽 등으로 완전히 가려짐)
-            # 100% 장애물(전체 0)로 처리
+        if floor_masks:
+            # 쪼개진 바닥 조각들을 하나로 합집합(OR) 병합
+            mask = np.bitwise_or.reduce(floor_masks)
+        else:
+            # 바닥이 전혀 감지되지 않은 경우 (카메라가 완전히 가려짐)
             mask = np.zeros((self.target_h, self.target_w), dtype=np.uint8)
 
         # 반사광 및 그림자로 인한 마스크 구멍 보정 (Morphological Close)

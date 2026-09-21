@@ -11,13 +11,16 @@ from tf2_ros import Buffer, TransformListener
 import math
 
 class AvoidanceGoalSender(Node):
-    def __init__(self, rel_x=5.0, rel_y=0.0, rel_yaw_deg=0.0):
+    def __init__(self, rel_x=10.0, rel_y=0.0, rel_yaw_deg=0.0, timeout_sec=60.0):
         super().__init__('avoidance_goal_sender')
         self._action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.init_pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
         self.rel_x = rel_x
         self.rel_y = rel_y
         self.rel_yaw_rad = math.radians(rel_yaw_deg)
+        self.timeout_sec = timeout_sec
+        self.timeout_timer = None
+        self.goal_handle = None
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -104,14 +107,25 @@ class AvoidanceGoalSender(Node):
         return True
 
     def goal_response_callback(self, future):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
+        self.goal_handle = future.result()
+        if not self.goal_handle.accepted:
             self.get_logger().error('Goal rejected by Nav2. Please ensure Nav2 lifecycle is active.')
+            rclpy.shutdown()
             return
 
-        self.get_logger().info('Goal accepted! Robot moving forward. Avoidance active...')
-        result_future = goal_handle.get_result_async()
+        self.get_logger().info(f'Goal accepted! Robot moving forward. Avoidance active (Timeout: {self.timeout_sec:.1f}s)...')
+        self.timeout_timer = self.create_timer(self.timeout_sec, self.timeout_callback)
+        result_future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_callback)
+
+    def timeout_callback(self):
+        self.get_logger().error(f'Navigation TIMED OUT after {self.timeout_sec:.1f}s! Robot stuck or unable to reach goal.')
+        if self.timeout_timer:
+            self.timeout_timer.cancel()
+        if self.goal_handle:
+            self.get_logger().info('Canceling active goal...')
+            self.goal_handle.cancel_goal_async()
+        rclpy.shutdown()
 
     def feedback_callback(self, feedback_msg):
         feedback = feedback_msg.feedback
@@ -119,6 +133,8 @@ class AvoidanceGoalSender(Node):
         self.get_logger().info(f'Distance remaining: {dist_remain:.2f}m', throttle_duration_sec=1.0)
 
     def get_result_callback(self, future):
+        if self.timeout_timer:
+            self.timeout_timer.cancel()
         status = future.result().status
         if status == 4:
             self.get_logger().info('Navigation Succeeded! Reached target position.')
@@ -129,10 +145,12 @@ class AvoidanceGoalSender(Node):
 def main():
     parser = argparse.ArgumentParser(description='Send relative navigation goal (straight or cornering) for avoidance test.')
     parser.add_argument('-d', '--distance', type=float, default=None, help='Straight distance in meters (shortcut for -x)')
-    parser.add_argument('-x', type=float, default=5.0, help='Forward distance in meters (default: 5.0m)')
+    parser.add_argument('-x', type=float, default=10.0, help='Forward distance in meters (default: 10.0m)')
     parser.add_argument('-y', type=float, default=0.0, help='Lateral distance in meters (+: left, -: right, default: 0.0m)')
     parser.add_argument('-a', '--angle', type=float, default=0.0, help='Heading angle in degrees (+: left/CCW, -: right/CW, default: 0.0)')
     parser.add_argument('--corner', choices=['left', 'right'], default=None, help='Preset corner turn (e.g. --corner left sets x=4.0, y=3.0, a=90)')
+
+    parser.add_argument('-t', '--timeout', type=float, default=60.0, help='Navigation timeout in seconds (default: 60.0s)')
 
     args, _ = parser.parse_known_args()
 
@@ -155,7 +173,7 @@ def main():
         rel_angle = -90.0
 
     rclpy.init()
-    sender = AvoidanceGoalSender(rel_x=rel_x, rel_y=rel_y, rel_yaw_deg=rel_angle)
+    sender = AvoidanceGoalSender(rel_x=rel_x, rel_y=rel_y, rel_yaw_deg=rel_angle, timeout_sec=args.timeout)
     if sender.initialize_and_send_goal():
         try:
             rclpy.spin(sender)

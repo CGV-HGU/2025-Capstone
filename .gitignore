@@ -12,3 +12,8 @@
 # Experiment logs (keep folder structure via .gitkeep)
 /experiments/logs/*
 !/experiments/logs/.gitkeep
+
+# Temporary test artifacts
+*.jpg
+frames_*
+

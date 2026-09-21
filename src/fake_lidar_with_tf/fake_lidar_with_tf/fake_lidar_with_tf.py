@@ -79,8 +79,8 @@ class FakeLidarWithTF(Node):
         scan.angle_increment = self.angle_increment
         scan.range_min = self.range_min
         scan.range_max = self.range_max
-        scan.scan_time       = 1.0 / 10.0      # <- 추가
-        scan.time_increment  = scan.scan_time / self.num_readings  # <- 추가
+        scan.scan_time       = 1.0 / 10.0
+        scan.time_increment  = 0.0  # 단안 카메라 전 채널 동시 캡처 (왜곡 방지)
 
         # 채널별 거리 데이터 직접 반영 (장애물 없는 채널은 이미 inf)
         scan.ranges = self.channel_distances[::-1].tolist()
