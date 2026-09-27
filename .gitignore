@@ -14,6 +14,8 @@
 !/experiments/logs/.gitkeep
 
 # Temporary test artifacts
-*.jpg
+/*.jpg
 frames_*
+!docs/papers/**
+
 
