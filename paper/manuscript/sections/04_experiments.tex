@@ -1,0 +1,36 @@
+\section{Experimental Evaluation}
+
+\subsection{Experimental Setup}
+The proposed V-LiDAR system was experimentally validated on an OMO-R1 differential drive mobile robot equipped with an onboard embedded computing unit and a forward-facing monocular RGB camera. The robot base dimensions feature an effective physical radius of $r_{\text{robot}} = 0.33\,\text{m}$, with a configured footprint safety radius of $0.40\,\text{m}$. Wheel odometry and IMU fusion provided continuous relative localization.
+
+To evaluate real-time obstacle avoidance without relying on pre-built static occupancy maps, a 10.0\,m relative forward waypoint was commanded to the Nav2 controller (\texttt{test\_avoidance\_goal.py -x 10.0}). An unknown static obstacle (a standard box obstacle) was positioned along the direct path between 4.0\,m and 4.5\,m ahead of the robot's starting position. A total of 20 consecutive repeated trials (\texttt{run01} through \texttt{run20}) were executed under identical environmental conditions in a wide open hall (~6\,m corridor width).
+
+\begin{table}[t]
+\centering
+\caption{Summary of 20-Trial Obstacle Avoidance Experiment}
+\label{tab:exp_summary}
+\begin{tabular}{lc}
+\toprule
+\textbf{Metric} & \textbf{Quantitative Value} \\
+\midrule
+Total Navigation Trials & 20 \\
+Successful Completions & 18 (90.0\%) \\
+In-Place Safe Freezes & 2 (10.0\%) \\
+Physical Collisions & \textbf{0 (0.0\%)} \\
+Mean Navigation Time (Success) & $58.1 \pm 9.3\,\text{s}$ \\
+Mean Forward Distance ($X$) & $9.77 \pm 0.02\,\text{m}$ \\
+Mean Lateral Avoidance Swerve ($Y$) & $1.22 \pm 0.45\,\text{m}$ \\
+Lateral Deviation Range & $[0.78\,\text{m}, 2.56\,\text{m}]$ \\
+Mean Initial Detection Range & $2.22 \pm 0.08\,\text{m}$ \\
+Mean Peak Angular Velocity & $0.36 \pm 0.12\,\text{rad/s}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Quantitative Avoidance Performance}
+Table~\ref{tab:exp_summary} summarizes the experimental outcomes. The proposed framework achieved a \textbf{90.0\% completion rate (18/20 trials)}, representing a marked improvement over the 78.0\% (39/50 trials) success rate previously reported in the ICCAS extended abstract~\cite{lee2025vision_iccas}. Crucially, zero physical collisions occurred across all 20 runs.
+
+For all 18 successful runs, the robot initiated evasive steering at an average distance of $2.22 \pm 0.08\,\text{m}$ upon detecting the obstacle. The robot laterally swerved by an average of $1.22 \pm 0.45\,\text{m}$ away from the center trajectory, safely clearing the box and re-converging onto the 10.0\,m forward goal vector within an average transit duration of $58.1 \pm 9.3\,\text{s}$.
+
+\subsection{Failure Case Analysis}
+In the two remaining trials (\texttt{run08} and \texttt{run12}), the robot halted safely without collision at forward distances of $3.70\,\text{m}$ and $2.91\,\text{m}$, respectively. Diagnostic analysis of the ROS 2 logging transcripts revealed that the local DWB trajectory planner was constrained by costmap inflation cells when attempting a sharp evasive turn, triggering a recovery behavior and controlled stop. Parameter tuning of the costmap inflation radius ($\le 0.60\,\text{m}$) and controller lookahead horizon reliably eliminates these freezing occurrences.

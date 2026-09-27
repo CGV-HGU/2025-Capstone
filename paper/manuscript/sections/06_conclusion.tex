@@ -1,0 +1,5 @@
+\section{Conclusion}
+
+This paper presented a practical Vision-Based 2D Scan Generation (V-LiDAR) framework that translates monocular RGB floor segmentation into standard planar range scans for real-time indoor AMR obstacle avoidance. By coupling fine-tuned YOLOv11n-seg with deterministic geometric Look-Up Tables, the system operates at low computational latency while bypassing expensive active LiDAR hardware. Experimental verification over 20 consecutive 10.0\,m trials demonstrated a 90.0\% avoidance success rate and zero physical collisions. Furthermore, we provided an exact analytical formulation of the near-field optical blind spot ($D_{\text{min}} \approx 2.178\,\text{m}$) and detailed the spatial constraints of narrow corridor navigation. 
+
+Future research will incorporate complementary short-range ultrasonic proximity sensors to cover the blind spot below 2.18\,m, investigate multi-camera panoramic setups, and release the complete ROS 2 Humble V-LiDAR package as open-source software for the robotics community.

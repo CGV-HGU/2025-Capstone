@@ -1,0 +1,27 @@
+\section{Discussion and Limitations}
+
+\subsection{Analytical Derivation of the Near-Field Blind Spot}
+Throughout the 20 experimental trials, the minimum reported obstacle range was persistently bounded below by $2.178\,\text{m}$. We emphasize that this lower bound is not an algorithmic artifact or neural network deficiency, but a direct geometric consequence of the camera configuration.
+
+Given a mounting height $H = 1.05\,\text{m}$, fixed downward tilt $\theta = 2.0^\circ$, and vertical field of view $\alpha_v = 47.48^\circ$, the steepest downward optical ray passing through the bottom image boundary ($y = H_r - 1$) makes an angle $\theta_{\text{max}}$ with respect to the horizontal plane:
+\begin{equation}
+    \theta_{\text{max}} = \theta + \frac{\alpha_v}{2} = 2.0^\circ + 23.74^\circ = 25.74^\circ
+\end{equation}
+By fundamental trigonometry, the nearest ground-plane intercept observable by the camera sensor is:
+\begin{equation}
+    D_{\text{min}} = \frac{H}{\tan(\theta_{\text{max}})} = \frac{1.05\,\text{m}}{\tan(25.74^\circ)} = \frac{1.05}{0.4821} \approx 2.178\,\text{m}
+\end{equation}
+
+When an obstacle draws closer than $2.178\,\text{m}$, its physical ground contact line drops below the camera's lower image boundary. Because only the mid-section or top of the obstacle remains visible, the lowest detected non-floor pixel is pinned at row $y = H_r - 1$, capping the estimated range at $D_{\text{min}}$.
+
+\subsection{Infeasibility of Testing in Narrow Corridors}
+This geometric blind spot, coupled with the spatial requirements of dynamic evasion, elucidates why testing was deliberately conducted in an expansive open hall (~6\,m width) rather than a narrow corridor (1.8--2.2\,m):
+\begin{enumerate}
+    \item \textbf{Lateral Swerve Clearance}: Avoiding a standard frontal obstacle required an average lateral deviation of $Y = 1.22\,\text{m}$ (up to $2.56\,\text{m}$). In a 2.0\,m hallway, an obstacle placed centrally leaves only 1.0\,m of traversable lane on either side, forcing the robot within 10--20\,cm of the side wall during avoidance.
+    \item \textbf{Lateral Wall Blindness}: Side walls within 1.0\,m lateral distance fall entirely within the camera's near-field blind spot ($D < 2.18\,\text{m}$), preventing accurate ground contact segmentation.
+    \item \textbf{Costmap Entrapment}: In standard Nav2 configurations, the combined robot footprint and inflation safety radius ($r_{\text{robot}} + r_{\text{inf}} = 0.40 + 0.90 = 1.30\,\text{m}$) cause lethal and inscribed cost zones from opposing hallway walls to overlap across the corridor, completely blocking path generation.
+\end{enumerate}
+Thus, isolating the robot in an open hall was scientifically essential to rigorously measure the virtual scan generator's intrinsic detection and avoidance capability without artificial hallway trapping artifacts.
+
+\subsection{Environmental Sensitivity and Robustness}
+As noted by the ICCAS review feedback, monocular floor segmentation exhibits sensitivity to specular reflections on polished floors and sharp shadows. In our refined implementation, temporal continuity checks and ROI floor-clearing logic effectively suppress transient segmentation noise. Furthermore, integrating probabilistic depth uncertainty filtering (e.g., Pixel-to-Boundary Filtering) presents a promising path toward eliminating specular artifacts without retraining heavy segmentation architectures.

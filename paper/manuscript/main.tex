@@ -1,0 +1,51 @@
+\documentclass[10pt,twocolumn,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{abstract}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+\title{\textbf{Vision-Based 2D Scan Generation (V-LiDAR) for Indoor AMR Obstacle Avoidance Using Monocular Floor Segmentation}}
+
+\author{
+    Hyunseo Lee$^{1}$, Gunmin Yoo$^{2}$, Hyunwoo Gu$^{2}$, and Sung Soo Hwang$^{1,*}$\\[1ex]
+    $^{1}$School of Artificial Intelligence, Computer and Electrical Engineering, Handong Global University, Pohang, Korea\\
+    $^{2}$Department of Computer Science and Electronic Engineering, Handong Global University, Pohang, Korea\\
+    $^{*}$Corresponding author: \texttt{sshwang@handong.edu}
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\input{sections/00_abstract.tex}
+\input{sections/01_introduction.tex}
+\input{sections/02_related_work.tex}
+\input{sections/03_methodology.tex}
+\input{sections/04_experiments.tex}
+\input{sections/05_discussion.tex}
+\input{sections/06_conclusion.tex}
+
+\section*{Acknowledgment}
+This research was supported by the ANCHOR program Glocal University 30 through the Gyeongbuk ANCHOR CENTER, funded by the Ministry of Education (MOE) and the Gyeongsangbuk-do, Republic of Korea (2026-ANCHOR-15-119). Handong Global University Research Grants (No. 202500590001) and the National Research Foundation of Korea (NRF) grant funded by the Korean government (MSIT) (No. RS-2025-24683458) also supported this work.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,13 @@
+Comments to author (Associate Editor)
+=====================================
+
+A practical, lightweight ideaóconverting monocular
+floor-segmentation into a virtual 2D scan for Nav2 obstacle
+avoidance without LiDARóthat is clearly presented and
+honestly reports its limits (&#8804;0.261 m range error,
+78% success rate). However, this is only a preliminary
+extended abstract: validation is limited to a single static
+box in one corridor, the 22% failure rate and
+glossy-floor/illumination sensitivity are significant, and
+comparison against a LiDAR or alternative baseline is
+missing.

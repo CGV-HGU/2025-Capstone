@@ -1,0 +1,14 @@
+\section{Introduction}
+
+Autonomous Mobile Robots (AMRs) are rapidly proliferating across service, warehouse logistics, and healthcare automation. A foundational prerequisite for indoor autonomy is local obstacle detection and dynamic avoidance~\cite{liu2024review}. Traditionally, mobile robots rely on active range sensors, predominantly 2D and 3D LiDARs~\cite{li2020lidar}. While LiDAR sensors deliver direct, millimeter-accurate geometric measurements invariant to ambient lighting, their mechanical moving parts, substantial unit cost, physical payload, and electrical power consumption restrict their viability in low-cost, compact robotic platforms.
+
+Conversely, monocular RGB cameras represent an exceptionally lightweight, cost-effective, and energy-efficient sensing modality. However, visual imagery lacks explicit metric depth, rendering direct integration into conventional 2D planar occupancy grid mapping and navigation frameworks non-trivial~\cite{thrun2010probabilistic, elfes1989using}. While RGB-D sensors (e.g., active stereo or structured light cameras) mitigate this gap, their operational range is notoriously limited indoors by optical interference, sunlight dilution, and higher power budgets.
+
+To bridge the interface discrepancy between monocular visual features and planar robot navigation architectures, this paper introduces a real-time \textbf{Vision-Based 2D Scan Generation (V-LiDAR)} system. Instead of estimating dense depth across the entire scene via computationally burdensome deep neural networks, our framework leverages the physical constraint of indoor environments: ground-plane contact. By segmenting traversable floor surfaces and identifying the lowest non-floor pixel in each angular column, obstacle-to-ground contact boundaries are transformed into metric range vectors using precomputed geometric Look-Up Tables (LUTs).
+
+In preliminary work presented as an extended abstract at ICCAS~\cite{lee2025vision_iccas}, we demonstrated the initial feasibility of monocular scan generation. In this expanded article, we substantially advance the state of the art through:
+\begin{enumerate}
+    \item \textbf{Comprehensive 20-Run Avoidance Verification}: We conduct rigorous multi-trial repeatability evaluations in a 10.0\,m navigation task, improving obstacle avoidance success to 90.0\% (18/20 trials) with an average avoidance onset range of $2.22 \pm 0.08\,\text{m}$.
+    \item \textbf{Analytical Geometric Blind Spot Derivation}: We mathematically formalize the near-field ground visibility cutoff ($D_{\text{min}} \approx 2.178\,\text{m}$) as a direct function of mounting height, tilt, and vertical field of view.
+    \item \textbf{Costmap Entrapment Analysis}: We analytically dissect why narrow corridors (1.8--2.2\,m) lead to navigation freeze when combined with standard safety inflation radiuses, justifying the experimental decoupling of obstacle detection from hallway wall interference.
+\end{enumerate}
