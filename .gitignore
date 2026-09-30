@@ -19,3 +19,4 @@ frames_*
 !docs/papers/**
 
 
+.DS_Store
