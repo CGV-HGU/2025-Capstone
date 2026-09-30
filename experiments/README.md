@@ -1,21 +1,23 @@
-# 🧪 자율주행 및 Freespace Detection 실험·평가 가이드
+# 🧪 자율주행 및 장애물 인식 2대 실험 가이드 (IEEE Access)
 
-본 디렉터리는 OMORobot R1 Mini 및 V-LiDAR 시스템의 **자율주행 주행 로그 수집**, **장애물 회피 검증**, 그리고 **YOLO 바닥 분할(Freespace Detection) 정밀 성능 평가**를 체계적으로 수행하기 위한 도구들을 제공합니다.
+본 디렉터리는 **IEEE Access 논문**에 수록되는 2대 핵심 실험인 **[Track 1: 제안 V-LiDAR 시스템 실증]**과 **[Track 2: 단안 뎁스 Baseline(MiDaS / Depth Anything V2) 비교 평가]**를 수행하고 결과를 체계적으로 관리하기 위한 통합 도구 모음입니다.
+
+> 📄 **전체 상세 프로토콜 및 실측 데이터는 [EXPERIMENT_PROTOCOL_AND_RESULTS.md](EXPERIMENT_PROTOCOL_AND_RESULTS.md)를 참고하세요.**
 
 ---
 
 ## 📂 1. 디렉터리 구성
 ```text
 experiments/
-├── README.md                 # 본 가이드 문서
-├── run_experiment.py         # 🚗 실시간 자율주행 통합 로깅 도구 (5Hz)
-├── evaluate_freespace.py     # 🔍 Freespace Detection 정밀 벤치마크 및 오프라인 평가
-├── configs/                  # 실험 프리셋 설정 파일
-└── logs/                     # 📁 실험 결과 자동 저장 폴더 (타임스탬프별)
-    └── YYYYMMDD_HHMMSS_<시나리오명>/
-        ├── metadata.json     # 실험 세부 환경 (맵, 날짜, 소요시간, 집계 수치)
-        ├── driving_log.csv   # 주행 시계열 로그 (위치, 속도, VSLAM, 라이다 거리)
-        └── summary_report.md # 회차별 자동 생성 요약 리포트 (통과/실패 판정)
+├── EXPERIMENT_PROTOCOL_AND_RESULTS.md  # 📋 [필독] 2대 실험 마스터 프로토콜 및 결과 기록서
+├── benchmark_depth_baselines.py        # 🔬 V-LiDAR vs MiDaS vs Depth Anything V2 벤치마크 (정적/Rosbag 동적)
+├── run_experiment.py                  # 🚗 실시간 자율주행 통합 로깅 도구 (5Hz)
+├── evaluate_freespace.py              # 🔍 Freespace Detection 정밀 벤치마크 및 오프라인 평가
+├── configs/                           # 실험 프리셋 설정 파일
+└── logs/                              # 📁 실험 결과 자동 저장 폴더
+    ├── dynamic_trajectory_benchmark.csv # Rosbag 동적 프레임별 거리 추적 시계열 데이터
+    ├── baseline_benchmark_report.md     # 모델별 Latency/FPS/MAE 마크다운 보고서
+    └── baseline_latex_table.tex         # IEEE Access 논문 삽입용 완성된 LaTeX 표
 ```
 
 ---

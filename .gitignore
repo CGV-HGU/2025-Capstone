@@ -20,3 +20,9 @@ frames_*
 
 
 .DS_Store
+
+# LaTeX temporary and binary artifacts
+*.aux
+*.log
+tectonic
+tectonic.tar.gz
