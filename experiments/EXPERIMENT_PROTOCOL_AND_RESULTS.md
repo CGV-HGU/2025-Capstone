@@ -59,20 +59,26 @@ flowchart TD
 
 ## 🚀 3. 실험 절차 및 실행 명령어
 
-### 3.1 [사전 준비] 카메라 및 로봇 기본 노드 기동
+### 3.1 [사전 준비] 통합 원클릭 시스템 기동 (One-Touch Bringup)
+기존에 터미널 4개를 따로 열어 실행하던 복잡한 과정 없이, **`./start_all.sh` 스크립트 하나로 카메라, MCU, V-LiDAR, Nav2 전체를 한 번에 기동**합니다:
+
 ```bash
-# 1. 카메라 영상 스트림 퍼블리시 (640x480 @ 30fps)
-ros2 run image_tools cam2image --ros-args -p device_id:=0 -p width:=640 -p height:=480
+cd ~/ros2_ws
 
-# 2. 로봇 MCU 드라이버 기동
-ros2 launch omo_r1_bringup omo_r1_mcu.launch.py
+# [원클릭 실행] 전체 자율주행 통합 시스템 기동 (헤드리스 모드, 실험 권장)
+./start_all.sh
 
-# 3. 제안 V-LiDAR 인식 노드 실행 (OpenVINO FP16 자동 활성화)
-ros2 launch freespace_detection floor_detector.launch.py
-
-# 4. Nav2 내비게이션 스택 실행
-ros2 launch omo_r1_navigation2 navigation2.launch.py use_sim_time:=false
+# (선택) RViz 시각화 모니터링 화면이 필요할 경우:
+./start_all.sh --rviz
 ```
+
+* **동시에 자동 기동되는 핵심 노드**:
+  1. `cam2image`: USB 웹캠 영상 스트림 퍼블리시 (640x480 @ 30fps)
+  2. `omo_r1_bringup`: 차륜 엔코더 오도메트리 및 모터 제어 MCU 드라이버
+  3. `freespace_detection`: V-LiDAR OpenVINO FP16 초고속 바닥 인식 (12.9ms)
+  4. `fake_lidar_with_tf`: 2D 유클리드 LUT 거리 변환 및 `/scan` (141ch), TF (`base_link` $\rightarrow$ `lidar_link`) 발행
+  5. `navigation2`: Nav2 스택 (A* 글로벌 플래너 + DWB 로컬 컨트롤러 + 로컬 코스트맵)
+* **종료 및 리셋**: 해당 터미널에서 **`Ctrl + C`**를 누르면 `./stop_all.sh`가 자동으로 호출되어 모든 백그라운드 노드가 깔끔히 정리됩니다.
 
 ### 3.2 [Track 1-A] 2.50m 정적 거리 정밀도 측정
 * 로봇을 정지 상태로 고정하고 전방 $2.50\,\text{m}$ 지점에 장애물 배치 (레이저 줄자 참값 $\pm 0.01\,\text{m}$)
