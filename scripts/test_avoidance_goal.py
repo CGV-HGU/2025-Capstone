@@ -7,6 +7,7 @@ from rclpy.node import Node
 from rclpy.action import ActionClient
 from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from nav_msgs.msg import Odometry
 from tf2_ros import Buffer, TransformListener
 import math
 
@@ -15,12 +16,25 @@ class AvoidanceGoalSender(Node):
         super().__init__('avoidance_goal_sender')
         self._action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.init_pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
+        self.odom_sub = self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
         self.rel_x = rel_x
         self.rel_y = rel_y
         self.rel_yaw_rad = math.radians(rel_yaw_deg)
         self.timeout_sec = timeout_sec
         self.timeout_timer = None
         self.goal_handle = None
+
+        # 순수 주행 정밀 측정을 위한 변수
+        self.t_script_start = time.time()
+        self.t_motion_start = None
+        self.t_motion_end = None
+        self.motion_started = False
+        self.motion_ended = False
+        self.start_pose = None
+        self.max_x = 0.0
+        self.max_y_deviation = 0.0
+        self.max_v = 0.0
+        self.max_w = 0.0
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -106,6 +120,34 @@ class AvoidanceGoalSender(Node):
         send_goal_future.add_done_callback(self.goal_response_callback)
         return True
 
+    def odom_callback(self, msg):
+        vx = msg.twist.twist.linear.x
+        vy = msg.twist.twist.linear.y
+        wz = abs(msg.twist.twist.angular.z)
+        v = math.sqrt(vx * vx + vy * vy)
+
+        px = msg.pose.pose.position.x
+        py = msg.pose.pose.position.y
+
+        if self.start_pose is None:
+            self.start_pose = (px, py)
+
+        dx = px - self.start_pose[0]
+        dy = abs(py - self.start_pose[1])
+        dist_from_start = math.sqrt(dx * dx + dy * dy)
+
+        # 실제 바퀴가 구르기 시작한 순간(v > 0.02 m/s 또는 이동 3cm 이상)을 정밀 포착
+        if not self.motion_started and self.goal_handle is not None and (v > 0.02 or dist_from_start > 0.03):
+            self.motion_started = True
+            self.t_motion_start = time.time()
+            self.get_logger().info('🚀 로봇 실제 주행 시작 감지! [순수 주행 시간 정밀 타이머 START]')
+
+        if self.motion_started and not self.motion_ended:
+            self.max_v = max(self.max_v, v)
+            self.max_w = max(self.max_w, wz)
+            self.max_x = max(self.max_x, dx)
+            self.max_y_deviation = max(self.max_y_deviation, dy)
+
     def goal_response_callback(self, future):
         self.goal_handle = future.result()
         if not self.goal_handle.accepted:
@@ -113,18 +155,21 @@ class AvoidanceGoalSender(Node):
             rclpy.shutdown()
             return
 
-        self.get_logger().info(f'Goal accepted! Robot moving forward. Avoidance active (Timeout: {self.timeout_sec:.1f}s)...')
+        self.get_logger().info(f'Goal accepted! Waiting for robot motion to start pure timer (Timeout: {self.timeout_sec:.1f}s)...')
         self.timeout_timer = self.create_timer(self.timeout_sec, self.timeout_callback)
         result_future = self.goal_handle.get_result_async()
         result_future.add_done_callback(self.get_result_callback)
 
     def timeout_callback(self):
+        self.motion_ended = True
+        self.t_motion_end = time.time()
         self.get_logger().error(f'Navigation TIMED OUT after {self.timeout_sec:.1f}s! Robot stuck or unable to reach goal.')
         if self.timeout_timer:
             self.timeout_timer.cancel()
         if self.goal_handle:
             self.get_logger().info('Canceling active goal...')
             self.goal_handle.cancel_goal_async()
+        self.print_summary(outcome_str=f"❌ 타임아웃 중도 정지 ({self.timeout_sec:.1f}s 초과)")
         rclpy.shutdown()
 
     def feedback_callback(self, feedback_msg):
@@ -133,14 +178,32 @@ class AvoidanceGoalSender(Node):
         self.get_logger().info(f'Distance remaining: {dist_remain:.2f}m', throttle_duration_sec=1.0)
 
     def get_result_callback(self, future):
+        self.motion_ended = True
+        self.t_motion_end = time.time()
         if self.timeout_timer:
             self.timeout_timer.cancel()
         status = future.result().status
         if status == 4:
-            self.get_logger().info('Navigation Succeeded! Reached target position.')
+            outcome_str = "✅ 목표 도달 완주 성공 (SUCCESS)"
         else:
-            self.get_logger().warn(f'Navigation ended with status: {status}')
+            outcome_str = f"⚠️ 중도 종료 (Nav2 Status: {status})"
+        self.print_summary(outcome_str=outcome_str)
         rclpy.shutdown()
+
+    def print_summary(self, outcome_str=""):
+        pure_duration = (self.t_motion_end - self.t_motion_start) if (self.t_motion_start and self.t_motion_end) else 0.0
+        init_delay = (self.t_motion_start - self.t_script_start) if (self.t_script_start and self.t_motion_start) else 0.0
+
+        print("\n" + "=" * 65)
+        print("🏁 [주행 완료 - 순수 주행 정밀 실측 결과 (Pure Motion Report)]")
+        print("=" * 65)
+        print(f"⏱️  순수 주행 시간 (Pure Motion Time) : {pure_duration:.2f} 초 (준비 대기 {init_delay:.2f}초 제외)")
+        print(f"📏  전진 주행 거리 (Travel X)         : {self.max_x:.2f} m")
+        print(f"↔️  최대 회피 이탈폭 (Max Lateral Y)  : {self.max_y_deviation:.3f} m")
+        print(f"🏎️  최고 선속도 (Max Linear Speed)   : {self.max_v:.2f} m/s (설정 0.30 m/s)")
+        print(f"🔄  최고 각속도 (Max Angular Speed)  : {self.max_w:.3f} rad/s")
+        print(f"📌  최종 판정 (Navigation Outcome)   : {outcome_str}")
+        print("=" * 65 + "\n")
 
 def main():
     parser = argparse.ArgumentParser(description='Send relative navigation goal (straight or cornering) for avoidance test.')
