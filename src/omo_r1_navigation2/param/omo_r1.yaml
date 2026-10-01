@@ -122,7 +122,7 @@ controller_server:
       ObstacleFootprint:
         plugin: "dwb_critics::ObstacleFootprintCritic"
         scale: 1.0
-      BaseObstacle.scale: 3.5 # 장애물 회피 반발력 안전-균형 최적화 (3.5: 충돌 방지 척력 유지 및 원활한 차선 복귀)
+      BaseObstacle.scale: 8.0 # 장애물 회피 반발력 대폭 강화 (기존 1.5 -> 8.0)
       PathAlign.scale: 3.0 # 경로 각도 고집 완화 (기존 10.0 -> 3.0)
       PathAlign.forward_point_distance: 0.8
       GoalAlign.scale: 5.0 # 목표 방향 고집 완화 (기존 12.0 -> 5.0)
@@ -154,8 +154,8 @@ local_costmap:
       plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.65 # 안전-균형 마진 (0.65m: 실차 불확실성 대비 25cm 순수 여유 버퍼 확보 + 컴팩트 우회)
-        cost_scaling_factor: 3.0 # 완만하고 안정적인 감속/우회 비용 경사면 형성
+        inflation_radius: 0.90 # 안전 완충 거리 90cm로 확대하여 3m 전방부터 회피 유도
+        cost_scaling_factor: 2.5
 
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -249,8 +249,8 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.65 # 글로벌 경로 우회 마진 (0.65m로 로컬 코스트맵과 통일)
+        cost_scaling_factor: 2.5
+        inflation_radius: 0.90 # 3m 전방부터 글로벌 경로 우회 유도
       always_send_full_costmap: False
   global_costmap_client:
     ros__parameters:
