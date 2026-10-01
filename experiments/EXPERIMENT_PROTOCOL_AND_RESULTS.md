@@ -52,7 +52,7 @@ flowchart TD
 * **내비게이션 스택 (ROS 2 Nav2)**:
   * Global Planner: Navfn Planner (A* Search)
   * Local Controller: DWB Controller (단거리 궤적 생성)
-  * Costmap 세팅: Inflation radius = $0.55\,\text{m}$, Obstacle range = $3.0\,\text{m}$, Raytrace range = $3.5\,\text{m}$
+  * Costmap 세팅: Inflation radius = $0.65\,\text{m}$, Obstacle range = $3.0\,\text{m}$, Raytrace range = $3.5\,\text{m}$
   * 위치 추정: 휠 오도메트리 (`/odom`) 기반 상대 좌표계 주행
 
 ---
@@ -183,7 +183,7 @@ python3 experiments/benchmark_depth_baselines.py \
 * **원인 1 (코스트맵 팽창 반경 중첩)**: 장애물 팽창 구역($R_{\text{zone}} = 0.40 + 0.90 = 1.30\,\text{m}$)이 로봇의 회피 후 복귀 궤적과 겹침.
 * **원인 2 (DWB Critic 과도한 페널티)**: `BaseObstacle.scale`이 8.0으로 과도하게 높아 회피 후 우측 복귀 경로의 비용이 폭증해 전진 속도가 0.0 m/s로 감소.
 * **원인 3 (복구 서버 시뮬레이션 클록 버그)**: 회피 불가 시 호출되는 Nav2 `Wait` 복구 노드가 `use_sim_time: True`로 잘못 설정되어 있어 정지 상태에서 풀려나지 못함.
-* $\rightarrow$ 팽창 반경을 $0.55\,\text{m}$로 완화하고 `BaseObstacle.scale`을 2.5로 조정하여 완벽 해결.
+* $\rightarrow$ 팽창 반경을 $0.65\,\text{m}$로 완화하고 `BaseObstacle.scale`을 3.5로 조정하여 완벽 해결.
 
 ### 3. 좁은 복도(<2.2m) 주행 불가 이유 (Physical Infeasibility)
 * 폭 2.0m 복도에서 로봇이 중앙 주행 시 벽면과의 거리는 1.0m에 불과함.
