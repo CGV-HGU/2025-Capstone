@@ -52,7 +52,7 @@ flowchart TD
 * **내비게이션 스택 (ROS 2 Nav2)**:
   * Global Planner: Navfn Planner (A* Search)
   * Local Controller: DWB Controller (단거리 궤적 생성)
-  * Costmap 세팅: Inflation radius = $0.90\,\text{m}$, Obstacle range = $3.0\,\text{m}$, Raytrace range = $3.5\,\text{m}$
+  * Costmap 세팅: Inflation radius = $0.75\,\text{m}$, Obstacle range = $3.0\,\text{m}$, Raytrace range = $3.5\,\text{m}$
   * 위치 추정: 휠 오도메트리 (`/odom`) 기반 상대 좌표계 주행
 
 ---
