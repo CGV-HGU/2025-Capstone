@@ -25,7 +25,7 @@ echo "================================================================="
 
 USE_RVIZ="false"
 for arg in "$@"; do
-  if [ "$arg" == "--rviz" ]; then
+  if [[ "$arg" =~ rviz ]]; then
     USE_RVIZ="true"
   fi
 done
