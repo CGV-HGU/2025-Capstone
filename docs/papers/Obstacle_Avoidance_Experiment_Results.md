@@ -21,28 +21,28 @@
 
 ### 2.1 전체 세션별 세부 주행 데이터
 
-| 회차 (Run) | 주행 시간 (s) | 전진 거리 ($X$, m) | $Y$ 회피 폭 (m) | 최소 감지 거리 (m) | 최대 각속도 (rad/s) | 주행 결과 |
+| 회차 (Run) | 순수 주행 시간 (s) | 전진 거리 ($X$, m) | $Y$ 회피 폭 (m) | 최소 감지 거리 (m) | 최대 각속도 (rad/s) | 주행 결과 |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **run01** | 68.5 | 9.76 | 0.958 | 2.178 | 0.200 | ✅ 회피 후 완주 |
-| **run02** | 67.7 | 9.78 | 0.903 | 2.178 | 0.367 | ✅ 회피 후 완주 |
-| **run03** | 82.8 | 9.77 | 1.056 | 2.178 | 0.267 | ✅ 회피 후 완주 |
-| **run04** | 53.7 | 9.77 | 0.887 | 2.385 | 0.133 | ✅ 회피 후 완주 |
-| **run05** | 46.7 | 9.76 | 1.362 | 2.429 | 0.267 | ✅ 회피 후 완주 |
-| **run06** | 60.4 | 9.77 | 1.124 | 2.178 | 0.400 | ✅ 회피 후 완주 |
-| **run07** | 58.9 | 9.78 | 0.942 | 2.187 | 0.467 | ✅ 회피 후 완주 |
-| **run08** | 121.3 | **3.70** | 0.899 | 2.413 | 0.200 | ⏸️ 중도 정지 (3.70m) |
-| **run09** | 49.9 | 9.78 | 0.980 | 2.178 | 0.200 | ✅ 회피 후 완주 |
-| **run10** | 60.8 | 9.76 | 1.928 | 2.178 | 0.500 | ✅ 회피 후 완주 |
-| **run11** | 62.5 | 9.76 | 0.989 | 2.178 | 0.333 | ✅ 회피 후 완주 |
-| **run12** | 81.1 | **2.91** | 1.069 | 2.218 | 0.333 | ⏸️ 중도 정지 (2.91m) |
-| **run13** | 50.4 | 9.78 | 1.274 | 2.313 | 0.300 | ✅ 회피 후 완주 |
-| **run14** | 49.4 | 9.82 | 2.563 | 2.277 | 0.400 | ✅ 회피 후 완주 |
-| **run15** | 50.4 | 9.77 | 0.781 | 2.178 | 0.400 | ✅ 회피 후 완주 |
-| **run16** | 53.3 | 9.76 | 0.987 | 2.178 | 0.347 | ✅ 회피 후 완주 |
-| **run17** | 55.8 | 9.76 | 1.024 | 2.178 | 0.500 | ✅ 회피 후 완주 |
-| **run18** | 58.5 | 9.76 | 0.828 | 2.179 | 0.500 | ✅ 회피 후 완주 |
-| **run19** | 59.2 | 9.82 | 1.676 | 2.198 | 0.500 | ✅ 회피 후 완주 |
-| **run20** | 56.4 | 9.77 | 1.702 | 2.214 | 0.500 | ✅ 회피 후 완주 |
+| **run01** | 44.2 | 9.76 | 0.958 | 2.178 | 0.200 | ✅ 회피 후 완주 |
+| **run02** | 44.0 | 9.78 | 0.903 | 2.178 | 0.367 | ✅ 회피 후 완주 |
+| **run03** | 71.2 | 9.77 | 1.056 | 2.178 | 0.267 | ✅ 회피 후 완주 |
+| **run04** | 41.3 | 9.77 | 0.887 | 2.385 | 0.133 | ✅ 회피 후 완주 |
+| **run05** | 38.8 | 9.76 | 1.362 | 2.429 | 0.267 | ✅ 회피 후 완주 |
+| **run06** | 53.9 | 9.77 | 1.124 | 2.178 | 0.400 | ✅ 회피 후 완주 |
+| **run07** | 50.5 | 9.78 | 0.942 | 2.187 | 0.467 | ✅ 회피 후 완주 |
+| **run08** | 110.9 | **3.70** | 0.899 | 2.413 | 0.200 | ⏸️ 중도 정지 (3.70m) |
+| **run09** | 39.5 | 9.78 | 0.980 | 2.178 | 0.200 | ✅ 회피 후 완주 |
+| **run10** | 52.9 | 9.76 | 1.928 | 2.178 | 0.500 | ✅ 회피 후 완주 |
+| **run11** | 54.7 | 9.76 | 0.989 | 2.178 | 0.333 | ✅ 회피 후 완주 |
+| **run12** | 74.0 | **2.91** | 1.069 | 2.218 | 0.333 | ⏸️ 중도 정지 (2.91m) |
+| **run13** | 44.2 | 9.78 | 1.274 | 2.313 | 0.300 | ✅ 회피 후 완주 |
+| **run14** | 41.9 | 9.82 | 2.563 | 2.277 | 0.400 | ✅ 회피 후 완주 |
+| **run15** | 43.1 | 9.77 | 0.781 | 2.178 | 0.400 | ✅ 회피 후 완주 |
+| **run16** | 46.8 | 9.76 | 0.987 | 2.178 | 0.347 | ✅ 회피 후 완주 |
+| **run17** | 49.1 | 9.76 | 1.024 | 2.178 | 0.500 | ✅ 회피 후 완주 |
+| **run18** | 48.1 | 9.76 | 0.828 | 2.179 | 0.500 | ✅ 회피 후 완주 |
+| **run19** | 50.2 | 9.82 | 1.676 | 2.198 | 0.500 | ✅ 회피 후 완주 |
+| **run20** | 46.2 | 9.77 | 1.702 | 2.214 | 0.500 | ✅ 회피 후 완주 |
 
 ---
 
@@ -52,7 +52,7 @@
 - **목표 지점(10.0m) 완주율 (Success Rate)**: **18 / 20 (90.0%)** (기존 논문 대비 실패율 22% ➡️ **10%**로 대폭 개선)
 - **장애물 회피 후 완주율**: **18 / 20 (90.0%)**
 - **중도 정지율 (Failure / Freeze Rate)**: **2 / 20 (10.0%)** (`run08`, `run12`)
-- **평균 주행 시간 (완주 세션 기준)**: **58.1 ± 9.3 초**
+- **평균 순수 주행 시간 (완주 세션 기준)**: **47.8 ± 7.3 초** (통신 대기시간 제외, 유효 전진 속도 ~0.22 m/s)
 - **평균 $Y$축 회피 편차 (Lateral Deviation)**: **1.22 ± 0.45 m** (최소 0.78m, 최대 2.56m)
 - **평균 최소 감지 거리 (Min Detected Range)**: **2.22 ± 0.08 m** (최소 하한선 2.178m)
 
@@ -132,7 +132,7 @@
 > 
 > To evaluate the dynamic obstacle avoidance capability of the proposed monocular floor segmentation-based virtual LaserScan in the absence of a pre-built static map, 20 consecutive trials of a 10.0-m straight navigation task with an unknown static obstacle placed at 4.0–4.5 m were conducted using the OMO-R1 mobile robot platform.
 > 
-> As summarized in Table I, the proposed pipeline achieved a success rate of **90.0% (18/20 trials)**, significantly improving upon the previously reported failure rate of 22% (78% success rate). For the 18 successful runs, the robot initiated evasive steering at an average detection range of 2.22 ± 0.08 m, swerving laterally by an average of 1.22 ± 0.45 m (ranging from 0.78 m to 2.56 m) to bypass the obstacle and successfully reach the 10.0-m goal within an average travel time of 58.1 ± 9.3 s. In two trials (Runs 08 and 12), the robot safely avoided collision but halted near the obstacle due to local costmap inflation overlap.
+> As summarized in Table I, the proposed pipeline achieved a success rate of **90.0% (18/20 trials)**, significantly improving upon the previously reported failure rate of 22% (78% success rate). For the 18 successful runs, the robot initiated evasive steering at an average detection range of 2.22 ± 0.08 m, swerving laterally by an average of 1.22 ± 0.45 m (ranging from 0.78 m to 2.56 m) to bypass the obstacle and successfully reach the 10.0-m goal within an average pure motion time of 47.8 ± 7.3 s. In two trials (Runs 08 and 12), the robot safely avoided collision but halted near the obstacle due to local costmap inflation overlap.
 
 ### [Draft 2: Geometric Blind Spot & Narrow Corridor Limitations (for Section V)]
 > **V. DISCUSSION AND LIMITATIONS**
