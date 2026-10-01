@@ -44,8 +44,8 @@ class RoiChecker(Node):
         if not os.path.exists(pt_path):
             pt_path = "/home/cgv/data/fsd/best.pt"
 
-        # YOLO Confidence threshold 파라미터 (기본 0.25)
-        self.declare_parameter('conf_threshold', 0.25)
+        # YOLO Confidence threshold 파라미터 (유광 타일 및 반사광 환경 최적화: 기본 0.15)
+        self.declare_parameter('conf_threshold', 0.15)
         self.conf_threshold = self.get_parameter('conf_threshold').get_parameter_value().double_value
 
         try:
@@ -121,11 +121,13 @@ class RoiChecker(Node):
         self.y_min_scan = 120  # 수평선(지평선) 인덱스 (y < 120은 거리 무한대)
         self.row_indices = np.arange(self.y_min_scan, self.target_h)[:, None]
 
-        # Temporal EMA & Persistence 필터 (바닥 반사광 떨림 제거)
+        # Temporal EMA & Persistence 필터 (바닥 반사광 떨림 및 유령 장애물 완전 제거)
         self.alpha = 0.6
-        self.clear_persist_frames = 2
+        self.clear_persist_frames = 2  # 장애물 소멸 지속 프레임 (깜빡임 방지)
+        self.obs_persist_frames = 2    # 신규 장애물 확인 프레임 (1프레임 순간 반사 노이즈 무시)
         self.filtered_dist = np.full(self.num_channels, float('inf'), dtype=np.float32)
         self.inf_counter = np.zeros(self.num_channels, dtype=int)
+        self.obs_counter = np.zeros(self.num_channels, dtype=int)
 
         self.bridge = CvBridge()
         self.get_logger().info("Floor Detector Node initialized.")
@@ -156,25 +158,12 @@ class RoiChecker(Node):
             self.get_logger().error(f"Inference error: {e}")
             results = []
 
-        # YOLO 마스크 추출 (장애물로 쪼개진 모든 바닥 인스턴스를 합집합(OR)으로 결합)
+        # YOLO 마스크 추출 (검출된 모든 바닥 인스턴스를 합집합(OR)으로 결합)
         floor_masks = []
         for res in results:
             if res.masks is not None and len(res.masks.data) > 0:
-                if res.boxes is not None and len(res.boxes) > 0:
-                    # 1) 우선 'floor' (cls_id == 1) 인스턴스 탐색 및 수집
-                    for i, box in enumerate(res.boxes):
-                        cls_id = int(box.cls.item())
-                        cls_name = res.names.get(cls_id, '')
-                        if cls_id == 1 or cls_name == 'floor':
-                            floor_masks.append(res.masks.data[i].cpu().numpy().astype(np.uint8))
-                    
-                    # 2) 만약 cls_id == 1이 없다면 모델의 모든 검출 마스크를 바닥으로 취합
-                    if not floor_masks:
-                        for i in range(len(res.boxes)):
-                            floor_masks.append(res.masks.data[i].cpu().numpy().astype(np.uint8))
-                else:
-                    for m in res.masks.data:
-                        floor_masks.append(m.cpu().numpy().astype(np.uint8))
+                for m in res.masks.data:
+                    floor_masks.append(m.cpu().numpy().astype(np.uint8))
                 break
 
         if floor_masks:
@@ -184,9 +173,9 @@ class RoiChecker(Node):
             # 바닥이 전혀 감지되지 않은 경우 (카메라가 완전히 가려짐)
             mask = np.zeros((self.target_h, self.target_w), dtype=np.uint8)
 
-        # 반사광 및 그림자로 인한 마스크 구멍 보정 (Morphological Close)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        # 반사광(천장 전등 및 사물 반사) 및 그림자로 인한 마스크 구멍 강력 보정 (7x7, 2회 반복)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
 
         # V-LiDAR 141채널 거리 계산 & 퍼블리시
         self.publish_channel_distances(mask)
@@ -305,36 +294,40 @@ class RoiChecker(Node):
 
     def apply_temporal_filter(self, raw_dist: np.ndarray) -> np.ndarray:
         """
-        시간적 EMA 필터 및 지속성 검증으로 반사광 노이즈 제거:
-        1. 신규 장애물 진입 (raw=유한, prev=inf): 충돌 방지 위해 즉각 반응
-        2. 장애물 추적 (raw=유한, prev=유한): EMA 스무딩 (alpha=0.6)
-        3. 장애물 소멸 (raw=inf, prev=유한): 2연속 프레임 확인 후 inf 전환 (플리커 제거)
-        4. 지속적 Freespace (raw=inf, prev=inf): inf 유지
+        시간적 EMA 필터 및 양방향 지속성 검증으로 반사광 노이즈 완전 제거:
+        1. 신규 장애물 진입: 2프레임 연속 검출 시에만 등록 (1프레임 순간 반사광 노이즈 무시)
+        2. 장애물 추적: EMA 스무딩 (alpha=0.6)
+        3. 장애물 소멸: 2프레임 연속 미검출 시에만 inf 전환 (플리커링 방지)
+        4. 지속적 Freespace: inf 유지
         """
         raw_finite = np.isfinite(raw_dist)
         prev_finite = np.isfinite(self.filtered_dist)
 
-        # 1) 추적 중인 장애물 -> EMA 스무딩
+        # 장애물 감지 연속 카운터 갱신
+        self.obs_counter[raw_finite] += 1
+        self.obs_counter[~raw_finite] = 0
+
+        # 장애물 미감지(inf) 연속 카운터 갱신
+        self.inf_counter[~raw_finite] += 1
+        self.inf_counter[raw_finite] = 0
+
+        # 1) 이미 추적 중인 장애물 유지 및 EMA 스무딩
         both_finite = raw_finite & prev_finite
         self.filtered_dist[both_finite] = (
             self.alpha * raw_dist[both_finite] + (1.0 - self.alpha) * self.filtered_dist[both_finite]
         )
-        self.inf_counter[raw_finite] = 0
 
-        # 2) 신규 장애물 등장 -> 즉각 반영
-        new_obs = raw_finite & (~prev_finite)
-        self.filtered_dist[new_obs] = raw_dist[new_obs]
-        self.inf_counter[new_obs] = 0
+        # 2) 신규 장애물 진입: 2프레임 연속 검출 시에만 등록 (1프레임 순간 반사광 노이즈 필터링)
+        new_confirmed = (~prev_finite) & (self.obs_counter >= self.obs_persist_frames)
+        self.filtered_dist[new_confirmed] = raw_dist[new_confirmed]
 
-        # 3) 장애물 소멸 감지 -> Persistence 체크
-        disappeared = (~raw_finite) & prev_finite
-        self.inf_counter[disappeared] += 1
-        to_clear = disappeared & (self.inf_counter >= self.clear_persist_frames)
+        # 3) 장애물 소멸 감지: 2프레임 연속 미감지 시에만 inf로 전환 (플리커링 방지)
+        to_clear = prev_finite & (self.inf_counter >= self.clear_persist_frames)
         self.filtered_dist[to_clear] = float('inf')
 
-        # 4) 빈 공간 유지
-        both_inf = (~raw_finite) & (~prev_finite)
-        self.filtered_dist[both_inf] = float('inf')
+        # 4) 빈 공간 유지 (확인되지 않은 1프레임 신규 노이즈 포함)
+        still_inf = (~prev_finite) & (~new_confirmed)
+        self.filtered_dist[still_inf] = float('inf')
 
         return self.filtered_dist.copy()
 
@@ -343,11 +336,12 @@ def main(args=None):
     node = RoiChecker()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, rclpy.executors.ExternalShutdownException):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
