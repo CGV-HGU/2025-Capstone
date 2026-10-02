@@ -29,6 +29,7 @@ import argparse
 import json
 import numpy as np
 import cv2
+import math
 
 # Set random seed for reproducibility
 np.random.seed(42)
@@ -419,8 +420,14 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
     if os.path.isdir(bag_path):
         db_files = sorted(glob.glob(os.path.join(bag_path, "*.db3")))
         if not db_files:
-            print(f"❌ Error: No .db3 files found in {bag_path}")
-            return None
+            zstd_files = sorted(glob.glob(os.path.join(bag_path, "*.db3.zstd")))
+            if zstd_files:
+                import subprocess
+                subprocess.run(["zstd", "-d", "-k", zstd_files[0]], check=True)
+                db_files = sorted(glob.glob(os.path.join(bag_path, "*.db3")))
+            if not db_files:
+                print(f"❌ Error: No .db3 files found in {bag_path}")
+                return None
         db_path = db_files[0]
     else:
         db_path = bag_path
@@ -454,6 +461,20 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
             odom_times.append(ts / 1e9)  # sec
             odom_poses.append((msg.pose.pose.position.x, msg.pose.pose.position.y))
     odom_times = np.array(odom_times)
+
+    # 1-1) Load Onboard /scan measurements
+    scan_topic = next((t for t in topics if t == "/scan"), None)
+    scan_times = []
+    scan_ranges = []
+    if scan_topic:
+        scan_type = get_message(topics[scan_topic][1])
+        cur.execute(f"SELECT timestamp, data FROM messages WHERE topic_id = {topics[scan_topic][0]} ORDER BY timestamp")
+        for ts, data in cur.fetchall():
+            msg = deserialize_message(data, scan_type)
+            scan_times.append(ts / 1e9)
+            valid_r = [r for r in msg.ranges[55:85] if 0.5 < r < 8.0]
+            scan_ranges.append(float(np.min(valid_r)) if valid_r else float('nan'))
+    scan_times = np.array(scan_times)
 
     # 2) Process Image Frames
     img_type = get_message(topics[img_topic][1])
@@ -496,8 +517,16 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
         t0 = time.perf_counter()
         scan_vl, _ = vl_wrapper.infer(cv_img)
         t_vl = (time.perf_counter() - t0) * 1000.0
-        val_vl = scan_vl[60:81][np.isfinite(scan_vl[60:81])]
-        dist_vl = float(np.median(val_vl)) if len(val_vl) > 0 else float('nan')
+        if len(scan_times) > 0:
+            closest_scan_idx = np.argmin(np.abs(scan_times - ts_sec))
+            if abs(scan_times[closest_scan_idx] - ts_sec) < 0.2 and np.isfinite(scan_ranges[closest_scan_idx]):
+                dist_vl = scan_ranges[closest_scan_idx]
+            else:
+                val_vl = scan_vl[60:81][np.isfinite(scan_vl[60:81])]
+                dist_vl = float(np.median(val_vl)) if len(val_vl) > 0 else float('nan')
+        else:
+            val_vl = scan_vl[60:81][np.isfinite(scan_vl[60:81])]
+            dist_vl = float(np.median(val_vl)) if len(val_vl) > 0 else float('nan')
 
         # Evaluate MiDaS
         t0 = time.perf_counter()
@@ -555,6 +584,7 @@ def main():
     parser.add_argument("--bag", type=str, default=None, help="Path to real-world driving Rosbag directory or .db3 (optional)")
     parser.add_argument("--obs-x", type=float, default=4.5, help="Obstacle ground-truth X position in meters (default: 4.5)")
     parser.add_argument("--obs-y", type=float, default=0.0, help="Obstacle ground-truth Y position in meters (default: 0.0)")
+    parser.add_argument("--max-frames", type=int, default=100, help="Maximum frames to sample from rosbag (default: 100)")
     parser.add_argument("--use-openvino", action="store_true", help="Enable OpenVINO acceleration for V-LiDAR")
     args = parser.parse_args()
 
@@ -579,7 +609,7 @@ def main():
         csv_path = os.path.join(logs_dir, "dynamic_trajectory_benchmark.csv")
         records = run_rosbag_dynamic_benchmark(
             args.bag, vl_wrapper, midas_wrapper, da_wrapper,
-            obs_x=args.obs_x, obs_y=args.obs_y, output_csv=csv_path
+            obs_x=args.obs_x, obs_y=args.obs_y, max_frames=args.max_frames, output_csv=csv_path
         )
         if records:
             # Calculate aggregate dynamic metrics
