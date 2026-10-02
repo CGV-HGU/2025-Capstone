@@ -24,6 +24,12 @@ mkdir -p "$BAG_BASE_DIR"
 source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash 2>/dev/null
 
+# Ctrl+C 종료 시 터미널 먹통(echo 꺼짐) 방지 자동 복구 핸들러
+cleanup() {
+    stty sane 2>/dev/null
+}
+trap cleanup EXIT INT TERM
+
 echo "========================================================"
 echo "🔴 ROS 2 Bag 녹화를 시작합니다."
 echo "📌 녹화 모드: $MODE"
@@ -92,6 +98,9 @@ ros2 bag record \
   --compression-format zstd \
   --max-cache-size 104857600 \
   "${TOPICS[@]}"
+
+# 터미널 에코 및 표준 입력 복구
+stty sane 2>/dev/null
 
 echo ""
 echo "========================================================"
