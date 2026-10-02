@@ -110,7 +110,7 @@ controller_server:
       vx_samples: 20
       vy_samples: 5
       vtheta_samples: 25 # 회전 샘플링 수 확대
-      sim_time: 2.5 # 전방 궤적 예측 시간 대폭 확대 (2.5초 = 3m 전방 미리 회피)
+      sim_time: 3.5 # 전방 궤적 예측 시간 확대 (3.5초 = 1.05m 전방 미리 조향)
       linear_granularity: 0.05 # 5cm 단위 궤적 정밀 충돌 검사
       angular_granularity: 0.05
       transform_tolerance: 0.1 #0.2
@@ -122,7 +122,7 @@ controller_server:
       ObstacleFootprint:
         plugin: "dwb_critics::ObstacleFootprintCritic"
         scale: 1.0
-      BaseObstacle.scale: 5.0 # 중간 절충치 (8.0과 2.5/3.5의 중간: 강력한 반발력 유지 + 경로 고립 방지)
+      BaseObstacle.scale: 8.0 # 조기 장애물 회피 반발력 강화 (3m 전방에서 민첩한 조향 유도)
       PathAlign.scale: 3.0 # 경로 각도 고집 완화 (기존 10.0 -> 3.0)
       PathAlign.forward_point_distance: 0.8
       GoalAlign.scale: 5.0 # 목표 방향 고집 완화 (기존 12.0 -> 5.0)
@@ -154,7 +154,7 @@ local_costmap:
       plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        inflation_radius: 0.75 # 중간 절충 마진 (0.90m와 0.55/0.65m의 중간: 외곽 안전 여유 35cm 확보)
+        inflation_radius: 0.90 # 안전 완충 거리 90cm로 확대하여 3m 전방부터 회피 유도
         cost_scaling_factor: 2.7 # 안정적이고 완만한 코스트 감쇄
 
       obstacle_layer:
@@ -185,7 +185,7 @@ local_costmap:
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
           raytrace_max_range: 6.0  # 레이 트레이싱 최대 거리
-          raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
+          raytrace_min_range: 2.0  # 근거리 사각지대(D_min=2.18m) 장애물 증발 방지 (2.0m 이내 삭제 금지)
     
       static_layer:
         map_subscribe_transient_local: True
@@ -242,7 +242,7 @@ global_costmap:
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
           raytrace_max_range: 6.0  # 레이 트레이싱 최대 거리
-          raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
+          raytrace_min_range: 2.0  # 근거리 사각지대(D_min=2.18m) 장애물 증발 방지 (2.0m 이내 삭제 금지)
 
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
@@ -250,7 +250,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 2.7
-        inflation_radius: 0.75 # 글로벌 경로 우회 마진 (0.75m로 로컬 코스트맵과 통일)
+        inflation_radius: 0.90 # 글로벌 경로 조기 우회 마진 (0.90m로 로컬 코스트맵과 통일하여 3m 전방 S자 우회 생성)
       always_send_full_costmap: False
   global_costmap_client:
     ros__parameters:
