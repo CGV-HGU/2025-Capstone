@@ -14,8 +14,14 @@ def analyze_bag(bag_dir):
 
     db3_files = glob.glob(os.path.join(bag_dir, "*.db3"))
     if not db3_files:
-        print(f"❌ Error: No .db3 files found in {bag_dir}")
-        return
+        zstd_files = glob.glob(os.path.join(bag_dir, "*.db3.zstd"))
+        if zstd_files:
+            import subprocess
+            subprocess.run(["zstd", "-d", "-k", zstd_files[0]], check=True)
+            db3_files = glob.glob(os.path.join(bag_dir, "*.db3"))
+        if not db3_files:
+            print(f"❌ Error: No .db3 or .db3.zstd files found in {bag_dir}")
+            return
 
     db_path = db3_files[0]
     conn = sqlite3.connect(db_path)
