@@ -1,0 +1,27 @@
+To:
+Editor-in-Chief
+Measurement Science and Technology
+IOP Publishing
+
+Subject: Submission of Original Research Paper to Measurement Science and Technology
+
+Dear Editor-in-Chief and Editorial Board,
+
+We would like to submit our original research manuscript entitled "Vision-Based 2D Scan Generation for AMR Obstacle Avoidance: Ground-Contact Range Measurement and Near-Field Optical Blind Spot Analysis" for consideration for publication as a regular research paper in Measurement Science and Technology.
+
+In this paper, we address the challenge of passive optical distance estimation and planar range measurement for autonomous mobile robots without relying on active laser scanners. We design an optical range measurement pipeline converting monocular ground-segmentation observations into calibrated 2D planar LaserScan measurements. We propose a precomputed 2D Euclidean lookup table that systematically eliminates up to 18% (0.26 m) of radial distance distortion at azimuth extremes (+-35 deg). To ensure measurement integrity, we combine multi-instance floor mask fusion, morphological closing, and an asymmetric temporal persistence filter. Furthermore, we present a formal geometric derivation of the optical near-field blind spot (D_min = 2.178 m) determined by camera mounting height and tilt angle, proving the lower bound of ground-contact distance estimation. The proposed measurement framework was validated through static ranging precision benchmarks at 2.50 m reference distance and 20 dynamic obstacle avoidance runs on a physical OMO-R1 mobile robot, achieving a 90.0% task success rate.
+
+We believe that our focus on calibrated range measurement, optical geometric calibration, uncertainty mitigation, and physical blind-spot modeling aligns well with the scope of Measurement Science and Technology, particularly in optical measurement techniques, sensor emulation, and instrument calibration.
+
+This manuscript is original, has not been published elsewhere, and is not currently under consideration for publication by any other journal. All authors have reviewed and approved the manuscript and agree to its submission.
+
+Thank you very much for your time and consideration.
+
+Sincerely,
+
+Sung Soo Hwang, Ph.D. (Corresponding Author)
+Associate Professor
+School of Computer Science and Electrical Engineering
+Handong Global University
+558 Handong-ro, Buk-gu, Pohang, Gyeongbuk 37554, Republic of Korea
+E-mail: sshwang@handong.edu

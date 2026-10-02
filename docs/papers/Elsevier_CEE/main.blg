@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 15 items.
+The style file: elsarticle-num.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Database file #1: references.bib
+Warning--I didn't find a database entry for "singh_2020_multidata"
+You've used 28 entries,
+            2952 wiz_defined-function locations,
+            847 strings with 10285 characters,
+and the built_in function-call counts, 9348 in all, are:
+= -- 898
+> -- 301
+< -- 6
++ -- 119
+- -- 91
+* -- 682
+:= -- 1236
+add.period$ -- 47
+call.type$ -- 28
+change.case$ -- 27
+chr.to.int$ -- 0
+cite$ -- 28
+duplicate$ -- 301
+empty$ -- 1056
+format.name$ -- 111
+if$ -- 2436
+int.to.chr$ -- 0
+int.to.str$ -- 28
+missing$ -- 22
+newline$ -- 118
+num.names$ -- 28
+pop$ -- 193
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 627
+stack$ -- 0
+substring$ -- 462
+swap$ -- 126
+text.length$ -- 6
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 66
+width$ -- 30
+write$ -- 274
+(There was 1 warning)

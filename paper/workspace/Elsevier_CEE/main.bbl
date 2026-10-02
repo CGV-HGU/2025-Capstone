@@ -1,0 +1,188 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{gvrnextgenerationtechnologiesresearchteam_2026_autonomous}
+{Grand View Research},
+  \href{https://www.grandviewresearch.com/industry-analysis/autonomous-mobile-robots-market}{Autonomous
+  mobile robots market size report, 2026--2033} (2026).
+\newline\urlprefix\url{https://www.grandviewresearch.com/industry-analysis/autonomous-mobile-robots-market}
+
+\bibitem{liu_2024_a}
+Y.~Liu, S.~Wang, Y.~Xie, T.~Xiong, M.~Wu, A review of sensing technologies for
+  indoor autonomous mobile robots, Sensors 24~(4) (2024) 1222.
+\newblock \href {https://doi.org/10.3390/s24041222}
+  {\path{doi:10.3390/s24041222}}.
+
+\bibitem{macenski_2020_the}
+S.~Macenski, F.~Mart{\'\i}n, R.~White, J.~G. Clavero, The {Marathon 2}: A
+  navigation system, in: Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. (IROS),
+  2020, pp. 2718--2725.
+\newblock \href {https://doi.org/10.1109/iros45743.2020.9341207}
+  {\path{doi:10.1109/iros45743.2020.9341207}}.
+
+\bibitem{yang_2019_semantic}
+F.~Yang, L.~Li, F.~Su, D.~Li, H.~Zhu, S.~Ying, X.~Zuo, L.~Tang, Semantic
+  decomposition and recognition of indoor spaces with structural constraints
+  for {3D} indoor modelling, Automation in Construction 106 (2019) 102913.
+\newblock \href {https://doi.org/10.1016/j.autcon.2019.102913}
+  {\path{doi:10.1016/j.autcon.2019.102913}}.
+
+\bibitem{li_2020_lidar}
+Y.~Li, J.~Ibanez-Guzman, {LiDAR} for autonomous driving: The principles,
+  challenges, and trends for automotive {LiDAR} and perception systems, IEEE
+  Signal Processing Magazine 37~(4) (2020) 50--61.
+\newblock \href {https://doi.org/10.1109/msp.2020.2973615}
+  {\path{doi:10.1109/msp.2020.2973615}}.
+
+\bibitem{yusuf_2022_iotbased}
+M.~Yusuf, A.~Zaidi, A.~Haleem, S.~Bahl, M.~Javaid, S.~B. Garg, J.~Garg,
+  {IoT}-based low-cost {3D} mapping using {2D} {LiDAR} for different materials,
+  Materials Today: Proceedings 57 (2022) 942--947.
+\newblock \href {https://doi.org/10.1016/j.matpr.2022.03.161}
+  {\path{doi:10.1016/j.matpr.2022.03.161}}.
+
+\bibitem{deepthadamodaran_2023_experimental}
+D.~Damodaran, S.~Mozaffari, S.~Alirezaee, M.~J. Ahamed, Experimental analysis
+  of the behavior of mirror-like objects in {LiDAR}-based robot navigation,
+  Applied Sciences 13~(5) (2023) 2908.
+\newblock \href {https://doi.org/10.3390/app13052908}
+  {\path{doi:10.3390/app13052908}}.
+
+\bibitem{yang_2011_on}
+S.-W. Yang, C.-C. Wang, On solving mirror reflection in {LIDAR} sensing,
+  IEEE/ASME Transactions on Mechatronics 16~(2) (2011) 255--265.
+\newblock \href {https://doi.org/10.1109/TMECH.2010.2040113}
+  {\path{doi:10.1109/TMECH.2010.2040113}}.
+
+\bibitem{tibebu_2021_lidarbased}
+H.~Tibebu, J.~Roche, V.~De~Silva, A.~Kondoz, {LiDAR}-based glass detection for
+  improved occupancy grid mapping, Sensors 21~(7) (2021) 2263.
+\newblock \href {https://doi.org/10.3390/s21072263}
+  {\path{doi:10.3390/s21072263}}.
+
+\bibitem{sajjan_2020_clear}
+S.~Sajjan, M.~Moore, M.~Pan, G.~Nagaraja, J.~Lee, A.~Zeng, S.~Song, Clear
+  {Grasp}: {3D} shape estimation of transparent objects for manipulation, in:
+  Proc. IEEE Int. Conf. Robot. Autom. (ICRA), 2020, pp. 3634--3642.
+\newblock \href {https://doi.org/10.1109/ICRA40945.2020.9197518}
+  {\path{doi:10.1109/ICRA40945.2020.9197518}}.
+
+\bibitem{singh_2019_multidata}
+R.~Singh, K.~S. Nagla, Multi-data sensor fusion framework to detect transparent
+  object for the efficient mobile robot mapping, International Journal of
+  Intelligent Unmanned Systems 7~(1) (2019) 2--18.
+\newblock \href {https://doi.org/10.1108/ijius-05-2018-0013}
+  {\path{doi:10.1108/ijius-05-2018-0013}}.
+
+\bibitem{shariqfarooqbhat_2021_adabins}
+S.~F. Bhat, I.~Alhashim, P.~Wonka, {AdaBins}: Depth estimation using adaptive
+  bins, in: Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), 2021,
+  pp. 4009--4018.
+\newblock \href {https://doi.org/10.1109/cvpr46437.2021.00400}
+  {\path{doi:10.1109/cvpr46437.2021.00400}}.
+
+\bibitem{ranftl_2021_vision}
+R.~Ranftl, A.~Bochkovskiy, V.~Koltun, Vision transformers for dense prediction,
+  in: Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV), 2021, pp. 12159--12168.
+\newblock \href {https://doi.org/10.1109/ICCV48922.2021.01196}
+  {\path{doi:10.1109/ICCV48922.2021.01196}}.
+
+\bibitem{ultralytics_2024_ultralytics}
+{Ultralytics}, \href{https://docs.ultralytics.com/models/yolo11}{Ultralytics
+  {YOLO11}} (2024).
+\newline\urlprefix\url{https://docs.ultralytics.com/models/yolo11}
+
+\bibitem{macenski_2022_robot}
+S.~Macenski, T.~Foote, B.~Gerkey, C.~Lalancette, W.~Woodall, Robot operating
+  system 2: Design, architecture, and uses in the wild, Science Robotics 7~(66)
+  (2022) eabm6074.
+\newblock \href {https://doi.org/10.1126/scirobotics.abm6074}
+  {\path{doi:10.1126/scirobotics.abm6074}}.
+
+\bibitem{macenski_2023_from}
+S.~Macenski, T.~Moore, D.~V. Lu, A.~Merzlyakov, M.~Ferguson, From the desks of
+  {ROS} maintainers: A survey of modern \& capable mobile robotics algorithms
+  in the {Robot Operating System 2}, Robotics and Autonomous Systems 168 (2023)
+  104493.
+\newblock \href {https://doi.org/10.1016/j.robot.2023.104493}
+  {\path{doi:10.1016/j.robot.2023.104493}}.
+
+\bibitem{openrobotics_sensor_msgslaserscan}
+{Open Robotics},
+  \href{https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/LaserScan.html}{sensor\_msgs/{LaserScan}
+  documentation} (2023).
+\newline\urlprefix\url{https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/LaserScan.html}
+
+\bibitem{openrobotics_2020_depthimage_to_laserscan}
+{Open Robotics},
+  \href{https://wiki.ros.org/depthimage_to_laserscan}{depthimage\_to\_laserscan
+  package documentation} (2020).
+\newline\urlprefix\url{https://wiki.ros.org/depthimage_to_laserscan}
+
+\bibitem{opennavigationllc_2023_costmap}
+{Open Navigation LLC},
+  \href{https://docs.nav2.org/configuration/packages/configuring-costmaps.html}{Costmap
+  {2D} -- {Nav2} documentation} (2023).
+\newline\urlprefix\url{https://docs.nav2.org/configuration/packages/configuring-costmaps.html}
+
+\bibitem{thrun_2010_probabilistic}
+S.~Thrun, W.~Burgard, D.~Fox, Probabilistic Robotics, MIT Press, Cambridge, MA,
+  USA, 2005.
+
+\bibitem{elfes_1989_using}
+A.~Elfes, Using occupancy grids for mobile robot perception and navigation,
+  Computer 22~(6) (1989) 46--57.
+\newblock \href {https://doi.org/10.1109/2.30720} {\path{doi:10.1109/2.30720}}.
+
+\bibitem{wang_2017_detecting}
+X.~Wang, J.~Wang, Detecting glass in simultaneous localisation and mapping,
+  Robotics and Autonomous Systems 88 (2017) 97--103.
+\newblock \href {https://doi.org/10.1016/j.robot.2016.11.003}
+  {\path{doi:10.1016/j.robot.2016.11.003}}.
+
+\bibitem{wang_2021_a}
+S.~Wang, L.~Wang, X.~He, Y.~Cao, A monocular vision obstacle avoidance method
+  applied to indoor tracking robot, Drones 5~(4) (2021) 105.
+\newblock \href {https://doi.org/10.3390/drones5040105}
+  {\path{doi:10.3390/drones5040105}}.
+
+\bibitem{dang_2023_obstacle}
+T.-V. Dang, N.-T. Bui, Obstacle avoidance strategy for mobile robot based on
+  monocular camera, Electronics 12~(8) (2023) 1932.
+\newblock \href {https://doi.org/10.3390/electronics12081932}
+  {\path{doi:10.3390/electronics12081932}}.
+
+\bibitem{quigley_2009_ros}
+M.~Quigley, K.~Conley, B.~Gerkey, J.~Faust, T.~Foote, J.~Leibs, R.~Wheeler,
+  A.~Y. Ng, {ROS}: An open-source robot operating system, in: Proc. IEEE Int.
+  Conf. Robot. Autom. (ICRA) Workshop Open Source Softw., 2009, pp. 1--6.
+
+\bibitem{openrobotics_2015_pointcloud_to_laserscan}
+{Open Robotics},
+  \href{https://wiki.ros.org/pointcloud_to_laserscan}{pointcloud\_to\_laserscan
+  package documentation} (2015).
+\newline\urlprefix\url{https://wiki.ros.org/pointcloud_to_laserscan}
+
+\bibitem{moravec_1985_high}
+H.~P. Moravec, A.~Elfes, High resolution maps from wide angle sonar, in: Proc.
+  IEEE Int. Conf. Robot. Autom. (ICRA), 1985, pp. 116--121.
+\newblock \href {https://doi.org/10.1109/robot.1985.1087316}
+  {\path{doi:10.1109/robot.1985.1087316}}.
+
+\bibitem{fox_1997_the}
+D.~Fox, W.~Burgard, S.~Thrun, The dynamic window approach to collision
+  avoidance, IEEE Robotics \& Automation Magazine 4~(1) (1997) 23--33.
+\newblock \href {https://doi.org/10.1109/100.580977}
+  {\path{doi:10.1109/100.580977}}.
+
+\bibitem{opennavigationllc_2025_denoise}
+{Open Navigation LLC},
+  \href{https://docs.nav2.org/configuration/packages/costmap-plugins/denoise.html}{Denoise
+  layer parameters -- {Nav2} documentation} (2025).
+\newline\urlprefix\url{https://docs.nav2.org/configuration/packages/costmap-plugins/denoise.html}
+
+\end{thebibliography}

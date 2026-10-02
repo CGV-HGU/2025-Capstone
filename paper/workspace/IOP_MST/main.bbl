@@ -1,0 +1,90 @@
+\providecommand{\newblock}{}
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{{\tt #1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+% Bibliography created with iopart-num v2.1
+% /biblio/bibtex/contrib/iopart-num
+
+\bibitem{gvrnextgenerationtechnologiesresearchteam_2026_autonomous}
+{Grand View Research} 2026 Autonomous mobile robots market size report,
+  2026--2033
+  \urlprefix\url{https://www.grandviewresearch.com/industry-analysis/autonomous-mobile-robots-market}
+
+\bibitem{liu_2024_a}
+Liu Y, Wang S, Xie Y, Xiong T and Wu M 2024 {\em Sensors\/} {\bf 24} 1222
+
+\bibitem{li_2020_lidar}
+Li Y and Ibanez-Guzman J 2020 {\em IEEE Signal Processing Magazine\/} {\bf 37}
+  50--61
+
+\bibitem{thrun_2010_probabilistic}
+Thrun S, Burgard W and Fox D 2005 {\em Probabilistic Robotics\/} (Cambridge,
+  MA, USA: MIT Press)
+
+\bibitem{elfes_1989_using}
+Elfes A 1989 {\em Computer\/} {\bf 22} 46--57
+
+\bibitem{deepthadamodaran_2023_experimental}
+Damodaran D, Mozaffari S, Alirezaee S and Ahamed M~J 2023 {\em Applied
+  Sciences\/} {\bf 13} 2908
+
+\bibitem{yang_2011_on}
+Yang S~W and Wang C~C 2011 {\em IEEE/ASME Transactions on Mechatronics\/} {\bf
+  16} 255--265
+
+\bibitem{tibebu_2021_lidarbased}
+Tibebu H, Roche J, De~Silva V and Kondoz A 2021 {\em Sensors\/} {\bf 21} 2263
+
+\bibitem{sajjan_2020_clear}
+Sajjan S, Moore M, Pan M, Nagaraja G, Lee J, Zeng A and Song S 2020 Clear
+  {Grasp}: {3D} shape estimation of transparent objects for manipulation {\em
+  Proc. IEEE Int. Conf. Robot. Autom. (ICRA)\/} pp 3634--3642
+
+\bibitem{ultralytics_2024_ultralytics}
+{Ultralytics} 2024 Ultralytics {YOLO11}
+  \urlprefix\url{https://docs.ultralytics.com/models/yolo11}
+
+\bibitem{macenski_2020_the}
+Macenski S, Mart{\'\i}n F, White R and Clavero J~G 2020 The {Marathon 2}: A
+  navigation system {\em Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst.
+  (IROS)\/} pp 2718--2725
+
+\bibitem{openrobotics_sensor_msgslaserscan}
+{Open Robotics} 2023 sensor\_msgs/{LaserScan} documentation
+  \urlprefix\url{https://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/LaserScan.html}
+
+\bibitem{shariqfarooqbhat_2021_adabins}
+Bhat S~F, Alhashim I and Wonka P 2021 {AdaBins}: Depth estimation using
+  adaptive bins {\em Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.
+  (CVPR)\/} pp 4009--4018
+
+\bibitem{ranftl_2021_vision}
+Ranftl R, Bochkovskiy A and Koltun V 2021 Vision transformers for dense
+  prediction {\em Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV)\/} pp
+  12159--12168
+
+\bibitem{wang_2021_a}
+Wang S, Wang L, He X and Cao Y 2021 {\em Drones\/} {\bf 5} 105
+
+\bibitem{dang_2023_obstacle}
+Dang T~V and Bui N~T 2023 {\em Electronics\/} {\bf 12} 1932
+
+\bibitem{macenski_2022_robot}
+Macenski S, Foote T, Gerkey B, Lalancette C and Woodall W 2022 {\em Science
+  Robotics\/} {\bf 7} eabm6074
+
+\bibitem{macenski_2023_from}
+Macenski S, Moore T, Lu D~V, Merzlyakov A and Ferguson M 2023 {\em Robotics and
+  Autonomous Systems\/} {\bf 168} 104493
+
+\bibitem{moravec_1985_high}
+Moravec H~P and Elfes A 1985 High resolution maps from wide angle sonar {\em
+  Proc. IEEE Int. Conf. Robot. Autom. (ICRA)\/} pp 116--121
+
+\bibitem{fox_1997_the}
+Fox D, Burgard W and Thrun S 1997 {\em IEEE Robotics \& Automation Magazine\/}
+  {\bf 4} 23--33
+
+\end{thebibliography}

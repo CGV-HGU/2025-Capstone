@@ -1,0 +1,27 @@
+To:
+Editor-in-Chief
+Computers & Electrical Engineering
+Elsevier
+
+Subject: Submission of Original Research Paper to Computers & Electrical Engineering
+
+Dear Editor-in-Chief and Editorial Board,
+
+We would like to submit our original research manuscript entitled "Vision-Based 2D Scan Generation for Obstacle Avoidance Using Floor Segmentation" for consideration for publication as a regular paper in Computers & Electrical Engineering.
+
+In this work, we propose a lightweight, real-time monocular virtual scan generation (V-LiDAR) framework that directly bridges the gap between deep vision segmentation models and production-grade mobile robot navigation middleware (ROS 2 Nav2). The system achieves 78.4 FPS on embedded hardware by combining YOLOv11n-seg with precomputed 2D Euclidean lookup tables, filtering reflection artifacts through multi-instance bitwise-OR merging, morphological closing, and temporal persistence filtering. In addition, we theoretically derive the optical near-field blind spot (D_min = 2.178 m) governed by camera mounting height and tilt angle. The framework was comprehensively evaluated on a physical OMO-R1 mobile robot platform across 20 consecutive real-world avoidance trials along a 10.0-meter trajectory without pre-built static maps, achieving a 90.0% goal completion and obstacle avoidance success rate.
+
+We believe that our findings align closely with the scope of Computers & Electrical Engineering, particularly in the domains of embedded vision, real-time robotic systems, computer vision middleware, and intelligent autonomous machines.
+
+This manuscript is original, has not been published elsewhere, and is not currently under consideration for publication by any other journal. All authors have reviewed and approved the manuscript and agree to its submission.
+
+Thank you very much for your time and consideration.
+
+Sincerely,
+
+Sung Soo Hwang, Ph.D. (Corresponding Author)
+Associate Professor
+School of Computer Science and Electrical Engineering
+Handong Global University
+558 Handong-ro, Buk-gu, Pohang, Gyeongbuk 37554, Republic of Korea
+E-mail: sshwang@handong.edu
