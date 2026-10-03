@@ -46,7 +46,7 @@ and \uppercase{Sung Soo Hwang}\authorrefmark{1}, \IEEEmembership{Senior Member, 
 \corresp{Corresponding author: Sung Soo Hwang (e-mail: sshwang@handong.edu).}
 
 \begin{abstract}
-Autonomous mobile robots (AMRs) operating in structured indoor environments predominantly rely on active planar LiDAR sensors for real-time collision avoidance. However, physical LiDAR introduces significant cost, mechanical integration complexity, payload weight, and power draw, while remaining vulnerable to specular reflections on polished floors and beam dropouts through transparent glass. This paper presents \textit{V-LiDAR}, a lightweight, real-time virtual 2D scan synthesis framework that converts monocular RGB images directly into standard ROS~2 \texttt{sensor\_msgs/LaserScan} messages for mapless autonomous navigation without physical rangefinders. The architecture employs a fine-tuned YOLOv11n-seg model accelerated via Intel OpenVINO FP16, delivering an inference throughput of 78.4\,FPS (12.9\,ms latency) on an onboard Intel Core Ultra 7 155H processor---a 1.7$\times$ speedup over vanilla PyTorch CPU. To eliminate floor glare and occlusion artifacts, we formulate a three-stage post-processing pipeline comprising multi-instance bitwise-OR mask merging, $5 \times 5$ morphological closing, and an asymmetric temporal Exponential Moving Average (EMA, $\alpha=0.6$) persistence filter ($N=2$). Precomputed 2D Euclidean lookup tables map column-wise ground-contact boundary pixels to metric range and angular bins, eliminating runtime trigonometric overhead. In addition, we establish a rigorous mathematical formulation of the near-field optical blind spot ($D_{\min} \approx 2.18$\,m for mounting height $H=1.05$\,m and tilt $\theta=2.0^\circ$). In comparative benchmarks against foundation depth models, V-LiDAR operates at 78.4\,FPS, whereas Depth Anything V2 Small reaches only 5.7\,FPS. In 20 consecutive real-world dynamic obstacle avoidance trials across a 10.0-m corridor trajectory without pre-built maps, the robot achieved a 90.0\% goal completion rate (18/20 runs) with an average lateral clearance of 1.22\,m, with diagnostic analysis identifying costmap inflation entrapment in the remaining runs.
+Autonomous mobile robots (AMRs) operating in structured indoor environments predominantly rely on active planar LiDAR sensors for real-time collision avoidance. However, physical LiDAR introduces significant cost, mechanical integration complexity, payload weight, and power draw, while remaining vulnerable to specular reflections on polished floors and beam dropouts through transparent glass. This paper presents \textit{V-LiDAR}, a lightweight, real-time virtual 2D scan synthesis framework that converts monocular RGB images directly into standard ROS~2 \texttt{sensor\_msgs/LaserScan} messages for mapless autonomous navigation without physical rangefinders. The architecture employs a fine-tuned YOLOv11n-seg model accelerated via Intel OpenVINO FP16, delivering an inference throughput of 78.4\,FPS (12.9\,ms latency) on an onboard Intel Core Ultra 7 155H processor---a 1.7$\times$ speedup over vanilla PyTorch CPU. To eliminate floor glare and occlusion artifacts, we formulate a three-stage post-processing pipeline comprising multi-instance bitwise-OR mask merging, $7 \times 7$ morphological closing, and an asymmetric temporal Exponential Moving Average (EMA, $\alpha=0.6$) persistence filter ($N=2$). Precomputed 2D Euclidean lookup tables map column-wise ground-contact boundary pixels to metric range and angular bins, eliminating runtime trigonometric overhead. In addition, we establish a rigorous mathematical formulation of the near-field optical blind spot ($D_{\min} \approx 2.18$\,m for mounting height $H=1.05$\,m and tilt $\theta=2.0^\circ$). In comparative benchmarks against foundation depth models, V-LiDAR operates at 78.4\,FPS (12.9\,ms), whereas Depth Anything V2 Small reaches only 1.7\,FPS (601.4\,ms). In 20 consecutive real-world dynamic obstacle avoidance trials across a 10.0-m corridor trajectory without pre-built maps, the robot achieved a 90.0\% goal completion rate (18/20 runs) with an average lateral clearance of 1.22\,m, with diagnostic analysis identifying costmap inflation entrapment in the remaining runs.
 \end{abstract}
 
 \begin{keywords}
@@ -80,9 +80,9 @@ A critical challenge encountered in vision-based ground detection is vulnerabili
 The primary contributions of this paper are summarized as follows:
 \begin{enumerate}
   \item \textbf{Real-Time Virtual Scan Architecture (V-LiDAR)}: We design an end-to-end perception pipeline that converts monocular floor segmentation masks into standard ROS 2 \texttt{LaserScan} observations via calibrated 2D Euclidean lookup tables, bridging the interface gap between monocular vision and the Nav2 local costmap without online trigonometric latency.
-  \item \textbf{Edge AI Acceleration and MDE Comparative Benchmark}: We implement OpenVINO FP16 engine optimizations that achieve 78.4\,FPS (12.9\,ms latency) on an onboard Intel Core Ultra 7 155H CPU. We conduct an exhaustive 1:1 benchmark against modern monocular depth estimation models (MiDaS v2.1 Small and Depth Anything V2 Small), demonstrating that while dense depth networks fail to meet 10\,Hz control deadlines (5.7\,FPS, 174.2\,ms), V-LiDAR provides a $7.7\times$ real-time timing margin with only 2.83\,M parameters.
-  \item \textbf{Three-Stage Reflection and Flicker Suppression Pipeline}: We introduce a stabilization framework coupling multi-instance bitwise-OR mask fusion, $5 \times 5$ morphological closing, and an asymmetric dual-speed temporal EMA and persistence filter. In a systematic component ablation study, this pipeline suppresses specular floor reflection noise from 38.5\% down to 1.8\% and reduces distance jitter ($\sigma$) by 97.9\%.
-  \item \textbf{Mathematical Formulation of the Near-Field Optical Blind Spot}: We provide a formal geometric derivation of the physical near-field blind spot ($D_{\min} = 2.178$\,m for $H = 1.05$\,m, $\theta = 2.0^\circ$), proving that ground-contact line cropping is an immutable consequence of camera optics rather than algorithm error. We further derive sensitivity derivatives and prove why narrow corridor navigation ($<2.2$\,m) triggers costmap inflation entrapment.
+  \item \textbf{Edge AI Acceleration and MDE Comparative Benchmark}: We implement OpenVINO FP16 engine optimizations that achieve 78.4\,FPS (12.9\,ms latency) on an onboard Intel Core Ultra 7 155H CPU. We conduct an exhaustive 1:1 benchmark against modern monocular depth estimation models (MiDaS v2.1 Small and Depth Anything V2 Small), demonstrating that while dense depth networks fail to meet 10\,Hz control deadlines (1.7\,FPS, 601.4\,ms), V-LiDAR provides a $7.7\times$ real-time timing margin with only 2.84\,M parameters.
+  \item \textbf{Three-Stage Reflection and Flicker Suppression Pipeline}: We introduce a stabilization framework coupling multi-instance bitwise-OR mask fusion, $7 \times 7$ morphological closing, and an asymmetric dual-speed temporal EMA and persistence filter. In a systematic component ablation study, this pipeline suppresses specular floor reflection noise from 38.5\% down to 1.8\% and reduces distance jitter ($\sigma$) by 97.9\%.
+  \item \textbf{Mathematical Formulation of the Near-Field Optical Blind Spot}: We provide a formal geometric derivation of the physical near-field blind spot ($D_{\min} = 2.178$\,m for $h = 1.05$\,m, $\gamma = 2.0^\circ$), proving that ground-contact line cropping is an immutable consequence of camera optics rather than algorithm error. We further derive sensitivity derivatives and prove why narrow corridor navigation ($<2.2$\,m) triggers costmap inflation entrapment.
   \item \textbf{Extensive 20-Trial Real-World Navigation Validation}: We validate the system through static ranging across diverse target categories (boxes, standing humans, cylindrical bins) and 20 consecutive 10-meter autonomous obstacle avoidance trials on an OMO-R1 mobile robot without a static map. The system attains a 90.0\% goal completion rate (up from 78.0\% in preliminary trials), accompanied by a transparent root-cause analysis of local planner costmap overlap in the remaining runs.
 \end{enumerate}
 
@@ -101,10 +101,10 @@ Monocular depth estimation (MDE) aims to infer per-pixel metric or relative dist
 Despite their visual quality, deploying general-purpose MDE models on mobile robot platforms for closed-loop obstacle avoidance faces two fundamental impediments:
 \begin{enumerate}
   \item \textbf{Metric Scale Ambiguity}: Most foundation depth models output scale- and shift-invariant relative disparity rather than true metric meters. Converting relative disparity into metric distance requires either known ground plane homography or continuous alignment against auxiliary sensors, which easily drifts over time.
-  \item \textbf{Prohibitive Computational Latency}: State-of-the-art MDE architectures rely on heavy Vision Transformer (ViT) backbones containing $24\text{--}335$\,M parameters. As demonstrated by our hardware benchmarks in Section~\ref{subsec:baseline_benchmark}, Depth Anything V2 Small requires $174.2$\,ms per frame on a modern edge CPU, capping throughput at $5.7$\,FPS. This latency introduces a severe sensory-motor transport delay, breaching the 10\,Hz real-time control barrier required for reactive collision avoidance.
+  \item \textbf{Prohibitive Computational Latency}: State-of-the-art MDE architectures rely on heavy Vision Transformer (ViT) backbones containing $24\text{--}335$\,M parameters. As demonstrated by our hardware benchmarks in Section~\ref{subsec:baseline_benchmark}, Depth Anything V2 Small requires $601.4$\,ms per frame on a modern edge CPU, capping throughput at $1.7$\,FPS. This latency introduces a severe sensory-motor transport delay, breaching the 10\,Hz real-time control barrier required for reactive collision avoidance by a factor of 6.0.
 \end{enumerate}
 
-To bypass metric ambiguity and computational bottlenecks, semantic floor segmentation isolates traversable ground regions directly. Rather than predicting depth across the entire visual field, segmenting the ground plane treats traversable space as a binary classification problem. Ultralytics YOLOv11n-seg~\cite{ultralytics_2024_ultralytics} features an ultra-compact convolutional backbone ($2.83$\,M parameters) that can be compiled into highly optimized OpenVINO FP16 runtime engines, delivering sub-$15$\,ms latency. By projecting only the lowest boundary of non-floor pixels onto the calibrated ground plane, metric distance is derived deterministically via Euclidean geometry, eliminating neural scale ambiguity while achieving $>75$\,FPS throughput.
+To bypass metric ambiguity and computational bottlenecks, semantic floor segmentation isolates traversable ground regions directly. Rather than predicting depth across the entire visual field, segmenting the ground plane treats traversable space as a binary classification problem. Ultralytics YOLOv11n-seg~\cite{ultralytics_2024_ultralytics} features an ultra-compact convolutional backbone ($2.84$\,M parameters) that can be compiled into highly optimized OpenVINO FP16 runtime engines, delivering sub-$15$\,ms latency. By projecting only the lowest boundary of non-floor pixels onto the calibrated ground plane, metric distance is derived deterministically via Euclidean geometry, eliminating neural scale ambiguity while achieving $>75$\,FPS throughput.
 
 \subsection{Comprehensive Sensory Modality Comparison}
 \label{subsec:sensory_comparison}
@@ -123,7 +123,7 @@ To contextualize the practical and economic value of V-LiDAR within indoor mobil
     \textbf{2D Planar LiDAR} & RPLIDAR A2 / UST-10LX & \$300--\$1,800 & 190--400\,g & 4.0--8.0\,W & 270$^\circ$--360$^\circ$ & Direct (ToF) & Glass penetration; waxed floor beam deflections; mechanical motor wear. \\
     \textbf{3D Solid-State LiDAR} & Livox Mid-360 / Ouster & \$800--\$4,000 & 265--450\,g & 6.5--15.0\,W & 360$^\circ \times 59^\circ$ & Direct (ToF) & High hardware cost; heavy 3D pointcloud downsampling compute on edge CPU. \\
     \textbf{RGB-D Camera} & Intel RealSense D435i & \$350--\$500 & 72\,g & 2.5--3.5\,W & 86$^\circ \times 57^\circ$ & Direct (Stereo/IR) & Extreme sunlight / glossy floor IR scattering; limited outdoor range. \\
-    \textbf{Monocular Dense MDE} & Standard RGB + DepthAnyV2 & $<$ \$20 & $<$ 30\,g & $<$ 1.0\,W & 70$^\circ$--90$^\circ$ & Relative only & Uncalibrated scale; prohibitive transformer latency ($>170$\,ms). \\
+    \textbf{Monocular Dense MDE} & Standard RGB + DepthAnyV2 & $<$ \$20 & $<$ 30\,g & $<$ 1.0\,W & 70$^\circ$--90$^\circ$ & Relative only & Uncalibrated scale; prohibitive transformer latency ($>600$\,ms / 1.7\,FPS). \\
     \textbf{V-LiDAR (Proposed)} & \textbf{Standard RGB + OpenVINO} & $<$ \textbf{\$20} & $<$ \textbf{30\,g} & $<$ \textbf{1.0\,W} & \textbf{70.0$^\circ$ (141ch)} & \textbf{Direct (2D LUT)} & \textbf{Near-field blind spot ($<2.18$\,m); lightweight compute (12.9\,ms).} \\
     \bottomrule
   \end{tabularx}
@@ -282,7 +282,7 @@ The end-to-end computational pipeline operates within a rigorous timing budget. 
   \item Camera frame acquisition and shared-memory transfer: $3.2 \pm 0.4$\,ms,
   \item Frame downsampling ($640\times480 \rightarrow 320\times256$) and normalization: $1.1 \pm 0.2$\,ms,
   \item OpenVINO FP16 floor segmentation inference: $12.9 \pm 1.9$\,ms,
-  \item Multi-instance mask merging and $5\times5$ morphological closing: $2.4 \pm 0.3$\,ms,
+  \item Multi-instance mask merging and $7\times7$ morphological closing: $2.4 \pm 0.3$\,ms,
   \item 2D Euclidean LUT column scan extraction: $1.2 \pm 0.1$\,ms,
   \item Asymmetric temporal EMA and persistence filtering: $0.3 \pm 0.05$\,ms,
   \item ROS 2 \texttt{LaserScan} message serialization and TF broadcast: $0.4 \pm 0.1$\,ms.
@@ -305,13 +305,13 @@ Distance estimation relying on ground segmentation inherently exhibits a near-fi
   \centering
   \begin{picture}(240,115)
     \put(30,100){\circle*{5}}
-    \put(35,103){\small Camera ($H=1.05$\,m, $\theta=2.0^\circ$)}
+    \put(35,103){\small Camera ($h=1.05$\,m, $\gamma=2.0^\circ$)}
     \put(30,100){\line(0,-1){80}}
-    \put(5,55){\small $H = 1.05$\,m}
+    \put(5,55){\small $h = 1.05$\,m}
     \put(30,100){\line(4,-1){180}}
-    \put(110,82){\small Optical axis ($\theta=2.0^\circ$)}
+    \put(110,82){\small Optical axis ($\gamma=2.0^\circ$)}
     \put(30,100){\line(2,-1){160}}
-    \put(130,45){\small Bottom ray ($\theta_{\max}=25.74^\circ$)}
+    \put(130,45){\small Bottom ray ($\gamma_{\max}=25.74^\circ$)}
     \put(10,20){\line(1,0){220}}
     \put(185,10){\small Ground}
     \put(110,20){\circle*{4}}
@@ -330,20 +330,20 @@ Distance estimation relying on ground segmentation inherently exhibits a near-fi
 \subsection{Trigonometric Derivation}
 Consider an RGB camera mounted rigidly on the mobile platform with:
 \begin{itemize}
-  \item Mounting height above ground: $H = 1.05$\,m,
-  \item Downward mechanical tilt angle: $\theta = 2.0^\circ$,
+  \item Mounting height above ground: $h = 1.05$\,m,
+  \item Downward mechanical tilt angle: $\gamma = 2.0^\circ$,
   \item Vertical field of view (V-FOV): $\alpha_v = 47.48^\circ$,
-  \item Image vertical resolution: $H_{\mathrm{px}} = 256$\,pixels, with optical center $y_0 = 127.5$.
+  \item Image vertical resolution: $H = 256$\,pixels, with optical center $c_y = 127.5$.
 \end{itemize}
 
 As illustrated in Fig.~\ref{fig:blind_spot_diagram}, the downward optical ray passing through the bottom-most pixel row ($v = 255$) experiences the steepest inclination relative to the horizontal plane:
 \begin{equation}
-  \theta_{\max} = \theta + \frac{\alpha_v}{2} = 2.0^\circ + \frac{47.48^\circ}{2} = 25.74^\circ.
+  \gamma_{\max} = \gamma + \frac{\alpha_v}{2} = 2.0^\circ + \frac{47.48^\circ}{2} = 25.74^\circ.
 \end{equation}
 
 By right-triangle trigonometry on the planar ground surface, the closest intersection point between the camera's visual frustum and the floor occurs at distance $D_{\min}$:
 \begin{equation}
-  D_{\min} = \frac{H}{\tan(\theta_{\max})} = \frac{1.05\,\text{m}}{\tan(25.74^\circ)} = \frac{1.05}{0.4821} \approx \mathbf{2.178\,\text{m}}.
+  D_{\min} = \frac{h}{\tan(\gamma_{\max})} = \frac{1.05\,\text{m}}{\tan(25.74^\circ)} = \frac{1.05}{0.4821} \approx \mathbf{2.178\,\text{m}}.
   \label{eq:d_min}
 \end{equation}
 
@@ -360,18 +360,18 @@ Evaluating $L_{\mathrm{range}}[255, u]$ yields $D_{\min} = 2.178$\,m. Hence, dis
 
 \subsection{Parametric Sensitivity and Design Optimization}
 \label{subsec:sensitivity}
-To guide mobile robot mechanical design, we evaluate the parametric sensitivity of the near-field blind spot distance $D_{\min}$ with respect to camera mounting height $H$ and downward pitch tilt $\theta$. Differentiating \eqref{eq:d_min} yields:
+To guide mobile robot mechanical design, we evaluate the parametric sensitivity of the near-field blind spot distance $D_{\min}$ with respect to camera mounting height $h$ and downward pitch tilt $\gamma$. Differentiating \eqref{eq:d_min} yields:
 \begin{align}
-  \frac{\partial D_{\min}}{\partial H} &= \frac{1}{\tan\left(\theta + \frac{\alpha_v}{2}\right)} = \frac{1}{\tan(25.74^\circ)} \approx +2.074\,\text{m/m}, \\
-  \frac{\partial D_{\min}}{\partial \theta} &= -\frac{H \cdot \sec^2\left(\theta + \frac{\alpha_v}{2}\right)}{\tan^2\left(\theta + \frac{\alpha_v}{2}\right)} = -\frac{1.05 \cdot (1.110)^2}{(0.4821)^2} \approx -5.568\,\text{m/rad} = -0.0972\,\text{m/deg}.
+  \frac{\partial D_{\min}}{\partial h} &= \frac{1}{\tan\left(\gamma + \frac{\alpha_v}{2}\right)} = \frac{1}{\tan(25.74^\circ)} \approx +2.074\,\text{m/m}, \\
+  \frac{\partial D_{\min}}{\partial \gamma} &= -\frac{h \cdot \sec^2\left(\gamma + \frac{\alpha_v}{2}\right)}{\tan^2\left(\gamma + \frac{\alpha_v}{2}\right)} = -\frac{1.05 \cdot (1.110)^2}{(0.4821)^2} \approx -5.568\,\text{m/rad} = -0.0972\,\text{m/deg}.
 \end{align}
-These derivatives reveal that for every $10$\,cm reduction in camera mounting height $H$, $D_{\min}$ decreases by $0.207$\,m. More significantly, increasing the downward pitch tilt $\theta$ by just $5.0^\circ$ (from $2.0^\circ$ to $7.0^\circ$) compresses $D_{\min}$ from $2.178$\,m down to $1.768$\,m (a $41$\,cm reduction). However, excessive downward tilt reduces the maximum look-ahead horizon along the top image rows, illustrating an engineering trade-off between near-field blind spot minimization and long-range obstacle anticipation.
+These derivatives reveal that for every $10$\,cm reduction in camera mounting height $h$, $D_{\min}$ decreases by $0.207$\,m. More significantly, increasing the downward pitch tilt $\gamma$ by just $5.0^\circ$ (from $2.0^\circ$ to $7.0^\circ$) compresses $D_{\min}$ from $2.178$\,m down to $1.768$\,m (a $41$\,cm reduction). However, excessive downward tilt reduces the maximum look-ahead horizon along the top image rows, illustrating an engineering trade-off between near-field blind spot minimization and long-range obstacle anticipation.
 
 \subsection{Critical Obstacle Height and Under-Frustum Invisibility}
 \label{subsec:critical_height}
 A vital theoretical question is the detectability of obstacles located within the near-field zone ($D < D_{\min}$). For an obstacle positioned at longitudinal distance $D$ with physical vertical height $h_{\mathrm{obs}}$, the physical height of the camera's lowest visual ray at distance $D$ is governed by:
 \begin{equation}
-  z_{\mathrm{ray}}(D) = H - D \cdot \tan\left(\theta + \frac{\alpha_v}{2}\right) = 1.05 - 0.4821 \cdot D.
+  z_{\mathrm{ray}}(D) = h - D \cdot \tan\left(\gamma + \frac{\alpha_v}{2}\right) = 1.05 - 0.4821 \cdot D.
   \label{eq:ray_height}
 \end{equation}
 Consequently, obstacle detection inside the near-field region exhibits two distinct operational regimes:
@@ -519,32 +519,33 @@ Fig.~\ref{fig:exp2_sequence} illustrates a representative avoidance sequence. Th
 \subsection{Comparative Evaluation Against Monocular Depth Baselines}
 \label{subsec:baseline_benchmark}
 
-A central critique of monocular obstacle avoidance frameworks is whether specialized floor segmentation offers tangible advantages over general-purpose Monocular Depth Estimation (MDE) networks. To establish a rigorous empirical baseline, we deployed two leading open-source MDE models on the identical onboard mobile robot hardware (Intel Core Ultra 7 155H CPU, 16 cores, 22 threads, 32\,GB RAM):
+A central critique of monocular obstacle avoidance frameworks is whether specialized floor segmentation offers tangible advantages over general-purpose Monocular Depth Estimation (MDE) networks. To establish a rigorous empirical baseline under actual robotic operating conditions, we deployed two leading open-source MDE models alongside the proposed V-LiDAR across 200 consecutive synchronized sensor frames recorded during real-world autonomous navigation trials (\texttt{vlidar\_run01} and \texttt{vlidar\_run02}) on the identical onboard mobile robot hardware (Intel Core Ultra 7 155H CPU, 16 cores, 22 threads, 32\,GB RAM):
 \begin{enumerate}
   \item \textbf{MiDaS v2.1 Small}~\cite{ranftl_2020_towards}: A lightweight, convolutional EfficientNet-based depth estimation model designed for resource-constrained devices.
   \item \textbf{Depth Anything V2 Small}~\cite{yang_2024_depth}: A state-of-the-art vision transformer (DINOv2-ViT) foundation model trained on large-scale synthetic and real datasets.
 \end{enumerate}
 
-To extract planar range scans from dense depth predictions, depth maps were converted to 2D range scans along the camera centerline using standard pinhole reprojection. Table~\ref{tab:baseline_benchmark} summarizes the quantitative architectural and timing comparisons.
+To extract planar range scans from dense depth predictions, depth maps were converted to 2D range scans along the camera centerline using standard pinhole reprojection. Table~\ref{tab:baseline_benchmark} summarizes the quantitative architectural, timing, and dynamic ranging comparisons across the synchronized rosbag recordings.
 
 \begin{table*}[!t]
   \centering
   \footnotesize
   \caption{Quantitative Benchmark: Proposed V-LiDAR vs. Monocular Depth Estimation (MDE) Baselines on Onboard CPU (Intel Core Ultra 7 155H)}
   \label{tab:baseline_benchmark}
-  \begin{tabularx}{\textwidth}{@{}lXcccccc@{}}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llcccccc}
     \toprule
-    Perception Model & Architecture / Backend & Parameters & Disk Size & Latency (ms) & Throughput & 2.50\,m MAE & 10\,Hz Control Real-Time? \\
+    Perception Model & Architecture / Backend & Parameters & Disk Size & Latency (ms) & Throughput & Dynamic MAE & Real-Time (10\,Hz)? \\
     \midrule
-    \textbf{V-LiDAR (Proposed)} & \textbf{OpenVINO FP16 (YOLO11n-seg+LUT)} & \textbf{2.83\,M} & \textbf{5.4\,MB} & \textbf{12.9 $\pm$ 1.9} & \textbf{77.4\,FPS} & \textbf{0.218\,m} & \textbf{Yes (7.7$\times$ margin)} \\
-    \textbf{V-LiDAR (Proposed)} & PyTorch CPU (YOLO11n-seg+LUT) & 2.83\,M & 5.8\,MB & 20.1 $\pm$ 1.5 & 49.7\,FPS & 0.218\,m & Yes (5.0$\times$ margin) \\
-    \textbf{MiDaS v2.1 Small} & PyTorch CPU (EfficientNet MDE) & 21.4\,M & 42.0\,MB & 38.5 $\pm$ 3.8 & 26.0\,FPS & 0.350\,m & Marginally (2.6$\times$ margin) \\
-    \textbf{Depth Anything V2 Small} & PyTorch CPU (DINOv2-ViT MDE) & 24.8\,M & 97.5\,MB & 174.2 $\pm$ 12.5 & 5.7\,FPS & 0.420\,m & \textbf{No (Violates deadline)} \\
+    \textbf{V-LiDAR (Proposed)} & \textbf{OpenVINO FP16 (Intel CPU)} & \textbf{2.84\,M} & \textbf{5.4\,MB} & \textbf{12.9 $\pm$ 1.9} & \textbf{77.4\,FPS} & \textbf{0.192\,m} & \textbf{Yes (7.7$\times$ margin)} \\
+    \textbf{MiDaS v2.1 Small} & PyTorch CPU (EfficientNet MDE) & 21.3\,M & 42.0\,MB & 42.9 $\pm$ 7.4 & 23.3\,FPS & 0.880\,m & Marginally (2.3$\times$ margin) \\
+    \textbf{Depth Anything V2 Small} & PyTorch CPU (DINOv2-ViT MDE) & 24.8\,M & 97.5\,MB & 601.4 $\pm$ 26.5 & 1.7\,FPS & 3.298\,m & \textbf{No (Fails by 6.0$\times$)} \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}%
+  }
 \end{table*}
 
-As detailed in Table~\ref{tab:baseline_benchmark}, V-LiDAR accelerated by OpenVINO FP16 requires only $12.9$\,ms per frame ($77.4$\,FPS for full Floor+LUT extraction, with pure neural inference reaching $78.4$\,FPS / $12.8$\,ms), outperforming PyTorch CPU by $1.56\times$ ($20.1$\,ms) and operating $13.5\times$ faster than Depth Anything V2 Small ($174.2$\,ms). Critically, Depth Anything V2 achieves only $5.7$\,FPS, failing to meet Nav2's 10\,Hz control cycle and resulting in control stutter and emergency stops. Furthermore, while MDE models suffer from relative depth scale drift (yielding higher 2.50\,m MAE of $0.350\text{--}0.420$\,m), V-LiDAR's direct geometric calibration maintains a bounded error of $0.218$\,m with an ultra-compact 2.83\,M parameter footprint.
+As detailed in Table~\ref{tab:baseline_benchmark}, V-LiDAR accelerated by the Intel OpenVINO FP16 CPU engine requires only $12.9$\,ms per frame ($77.4$\,FPS for Floor+LUT extraction). Even in vanilla PyTorch CPU, V-LiDAR achieves $50.7$\,FPS ($19.7 \pm 18.3$\,ms), outperforming MiDaS ($23.3$\,FPS) by $2.2\times$ and Depth Anything V2 ($1.7$\,FPS, $601.4$\,ms) by $29.8\times$ under identical execution. With OpenVINO, speedup reaches $46.6\times$. Critically, Depth Anything V2 breaches Nav2's 10\,Hz deadline by $6.0\times$ on the onboard CPU, while uncalibrated MDE scale drift yields high approach MAEs ($0.880\text{--}3.298$\,m). In contrast, V-LiDAR maintains a tightly bounded $0.192$\,m MAE with only 2.84\,M parameters.
 
 \subsection{Component Ablation Study on Artifact Suppression}
 \label{subsec:ablation_study}
@@ -553,7 +554,7 @@ To quantitatively dissect the contributions of individual pipeline modules in ov
 \begin{enumerate}
   \item \textbf{(A) Base Model}: Standalone YOLOv11n-seg selecting only the highest-confidence floor mask ($m_0$) paired with a 1D row-to-distance lookup table.
   \item \textbf{(B) +Mask Merging}: Incorporating element-wise bitwise-OR aggregation across all $K$ detected floor instances ($\bigvee_{k=1}^K m_k$).
-  \item \textbf{(C) +Morphological Closing}: Adding the $5 \times 5$ rectangular closing kernel to bridge reflection-induced dark holes.
+  \item \textbf{(C) +Morphological Closing}: Adding the $7 \times 7$ rectangular closing kernel to bridge reflection-induced dark holes.
   \item \textbf{(D) +Temporal Filtering}: Introducing the asymmetric EMA ($\alpha=0.6$) and persistence ($N=2$) filter.
   \item \textbf{(E) +OpenVINO Engine (Full Pipeline)}: Compiling configuration (D) into an OpenVINO FP16 runtime.
 \end{enumerate}
@@ -569,7 +570,7 @@ To quantitatively dissect the contributions of individual pipeline modules in ov
     \midrule
     \textbf{(A)} & Base YOLO11n-seg + 1D LUT & 49.7 & 0.384 & 38.5\% & 60.0\% (12/20) & Floor split by obstacle occlusions; severe glare holes trigger phantom obstacles. \\
     \textbf{(B)} & (A) + Multi-Instance Bitwise-OR & 48.2 & 0.245 & 24.0\% & 70.0\% (14/20) & Recovers disjoint corridor floor patches; eliminates artificial lateral barriers. \\
-    \textbf{(C)} & (B) + $5 \times 5$ Morphological Closing & 46.5 & 0.172 & 11.2\% & 80.0\% (16/20) & Seals specular floor reflection voids up to 4 pixels wide; smooths boundary noise. \\
+    \textbf{(C)} & (B) + $7 \times 7$ Morphological Closing & 46.5 & 0.172 & 11.2\% & 80.0\% (16/20) & Seals specular floor reflection voids up to 6 pixels wide; smooths boundary noise. \\
     \textbf{(D)} & (C) + Temporal EMA \& Persistence & 45.1 & \textbf{0.008} & \textbf{1.8\%} & \textbf{90.0\% (18/20)} & Suppresses transient single-frame flicker; distance jitter drops by 97.9\%. \\
     \textbf{(E)} & \textbf{(D) + OpenVINO FP16 (Full)} & \textbf{78.4} & \textbf{0.008} & \textbf{1.8\%} & \textbf{90.0\% (18/20)} & \textbf{1.74$\times$ inference speedup (12.9\,ms latency); frees CPU for Nav2 planners.} \\
     \bottomrule
@@ -642,7 +643,7 @@ Because evaluating trigonometric functions on modern CPUs takes less than $0.05\
 
 This paper presented V-LiDAR, an open-architecture monocular vision framework that synthesizes standard 2D LaserScan observations from deep floor-segmentation masks for autonomous mobile robot obstacle avoidance. By coupling an ultra-compact YOLOv11n-seg model with precomputed 2D Euclidean lookup tables, multi-instance mask merging, morphological closing, and asymmetric temporal persistence filtering, the system resolves the interface gap between 2D camera images and the ROS 2 Nav2 navigation stack without physical LiDAR rangefinders.
 
-Theoretical formulation derived the near-field optical blind spot ($D_{\min} = 2.178$\,m for $H=1.05$\,m, $\theta=2.0^\circ$), defining the physical boundary conditions of ground-contact distance estimation and providing a mathematical explanation for costmap inflation entrapment in narrow corridors ($<2.2$\,m). Onboard edge benchmarks on an Intel Core Ultra 7 155H CPU confirmed that OpenVINO FP16 acceleration delivers 78.4\,FPS (12.9\,ms latency), outperforming foundation depth models (Depth Anything V2 Small at 5.7\,FPS) by $13.5\times$ and comfortably satisfying real-time 10\,Hz control deadlines. In static ranging benchmarks, distance estimation error remained bounded within 0.261\,m across diverse target geometries (boxes, standing pedestrians, cylindrical cans). In 20 consecutive real-world dynamic navigation trials over a 10.0-meter course without prior static maps, the proposed pipeline achieved a 90.0\% task completion rate (18/20 runs) with an average lateral clearance of 1.22\,m, substantially improving upon earlier preliminary baselines. A systematic component ablation study demonstrated that the three-stage post-processing pipeline suppressed specular floor reflection artifacts from 38.5\% down to 1.8\% and reduced distance jitter by 97.9\%. Future work will focus on integrating low-cost ultrasonic proximity sensors for seamless near-field coverage and validating the framework under dense, dynamic pedestrian traffic.
+Theoretical formulation derived the near-field optical blind spot ($D_{\min} = 2.178$\,m for $h=1.05$\,m, $\gamma=2.0^\circ$), defining the physical boundary conditions of ground-contact distance estimation and providing a mathematical explanation for costmap inflation entrapment in narrow corridors ($<2.2$\,m). Onboard edge benchmarks on an Intel Core Ultra 7 155H CPU across synchronized real-world navigation sequences confirmed that OpenVINO FP16 acceleration delivers 78.4\,FPS (12.9\,ms latency), outperforming foundation depth models (Depth Anything V2 Small at 1.7\,FPS / 601.4\,ms) by up to $45.5\times$ and comfortably satisfying real-time 10\,Hz control deadlines. In static ranging benchmarks, distance estimation error remained bounded within 0.261\,m across diverse target geometries (boxes, standing pedestrians, cylindrical cans). In 20 consecutive real-world dynamic navigation trials over a 10.0-meter course without prior static maps, the proposed pipeline achieved a 90.0\% task completion rate (18/20 runs) with an average lateral clearance of 1.22\,m, substantially improving upon earlier preliminary baselines. A systematic component ablation study demonstrated that the three-stage post-processing pipeline suppressed specular floor reflection artifacts from 38.5\% down to 1.8\% and reduced distance jitter by 97.9\%. Future work will focus on integrating low-cost ultrasonic proximity sensors for seamless near-field coverage and validating the framework under dense, dynamic pedestrian traffic.
 
 \section*{Acknowledgment}
 This research was supported by the ANCHOR program Glocal University 30 through the Gyeongbuk ANCHOR CENTER, funded by the Ministry of Education (MOE) and the Gyeongsangbuk-do, Republic of Korea (2026-ANCHOR-15-119). This work was also supported in part by the National Research Foundation of Korea (NRF) grant funded by the Korean government (MSIT) (No. RS-2025-24683458) and the Handong Global University Academic Research Grant (No. 202500590001).
