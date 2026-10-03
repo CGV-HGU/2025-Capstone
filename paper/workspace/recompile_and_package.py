@@ -40,6 +40,10 @@ def run_cmd(cmd, cwd):
 def compile_target(t):
     name = t["name"]
     cwd = t["dir"]
+    if not os.path.exists(cwd):
+        print(f"[{name}] Skipping (directory not found: {cwd})")
+        return True
+
     tex_base = os.path.splitext(t["tex"])[0]
     print(f"=== Compiling {name} in {cwd} ===")
     
@@ -84,12 +88,20 @@ def compile_target(t):
         print(f"  Undefined cites: {set(undef_cites)}")
     if undef_refs:
         print(f"  Undefined refs: {set(undef_refs)}")
-        
+
+    if name == "IEEE_Access":
+        root_pdf = os.path.join(REPO_DIR, "paper", "IEEE_access.pdf")
+        import shutil
+        shutil.copy2(pdf_file, root_pdf)
+        print(f"[{name}] Copied {pdf_file} -> {root_pdf} ({os.path.getsize(root_pdf):,} bytes)")
+
     return True
 
 def package_target(t):
     name = t["name"]
     cwd = t["dir"]
+    if not os.path.exists(cwd):
+        return
     zip_path = t["zip"]
     print(f"=== Packaging {name} to {zip_path} ===")
     
