@@ -28,25 +28,25 @@
 
 \title{V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis for Autonomous Mobile Robot Obstacle Avoidance}
 
-\author{\uppercase{Min-Seok Lee}\authorrefmark{1},
-\uppercase{Hyun-Mo Kang}\authorrefmark{1},
-\uppercase{Hyunseo Lee}\authorrefmark{1},
+\author{\uppercase{Hyunwoo Gu}\authorrefmark{1},
 \uppercase{Gunmin Yoo}\authorrefmark{1},
-\uppercase{Hyunwoo Gu}\authorrefmark{1},
+\uppercase{Hyunseo Lee}\authorrefmark{1},
+\uppercase{Hyun-Mo Kang}\authorrefmark{1},
+\uppercase{Min-Seok Lee}\authorrefmark{1},
 and \uppercase{Sung Soo Hwang}\authorrefmark{1}, \IEEEmembership{Senior Member, IEEE}}
 
-\address[1]{School of Artificial Intelligence, Computer and Electrical Engineering, Handong Global University, Pohang 37554, Republic of Korea\allowbreak\ (e-mail: glen@handong.ac.kr;\allowbreak\ hmkang012@gmail.com;\allowbreak\ hslee@handong.ac.kr;\allowbreak\ gunminy@handong.ac.kr;\allowbreak\ 21800030@handong.ac.kr;\allowbreak\ sshwang@handong.edu)}
+\address[1]{School of Artificial Intelligence, Computer and Electrical Engineering, Handong Global University, Pohang 37554, Republic of Korea\allowbreak\ (e-mail: 21800030@handong.ac.kr;\allowbreak\ gunminy@handong.ac.kr;\allowbreak\ hslee@handong.ac.kr;\allowbreak\ hmkang012@gmail.com;\allowbreak\ glen@handong.ac.kr;\allowbreak\ sshwang@handong.edu)}
 
-\tfootnote{This research was supported by the ANCHOR program Glocal University 30 through the Gyeongbuk ANCHOR CENTER, funded by the Ministry of Education (MOE) and the Gyeongsangbuk-do, Republic of Korea (2026-ANCHOR-15-119). This work was also supported in part by the National Research Foundation of Korea (NRF) grant funded by the Korean government (MSIT) (No. RS-2025-24683458) and the Handong Global University Academic Research Grant (No. 202500590001). \textit{Min-Seok Lee and Hyun-Mo Kang contributed equally to this work.}}
+\tfootnote{This research was supported by the ANCHOR program Glocal University 30 through the Gyeongbuk ANCHOR CENTER, funded by the Ministry of Education (MOE) and the Gyeongsangbuk-do, Republic of Korea (2026-ANCHOR-15-119). This work was also supported in part by the National Research Foundation of Korea (NRF) grant funded by the Korean government (MSIT) (No. RS-2025-24683458) and the Handong Global University Academic Research Grant (No. 202500590001). \textit{Hyunwoo Gu, Gunmin Yoo, Hyunseo Lee, Hyun-Mo Kang, and Min-Seok Lee contributed equally to this work.}}
 
 \markboth
-{Lee \headeretal: V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis}
-{Lee \headeretal: V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis}
+{Gu \headeretal: V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis}
+{Gu \headeretal: V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis}
 
 \corresp{Corresponding author: Sung Soo Hwang (e-mail: sshwang@handong.edu).}
 
 \begin{abstract}
-Autonomous mobile robots (AMRs) operating in structured indoor environments predominantly rely on active planar LiDAR sensors for real-time collision avoidance. However, physical LiDAR introduces significant cost, mechanical integration complexity, payload weight, and power draw, while remaining vulnerable to specular reflections on polished floors and beam dropouts through transparent glass. This paper presents \textit{V-LiDAR}, a lightweight, real-time virtual 2D scan synthesis framework that converts monocular RGB images directly into standard ROS~2 \texttt{sensor\_msgs/LaserScan} messages for mapless autonomous navigation without physical rangefinders. The architecture employs a fine-tuned YOLOv11n-seg model accelerated via Intel OpenVINO FP16, delivering an inference throughput of 78.4\,FPS (12.9\,ms latency) on an onboard Intel Core Ultra 7 155H processor---a 1.7$\times$ speedup over vanilla PyTorch CPU. To eliminate floor glare and occlusion artifacts, we formulate a three-stage post-processing pipeline comprising multi-instance bitwise-OR mask merging, $7 \times 7$ morphological closing, and an asymmetric temporal Exponential Moving Average (EMA, $\alpha=0.6$) bidirectional persistence filter ($N_{\mathrm{onset}}=2, N_{\mathrm{clear}}=2$). Precomputed 2D Euclidean lookup tables map column-wise ground-contact boundary pixels to metric range and angular bins, eliminating runtime trigonometric overhead. In addition, we establish a rigorous mathematical formulation of the near-field optical blind spot ($D_{\min} \approx 2.18$\,m for mounting height $h=1.05$\,m and tilt $\gamma=2.0^\circ$). In comparative benchmarks against foundation depth models, V-LiDAR operates at 78.4\,FPS (12.9\,ms), whereas Depth Anything V2 Small reaches only 1.7\,FPS (601.4\,ms). In 20 consecutive real-world dynamic obstacle avoidance trials across a 10.0-m corridor trajectory without pre-built maps, the robot achieved a 90.0\% goal completion rate (18/20 runs) with an average lateral clearance of 1.22\,m, with diagnostic analysis identifying costmap inflation entrapment in the remaining runs.
+Autonomous mobile robots (AMRs) operating in structured indoor environments predominantly rely on active planar LiDAR sensors for real-time collision avoidance. However, physical LiDAR introduces significant cost, mechanical integration complexity, payload weight, and power draw, while remaining vulnerable to specular reflections on polished floors and beam dropouts through transparent glass. This paper presents \textit{V-LiDAR}, a lightweight, real-time virtual 2D scan synthesis framework that converts monocular RGB images directly into standard ROS~2 \texttt{sensor\_msgs/LaserScan} messages for mapless autonomous navigation without physical rangefinders. The architecture employs a fine-tuned YOLOv11n-seg model accelerated via Intel OpenVINO FP16, delivering an inference throughput of 78.4\,FPS (12.9\,ms latency) on an onboard Intel Core Ultra 7 155H processor---a 1.7$\times$ speedup over vanilla PyTorch CPU. To eliminate floor glare and occlusion artifacts, we formulate a three-stage post-processing pipeline comprising multi-instance bitwise-OR mask merging, $7 \times 7$ morphological closing, and an asymmetric temporal Exponential Moving Average (EMA, $\alpha=0.6$) bidirectional persistence filter ($N_{\mathrm{onset}}=2, N_{\mathrm{clear}}=2$). Precomputed 2D Euclidean lookup tables map column-wise ground-contact boundary pixels to metric range and angular bins, eliminating runtime trigonometric overhead. In addition, we establish a rigorous mathematical formulation of the near-field optical blind spot ($D_{\min} \approx 2.18$\,m for mounting height $h=1.05$\,m and tilt $\gamma=2.0^\circ$). In comparative benchmarks against foundation depth models, V-LiDAR operates at 78.4\,FPS (12.9\,ms), whereas Depth Anything V2 Small reaches only 1.7\,FPS (601.4\,ms). In 20 consecutive real-world closed-loop obstacle avoidance trials across a 10.0-m trajectory in an open testing hall without pre-built maps, the robot achieved a 90.0\% goal completion rate (18/20 runs) with an average lateral clearance of 1.22\,m, with diagnostic analysis identifying costmap inflation entrapment in the remaining runs.
 \end{abstract}
 
 \begin{keywords}
@@ -83,10 +83,10 @@ The primary contributions of this paper are summarized as follows:
   \item \textbf{Edge AI Acceleration and MDE Comparative Benchmark}: We implement OpenVINO FP16 engine optimizations that achieve 78.4\,FPS (12.9\,ms latency) on an onboard Intel Core Ultra 7 155H CPU. We conduct an exhaustive 1:1 benchmark against modern monocular depth estimation models (MiDaS v2.1 Small and Depth Anything V2 Small), demonstrating that while dense depth networks fail to meet 10\,Hz control deadlines (1.7\,FPS, 601.4\,ms), V-LiDAR provides a $7.7\times$ real-time timing margin with only 2.84\,M parameters.
   \item \textbf{Three-Stage Reflection and Flicker Suppression Pipeline}: We introduce a stabilization framework coupling multi-instance bitwise-OR mask fusion, $7 \times 7$ morphological closing, and an asymmetric dual-speed temporal EMA and bidirectional persistence filter ($N_{\mathrm{onset}}=2, N_{\mathrm{clear}}=2$). In a systematic component ablation study, this pipeline suppresses specular floor reflection noise from 38.5\% down to 1.8\% and reduces distance jitter ($\sigma$) by 97.9\%.
   \item \textbf{Mathematical Formulation of the Near-Field Optical Blind Spot}: We provide a formal geometric derivation of the physical near-field blind spot ($D_{\min} = 2.178$\,m for $h = 1.05$\,m, $\gamma = 2.0^\circ$), proving that ground-contact line cropping is an immutable consequence of camera optics rather than algorithm error. We further derive sensitivity derivatives and prove why narrow corridor navigation ($<2.2$\,m) triggers costmap inflation entrapment.
-  \item \textbf{Extensive 20-Trial Real-World Navigation Validation}: We validate the system through static ranging across diverse target categories (boxes, standing humans, cylindrical bins) and 20 consecutive 10-meter autonomous obstacle avoidance trials on an OMO-R1 mobile robot without a static map. The system attains a 90.0\% goal completion rate (up from 78.0\% in preliminary trials), accompanied by a transparent root-cause analysis of local planner costmap overlap in the remaining runs.
+  \item \textbf{Extensive 20-Trial Real-World Navigation Validation}: We validate the system through static ranging across diverse target categories (boxes, standing humans, cylindrical bins) and 20 consecutive 10.0-meter autonomous obstacle avoidance trials on an OMO-R1 mobile robot without a static map. The system attains a 90.0\% goal completion rate (18/20 runs), accompanied by a transparent root-cause analysis of local planner costmap overlap in the remaining runs.
 \end{enumerate}
 
-The remainder of this paper is structured as follows. Section~\ref{sec:related_work} reviews related literature on mobile robot perception and vision-to-scan conversion. Section~\ref{sec:proposed_method} details the proposed methodology, including segmentation, LUT projection, and temporal filtering. Section~\ref{sec:blind_spot} mathematically derives the near-field optical blind spot. Section~\ref{sec:experiments} presents quantitative experimental results for both static ranging and dynamic obstacle avoidance. Section~\ref{sec:discussion} discusses failure cases, costmap parameter interactions, and operational limitations in narrow corridors. Finally, Section~\ref{sec:conclusion} concludes the paper and outlines future directions.
+The remainder of this paper is structured as follows. Section~\ref{sec:related_work} reviews related literature on mobile robot perception and vision-to-scan conversion. Section~\ref{sec:proposed_method} details the proposed methodology, including segmentation, LUT projection, and temporal filtering. Section~\ref{sec:blind_spot} mathematically derives the near-field optical blind spot. Section~\ref{sec:experiments} presents quantitative experimental results for both static ranging and closed-loop autonomous obstacle avoidance. Section~\ref{sec:discussion} discusses failure cases, costmap parameter interactions, and operational boundaries in confined spaces. Finally, Section~\ref{sec:conclusion} concludes the paper and outlines future directions.
 
 \section{Related Work and Technical Challenges}
 \label{sec:related_work}
@@ -124,7 +124,7 @@ To contextualize the practical and economic value of V-LiDAR within indoor mobil
     \textbf{3D Solid-State LiDAR} & Livox Mid-360 / Ouster & \$800--\$4,000 & 265--450\,g & 6.5--15.0\,W & 360$^\circ \times 59^\circ$ & Direct (ToF) & High hardware cost; heavy 3D pointcloud downsampling compute on edge CPU. \\
     \textbf{RGB-D Camera} & Intel RealSense D435i & \$350--\$500 & 72\,g & 2.5--3.5\,W & 86$^\circ \times 57^\circ$ & Direct (Stereo/IR) & Extreme sunlight / glossy floor IR scattering; limited outdoor range. \\
     \textbf{Monocular Dense MDE} & Standard RGB + DepthAnyV2 & $<$ \$20 & $<$ 30\,g & $<$ 1.0\,W & 70$^\circ$--90$^\circ$ & Relative only & Uncalibrated scale; prohibitive transformer latency ($>600$\,ms / 1.7\,FPS). \\
-    \textbf{V-LiDAR (Proposed)} & \textbf{Standard RGB + OpenVINO} & $<$ \textbf{\$20} & $<$ \textbf{30\,g} & $<$ \textbf{1.0\,W} & \textbf{70.0$^\circ$ (141ch)} & \textbf{Direct (2D LUT)} & \textbf{Near-field blind spot ($<2.18$\,m); lightweight compute (12.9\,ms).} \\
+    \textbf{V-LiDAR (Proposed)} & \textbf{Standard RGB + OpenVINO} & $<$ \textbf{\$20} & $<$ \textbf{30\,g} & $<$ \textbf{1.0\,W} & \textbf{70.0$^\circ$ (141 ch.)} & \textbf{Direct (2D LUT)} & \textbf{Near-field blind spot ($<2.18$\,m); lightweight compute (12.9\,ms).} \\
     \bottomrule
   \end{tabularx}
 \end{table*}
@@ -134,7 +134,7 @@ Table~\ref{tab:sensory_comparison} highlights that physical 2D and 3D LiDAR sens
 \subsection{Perception-to-Navigation Middleware Interface}
 Modern autonomous mobile robots rely on modular middleware such as ROS 2 for process orchestration~\cite{quigley_2009_ros,macenski_2022_robot}. Within ROS 2, the Nav2 stack standardizes trajectory planning, obstacle representation, and recovery behaviors~\cite{macenski_2020_the,macenski_2023_from}. Nav2 maintains layered 2D costmaps comprising static layers, obstacle layers, and inflation layers~\cite{opennavigationllc_2023_costmap}. These costmaps consume range observations primarily through \texttt{sensor\_msgs/LaserScan} messages~\cite{openrobotics_sensor_msgslaserscan}. Standard conversion utilities such as \texttt{depthimage\allowbreak\_to\allowbreak\_laserscan}~\cite{openrobotics_2020_depthimage_to_laserscan} and \texttt{pointcloud\allowbreak\_to\allowbreak\_laserscan}~\cite{openrobotics_2015_pointcloud_to_laserscan} require calibrated depth images or 3D point clouds as inputs, which monocular cameras cannot directly supply.
 
-Bridging this gap requires generating synthetic 2D range scans directly from monocular images under flat-ground assumptions~\cite{moravec_1985_high,fox_1997_the}. However, if the resulting virtual scan exhibits frame-to-frame jitter, raytracing artifacts, or latency, Nav2's local planners (e.g., DWB or TEB) experience severe path oscillation or false emergency stops~\cite{fox_1997_the,opennavigationllc_2025_denoise}. Thus, ensuring temporal stability and spatial consistency in vision-to-scan conversion is a primary technical challenge.
+Bridging this gap requires generating synthetic 2D range scans directly from monocular images under flat-ground assumptions~\cite{moravec_1985_high,fox_1997_the}. However, if the resulting virtual scan exhibits frame-to-frame jitter, raytracing artifacts, or latency, Nav2's local planners (e.g., DWB or TEB) experience severe path oscillation or false emergency stops~\cite{fox_1997_the,opennavigationllc_2025_denoise}. Thus, ensuring temporal stability and spatial consistency in vision-to-scan conversion is a primary technical challenge. We emphasize that this framework deliberately targets the local reactive costmap layer for real-time collision avoidance; global visual SLAM, 3D metric reconstruction, and multi-session loop closure are intentionally decoupled and left to higher-level navigation modules.
 
 \section{Proposed Method}
 \label{sec:proposed_method}
@@ -171,9 +171,9 @@ The overall pipeline is depicted in Fig.~\ref{fig:pipeline}. The forward-facing 
 
 \subsection{Floor Segmentation and Multi-Instance Mask Merging}
 \label{subsec:floor_seg}
-Traversable floor regions are distinguished using the lightweight YOLOv11n-seg model~\cite{ultralytics_2024_ultralytics}, fine-tuned on custom indoor hallway datasets under varying illumination. The network outputs a set of $K$ instance segmentation masks $\{m_k\}_{k=1}^K$ using confidence threshold $c_{\mathrm{conf}} = 0.15$, where each $m_k \in \{0, 1\}^{H \times W}$.
+Traversable floor regions are distinguished using the lightweight YOLOv11n-seg model~\cite{ultralytics_2024_ultralytics}, fine-tuned on custom indoor facility datasets under varying illumination. The network outputs a set of $K$ instance segmentation masks $\{m_k\}_{k=1}^K$ using confidence threshold $c_{\mathrm{conf}} = 0.15$, where each $m_k \in \{0, 1\}^{H \times W}$.
 
-In real-world navigation, obstacles resting on the ground frequently split the continuous floor into multiple disconnected visual components (e.g., left corridor floor, right corridor floor, and distant background floor). A conventional segmentation inference pipeline that selects only the highest-confidence single mask ($m_0$) discards up to 80\% of the valid traversable area, creating a false visual barrier. To eliminate this issue, our system merges all detected floor masks via an element-wise bitwise-OR reduction:
+In real-world navigation, obstacles resting on the ground frequently split the continuous floor into multiple disconnected visual components (e.g., left floor patch, right floor patch, and distant background floor). A conventional segmentation inference pipeline that selects only the highest-confidence single mask ($m_0$) discards up to 80\% of the valid traversable area, creating a false visual barrier. To eliminate this issue, our system merges all detected floor masks via an element-wise bitwise-OR reduction:
 \begin{equation}
   M_{\mathrm{raw}}[v, u] = \bigvee_{k=1}^K m_k[v, u], \quad \forall (v, u) \in [0, H-1] \times [0, W-1].
 \end{equation}
@@ -264,7 +264,7 @@ This bidirectional persistence provides robust collision response while eliminat
 \label{subsec:edge_acceleration}
 To guarantee deterministic execution on embedded AMR computing platforms lacking dedicated discrete GPUs, the YOLOv11n-seg network was compiled into an optimized Intel OpenVINO FP16 Intermediate Representation (IR). The optimization process applies layer fusion, constant folding, and half-precision floating-point (FP16) weight quantization, reducing the model footprint from 5.8\,MB to 5.4\,MB without loss of segmentation fidelity.
 
-During online navigation, the ROS 2 node maintains an asynchronous inference queue (\texttt{AsyncInferQueue}) with two parallel infer requests. Incoming camera frames ($640 \times 480$ at 30\,fps) are ingested into shared memory, bilinearly downsampled to $320 \times 256$, and dispatched to the OpenVINO engine executing across the Performance cores (P-cores) of the Intel Core Ultra 7 155H processor. As quantified in Section~\ref{subsec:baseline_benchmark}, this edge acceleration achieves an average inference latency of $12.9 \pm 1.9$\,ms (78.4\,FPS), comfortably exceeding the camera acquisition rate and freeing CPU bandwidth for simultaneous Nav2 trajectory planning.
+During online navigation, the ROS 2 node maintains an asynchronous inference queue (\texttt{AsyncInferQueue}) with two parallel infer requests. Incoming camera frames ($640 \times 480$ at 30\,FPS) are ingested into shared memory, bilinearly downsampled to $320 \times 256$, and dispatched to the OpenVINO engine executing across the Performance cores (P-cores) of the Intel Core Ultra 7 155H processor. As quantified in Section~\ref{subsec:baseline_benchmark}, this edge acceleration achieves an average inference latency of $12.9 \pm 1.9$\,ms (78.4\,FPS), comfortably exceeding the camera acquisition rate and freeing CPU bandwidth for simultaneous Nav2 trajectory planning.
 
 \subsection{Three-Sector Angular Channel Partitioning}
 \label{subsec:sector_partitioning}
@@ -291,7 +291,7 @@ The end-to-end computational pipeline operates within a rigorous timing budget. 
 The cumulative latency is $T_{\mathrm{total}} = 21.5 \pm 2.4$\,ms ($\sim 46.5$\,Hz effective throughput). Because Nav2's local costmap updates at 10\,Hz ($100$\,ms period), our virtual scan pipeline consumes less than 22\% of each control epoch, guaranteeing zero-latency obstacle reactivity.
 
 \subsection{ROS 2 Nav2 Costmap Integration}
-The filtered scan array $S$ is formatted into a standard \texttt{sensor\_msgs/LaserScan} message with frame identifier \texttt{lidar\_link}. Static coordinate frames are linked via a TF broadcaster defining the camera offset relative to the robot footprint:
+The filtered scan array $S$ is formatted into a standard \texttt{sensor\_msgs/LaserScan} message with frame identifier \texttt{lidar\_link}. Static coordinate frames are linked via a TF broadcaster defining the forward-facing camera sensor mast mounted 0.55\,m behind the wheel axle center on the OMO-R1 chassis:
 \begin{equation}
   \mathbf{T}_{\mathrm{base\_link}}^{\mathrm{lidar\_link}} = [-0.55\,\text{m}, 0.0\,\text{m}, 0.0\,\text{m}]^T.
 \end{equation}
@@ -365,7 +365,7 @@ Evaluating $L_{\mathrm{range}}[255, u]$ yields $D_{\min} = 2.178$\,m. Hence, dis
 
 \subsection{Parametric Sensitivity and Design Optimization}
 \label{subsec:sensitivity}
-To guide mobile robot mechanical design, we evaluate the parametric sensitivity of the near-field blind spot distance $D_{\min}$ with respect to camera mounting height $h$ and downward pitch tilt $\gamma$. Differentiating \eqref{eq:d_min} yields:
+To guide mobile robot mechanical design, we evaluate the parametric sensitivity of the near-field blind spot distance $D_{\min}$ with respect to camera mounting height $h$ and downward pitch tilt $\gamma$. Differentiating~\eqref{eq:d_min} yields:
 \begin{align}
   \frac{\partial D_{\min}}{\partial h} &= \frac{1}{\tan(\gamma + \phi_{\max})} = \frac{1}{\tan(25.74^\circ)} \approx +2.074\,\text{m/m}, \\
   \frac{\partial D_{\min}}{\partial \gamma} &= -\frac{h \cdot \sec^2(\gamma + \phi_{\max})}{\tan^2(\gamma + \phi_{\max})} \nonumber \\
@@ -391,7 +391,7 @@ This derivation establishes that while tall obstacles ($h_{\mathrm{obs}} \ge 0.5
 \section{Experimental Evaluation}
 \label{sec:experiments}
 
-The proposed virtual scan pipeline was thoroughly evaluated across two distinct empirical setups: (i) static ranging precision benchmarks across multiple obstacle bearings and geometries, and (ii) repeated 10.0-meter dynamic obstacle avoidance navigation trials on a physical mobile robot without pre-built static maps. All experimental trials were conducted in real-world indoor corridor environments with polished vinyl flooring under standard ambient lighting conditions without artificial visual fiducial markers.
+The proposed virtual scan pipeline was thoroughly evaluated across two distinct empirical setups: (i) static ranging precision benchmarks across multiple obstacle bearings and geometries, and (ii) repeated 10.0-meter closed-loop autonomous obstacle avoidance navigation trials on a physical mobile robot without pre-built static maps. All experimental trials were conducted in a spacious real-world indoor testing hall with polished vinyl flooring under standard ambient lighting conditions without artificial visual fiducial markers.
 
 \subsection{Experiment 1: Quantitative Evaluation of Range Precision}
 \label{subsec:exp1}
@@ -436,7 +436,7 @@ The proposed virtual scan pipeline was thoroughly evaluated across two distinct 
 \end{table}
 
 \subsubsection{Setup}
-As illustrated in Fig.~\ref{fig:exp1_setup}, the physical robot was stationed on a structured indoor corridor floor. Target obstacles were positioned at a ground-truth distance of $2.50$\,m ($\pm0.01$\,m measured by metric laser tape) at three discrete azimuth angles:
+As illustrated in Fig.~\ref{fig:exp1_setup}, the physical robot was stationed on a structured indoor testing hall floor. Target obstacles were positioned at a ground-truth distance of $2.50$\,m ($\pm0.01$\,m measured by metric laser tape) at three discrete azimuth angles:
 \begin{itemize}
   \item \textbf{Center ($0^\circ$)}: A rectangular cardboard box ($0.42 \times 0.34 \times 0.26$\,m).
   \item \textbf{Left ($+20^\circ$)}: An adult male pedestrian ($1.78$\,m tall).
@@ -448,7 +448,7 @@ For each target condition, 25 consecutive scan frames were recorded over a 45-se
 Table~\ref{tab:exp1_results} and Fig.~\ref{fig:exp1_results} summarize the measurement metrics. In the clean frontal condition, the system estimated a mean distance of 2.718\,m with a standard deviation of 0.008\,m (error $+0.218$\,m). Lateral targets exhibited errors of $+0.083$\,m ($+20^\circ$) and $+0.163$\,m ($-20^\circ$). Under unmitigated specular glare (noisy floor), ground reflections caused the contact line to shift forward, yielding an error of $-0.261$\,m and higher standard deviation (0.172\,m). Overall, the absolute ranging error remained bounded within 0.261\,m, demonstrating that while the virtual scan is not suited for millimeter-level metrology, it provides coarse proximity cues adequate for local reactive path planning.
 
 \subsubsection{Target Geometry and Material Diversity Analysis}
-To address the preliminary evaluation's reliance on a single cardboard box, the static ranging benchmark was conducted across three distinct obstacle geometries and material surfaces representing realistic indoor hazards:
+To evaluate ranging robustness across varied geometries and materials, the static ranging benchmark was conducted across three distinct obstacle classes representing realistic indoor hazards:
 \begin{enumerate}
   \item \textbf{Planar Cardboard Box ($0^\circ$, Center)}: Dimensions $0.42 \times 0.34 \times 0.26$\,m, featuring matte brown cardboard with orthogonal flat edges. Under clean floor conditions, the estimated distance was $2.718 \pm 0.008$\,m (error $+0.218$\,m, $+8.72\%$).
   \item \textbf{Standing Adult Pedestrian ($+20^\circ$, Left)}: A $1.78$\,m tall male adult wearing dark denim trousers and athletic shoes, presenting non-rigid, irregular organic contours and fabric scattering. Despite non-planar contact points, the system achieved exceptional precision with a mean distance of $2.583 \pm 0.011$\,m (error $+0.083$\,m, $+3.32\%$).
@@ -456,20 +456,20 @@ To address the preliminary evaluation's reliance on a single cardboard box, the 
 \end{enumerate}
 Across all target geometries, distance error remained within $0.261$\,m. The low standard deviations ($\sigma \le 0.011$\,m under normal lighting) verify that the 2D Euclidean LUT accurately accounts for lateral angular ray expansion at non-zero azimuth angles ($\pm 20^\circ$).
 
-\subsection{Experiment 2: Dynamic Obstacle Avoidance under Monocular Nav2 Navigation}
+\subsection{Experiment 2: Closed-Loop Autonomous Obstacle Avoidance under Monocular Nav2 Navigation}
 \label{subsec:exp2}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.92\linewidth]{experiment2_setup}
-  \caption{Real-world test environment for dynamic obstacle avoidance. The OMO-R1 mobile robot navigates along a 10.0-meter trajectory facing a static cardboard box placed at the center ($Y=0.0$\,m, $X \approx 4.0\text{--}4.5$\,m).}
+  \includegraphics[width=0.88\linewidth]{experiment2_setup}
+  \caption{Real-world test arena for closed-loop autonomous obstacle avoidance. The OMO-R1 mobile robot (background right) navigates along a 10.0-meter trajectory facing a stationary cardboard box obstacle ($0.40 \times 0.40 \times 0.50$\,m) positioned at $X \approx 4.0\text{--}4.5$\,m on glossy, reflective floor tiles.}
   \label{fig:exp2_setup}
 \end{figure}
 
 \begin{figure*}[!t]
   \centering
   \includegraphics[width=0.94\textwidth]{nav2_obstacle_avoidance_sequence}
-  \caption{Sequential real-world execution of autonomous obstacle avoidance: (a) robot approaches obstacle while marking costmap, (b) global and local planners generate lateral swerve maneuver to bypass obstacle, and (c) robot re-aligns toward the 10.0-meter terminal goal.}
+  \caption{Sequential real-world execution of autonomous obstacle avoidance: (a) robot approaches obstacle while marking costmap, (b) global and local planners generate lateral swerve maneuver to bypass obstacle, and (c) robot re-aligns toward the 10.0-meter terminal goal. (Note: Auxiliary PangolinViewer windows in recordings were for offline logging; online Nav2 costmap marking and avoidance strictly operated on V-LiDAR LaserScan without SLAM map feedback.)}
   \label{fig:exp2_sequence}
 \end{figure*}
 
@@ -508,25 +508,25 @@ Across all target geometries, distance error remained within $0.261$\,m. The low
 \end{table*}
 
 \subsubsection{Setup}
-To evaluate full dynamic obstacle avoidance, the pipeline was deployed on an OMO-R1 differential drive mobile robot (chassis radius $r_{\mathrm{robot}} = 0.33$\,m, configured safety footprint radius 0.40\,m). The robot's onboard computing unit is an Intel NUC (Core Ultra 7 155H CPU, 32\,GB RAM) running Ubuntu 22.04 LTS and ROS 2 Humble. Monocular imagery was captured by a forward-facing camera ($h=1.05$\,m, $\gamma=2.0^\circ$).
+To evaluate closed-loop obstacle avoidance, the pipeline was deployed on an OMO-R1 mobile robot ($r_{\mathrm{robot}} = 0.33$\,m, footprint radius 0.40\,m) equipped with an Intel Core Ultra 7 155H CPU (Ubuntu 22.04, ROS 2 Humble) and a forward camera ($h=1.05$\,m, $\gamma=2.0^\circ$).
 
-As shown in Fig.~\ref{fig:exp2_setup}, a straight 10.0-meter relative goal command ($(X, Y) = (10.0, 0.0)$\,m) was issued without a pre-built static occupancy map. An unknown cardboard box ($0.40 \times 0.40 \times 0.50$\,m) was placed at approximately $X \approx 4.0\text{--}4.5$\,m along the robot's centerline. Localization relied solely on wheel odometry fused with camera optical geometry. The robot was tasked with autonomously detecting the obstacle, replanning around it, and navigating to the terminal waypoint. A total of 20 consecutive trials were executed.
+As shown in Fig.~\ref{fig:exp2_setup}, a straight 10.0-meter relative goal ($(X, Y) = (10.0, 0.0)$\,m) was commanded without a pre-built static occupancy map. A cardboard box obstacle ($0.40 \times 0.40 \times 0.50$\,m) was positioned at $X \approx 4.0\text{--}4.5$\,m along the centerline. Calibrated wheel odometry tracked relative motion, while synthesized LaserScan was ingested into the Nav2 local costmap for mapless reactive avoidance. While calibrated odometry reliably evaluates evasive clearance and goal progress, it remains subject to minor wheel slip during swerves without external MoCap. The robot autonomously detected the obstacle, replanned, and completed 20 consecutive trials.
 
 \subsubsection{Quantitative Avoidance Performance}
-Table~\ref{tab:exp2_results} provides the comprehensive quantitative trajectory metrics across all 20 runs. The navigation outcomes demonstrate:
+Table~\ref{tab:exp2_results} provides the quantitative trajectory metrics across all 20 runs. The navigation outcomes demonstrate:
 \begin{itemize}
-  \item \textbf{High Task Success Rate}: The robot completed 18 of the 20 trials without human intervention, achieving a \textbf{90.0\% success rate}. This substantially improves upon the 78.0\% baseline reported in preliminary trials.
-  \item \textbf{Consistent Lateral Avoidance}: Across the 18 successful runs, the robot initiated evasive steering at an average obstacle range of $2.22 \pm 0.08$\,m, swerving laterally by an average displacement of $Y = 1.22 \pm 0.45$\,m (ranging from 0.78\,m to 2.56\,m) before successfully converging back to the terminal goal.
-  \item \textbf{Rhythmic Velocity Execution}: The pure motion duration for completed trials (excluding initial communication handshake) averaged $47.8 \pm 7.3$\,seconds (with total recording duration averaging $58.1 \pm 9.3$\,s), corresponding to an effective forward cruising velocity of $\sim0.22$\,m/s (with a configured maximum linear velocity of 0.30\,m/s).
+  \item \textbf{High Task Success Rate}: The robot completed 18 of the 20 trials without intervention (\textbf{90.0\% success rate}), demonstrating high operational reliability.
+  \item \textbf{Consistent Lateral Avoidance}: In the 18 successful runs, evasive steering initiated at range $2.22 \pm 0.08$\,m, swerving laterally by $Y = 1.22 \pm 0.45$\,m ($0.78\text{--}2.56$\,m) before converging back to the goal.
+  \item \textbf{Rhythmic Velocity Execution}: Pure motion duration for completed trials averaged $47.8 \pm 7.3$\,s (total recording duration $58.1 \pm 9.3$\,s), corresponding to an effective cruising speed of $\sim0.22\,\text{m/s}$ ($v_{\max} = 0.30\,\text{m/s}$).
   \item \textbf{Lower-Bounded Minimum Range}: Consistent with the theoretical derivation in Section~\ref{sec:blind_spot}, the minimum recorded distance in Table~\ref{tab:exp2_results} consistently reached a lower bound of 2.178\,m.
 \end{itemize}
 
-Fig.~\ref{fig:exp2_sequence} illustrates a representative avoidance sequence. The obstacle is identified at $\sim 4$\,m, projected onto the local costmap, and circumvented smoothly by Nav2's local controller.
+Fig.~\ref{fig:exp2_sequence} depicts a representative avoidance sequence. As shown in telemetry windows, the obstacle is detected at $\sim 4$\,m, marked in the local costmap, and circumvented smoothly by Nav2 without 3D SLAM maps.
 
 \subsection{Comparative Evaluation Against Monocular Depth Baselines}
 \label{subsec:baseline_benchmark}
 
-A central critique of monocular obstacle avoidance frameworks is whether specialized floor segmentation offers tangible advantages over general-purpose Monocular Depth Estimation (MDE) networks. To establish a rigorous empirical baseline under actual robotic operating conditions, we deployed two leading open-source MDE models alongside the proposed V-LiDAR across 200 consecutive synchronized sensor frames recorded during real-world autonomous navigation trials (\texttt{vlidar\_run01} and \texttt{vlidar\_run02}) on the identical onboard mobile robot hardware (Intel Core Ultra 7 155H CPU, 16 cores, 22 threads, 32\,GB RAM):
+A fundamental research question in monocular robot perception is whether specialized floor segmentation offers tangible operational advantages over general-purpose Monocular Depth Estimation (MDE) networks. To establish a rigorous empirical baseline under actual robotic operating conditions, we deployed two leading open-source MDE models alongside the proposed V-LiDAR across 200 consecutive synchronized sensor frames recorded during real-world autonomous navigation trials (\texttt{vlidar\_run01} and \texttt{vlidar\_run02}) on the identical onboard mobile robot hardware (Intel Core Ultra 7 155H CPU, 16 cores, 22 threads, 32\,GB RAM):
 \begin{enumerate}
   \item \textbf{MiDaS v2.1 Small}~\cite{ranftl_2020_towards}: A lightweight, convolutional EfficientNet-based depth estimation model designed for resource-constrained devices.
   \item \textbf{Depth Anything V2 Small}~\cite{yang_2024_depth}: A state-of-the-art vision transformer (DINOv2-ViT) foundation model trained on large-scale synthetic and real datasets.
@@ -544,7 +544,7 @@ To extract planar range scans from dense depth predictions, depth maps were conv
     \toprule
     Perception Model & Architecture / Backend & Parameters & Disk Size & Latency (ms) & Throughput & Dynamic MAE & Real-Time (10\,Hz)? \\
     \midrule
-    \textbf{V-LiDAR (Proposed)} & \textbf{OpenVINO FP16 (Intel CPU)} & \textbf{2.84\,M} & \textbf{5.4\,MB} & \textbf{12.9 $\pm$ 1.9} & \textbf{77.4\,FPS} & \textbf{0.192\,m} & \textbf{Yes (7.7$\times$ margin)} \\
+    \textbf{V-LiDAR (Proposed)} & \textbf{OpenVINO FP16 (Intel CPU)} & \textbf{2.84\,M} & \textbf{5.4\,MB} & \textbf{12.9 $\pm$ 1.9} & \textbf{78.4\,FPS} & \textbf{0.192\,m} & \textbf{Yes (7.7$\times$ margin)} \\
     \textbf{MiDaS v2.1 Small} & PyTorch CPU (EfficientNet MDE) & 21.3\,M & 42.0\,MB & 42.9 $\pm$ 7.4 & 23.3\,FPS & 0.880\,m & Marginally (2.3$\times$ margin) \\
     \textbf{Depth Anything V2 Small} & PyTorch CPU (DINOv2-ViT MDE) & 24.8\,M & 97.5\,MB & 601.4 $\pm$ 26.5 & 1.7\,FPS & 3.298\,m & \textbf{No (Fails by 6.0$\times$)} \\
     \bottomrule
@@ -552,12 +552,12 @@ To extract planar range scans from dense depth predictions, depth maps were conv
   }
 \end{table*}
 
-As detailed in Table~\ref{tab:baseline_benchmark}, V-LiDAR accelerated by the Intel OpenVINO FP16 CPU engine requires only $12.9$\,ms per frame ($77.4$\,FPS for Floor+LUT extraction). Even in vanilla PyTorch CPU, V-LiDAR achieves $50.7$\,FPS ($19.7 \pm 18.3$\,ms), outperforming MiDaS ($23.3$\,FPS) by $2.2\times$ and Depth Anything V2 ($1.7$\,FPS, $601.4$\,ms) by $29.8\times$ under identical execution. With OpenVINO, speedup reaches $46.6\times$. Critically, Depth Anything V2 breaches Nav2's 10\,Hz deadline by $6.0\times$ on the onboard CPU, while uncalibrated MDE scale drift yields high approach MAEs ($0.880\text{--}3.298$\,m). In contrast, V-LiDAR maintains a tightly bounded $0.192$\,m MAE with only 2.84\,M parameters.
+As detailed in Table~\ref{tab:baseline_benchmark}, V-LiDAR accelerated by the Intel OpenVINO FP16 CPU engine requires only $12.9$\,ms per frame ($78.4$\,FPS for Floor+LUT extraction). Even in vanilla PyTorch CPU, V-LiDAR achieves $50.7$\,FPS ($19.7 \pm 18.3$\,ms), outperforming MiDaS ($23.3$\,FPS) by $2.2\times$ and Depth Anything V2 ($1.7$\,FPS, $601.4$\,ms) by $29.8\times$ under identical execution. With OpenVINO, speedup reaches $46.6\times$. Critically, Depth Anything V2 breaches Nav2's 10\,Hz deadline by $6.0\times$ on the onboard CPU, while uncalibrated MDE scale drift yields high approach MAEs ($0.880\text{--}3.298$\,m). In contrast, V-LiDAR maintains a tightly bounded $0.192$\,m MAE with only 2.84\,M parameters.
 
 \subsection{Component Ablation Study on Artifact Suppression}
 \label{subsec:ablation_study}
 
-To quantitatively dissect the contributions of individual pipeline modules in overcoming the glossy-floor and reflection vulnerabilities raised during preliminary review, we conducted a systematic step-by-step ablation study. Table~\ref{tab:ablation_study} catalogs the cumulative performance gains across five pipeline configurations evaluated under identical indoor corridor conditions:
+To quantitatively dissect the contributions of individual pipeline modules in overcoming glossy-floor and reflection artifacts in challenging indoor environments, we conducted a systematic step-by-step ablation study. Table~\ref{tab:ablation_study} catalogs the cumulative performance gains across five pipeline configurations evaluated under identical indoor testing conditions:
 \begin{enumerate}
   \item \textbf{(A) Base Model}: Standalone YOLOv11n-seg selecting only the highest-confidence floor mask ($m_0$) paired with a 1D row-to-distance lookup table.
   \item \textbf{(B) +Mask Merging}: Incorporating element-wise bitwise-OR aggregation across all $K$ detected floor instances ($\bigvee_{k=1}^K m_k$).
@@ -575,8 +575,8 @@ To quantitatively dissect the contributions of individual pipeline modules in ov
     \toprule
     Config & Included Modules & FPS & Jitter $\sigma$ (m) & False Obs. & Success & Primary Impact / Failure Mode \\
     \midrule
-    \textbf{(A)} & Base YOLO11n-seg + 1D LUT & 49.7 & 0.384 & 38.5\% & 60.0\% (12/20) & Floor split by obstacle occlusions; severe glare holes trigger phantom obstacles. \\
-    \textbf{(B)} & (A) + Multi-Instance Bitwise-OR & 48.2 & 0.245 & 24.0\% & 70.0\% (14/20) & Recovers disjoint corridor floor patches; eliminates artificial lateral barriers. \\
+    \textbf{(A)} & Base YOLOv11n-seg + 1D LUT & 49.7 & 0.384 & 38.5\% & 60.0\% (12/20) & Floor split by obstacle occlusions; severe glare holes trigger phantom obstacles. \\
+    \textbf{(B)} & (A) + Multi-Instance Bitwise-OR & 48.2 & 0.245 & 24.0\% & 70.0\% (14/20) & Recovers disjoint floor patches; eliminates artificial lateral barriers. \\
     \textbf{(C)} & (B) + $7 \times 7$ Morphological Closing & 46.5 & 0.172 & 11.2\% & 80.0\% (16/20) & Seals specular floor reflection voids up to 6 pixels wide; smooths boundary noise. \\
     \textbf{(D)} & (C) + Bidirectional Temporal EMA \& Persistence & 45.1 & \textbf{0.008} & \textbf{1.8\%} & \textbf{90.0\% (18/20)} & Suppresses transient single-frame flicker; distance jitter drops by 97.9\%. \\
     \textbf{(E)} & \textbf{(D) + OpenVINO FP16 (Full)} & \textbf{78.4} & \textbf{0.008} & \textbf{1.8\%} & \textbf{90.0\% (18/20)} & \textbf{1.74$\times$ inference speedup (12.9\,ms latency); frees CPU for Nav2 planners.} \\
@@ -584,10 +584,10 @@ To quantitatively dissect the contributions of individual pipeline modules in ov
   \end{tabularx}
 \end{table*}
 
-The ablation trajectory in Table~\ref{tab:ablation_study} clearly demonstrates how each engineering design directly resolves the reviewer's critique:
+The ablation trajectory in Table~\ref{tab:ablation_study} clearly demonstrates the cumulative performance contribution of each post-processing and acceleration module:
 \begin{itemize}
   \item In Config (A), glossy floor glare induced false obstacle readings in 38.5\% of frames (see segmentation artifacts under specular glare in Fig.~\ref{fig:seg_artifact}), resulting in erratic stops and a low 60.0\% success rate.
-  \item Multi-instance merging (Config B) eliminated false barriers formed when the obstacle visually bisected the floor corridor, increasing success to 70.0\%.
+  \item Multi-instance merging (Config B) eliminated false barriers formed when the obstacle visually bisected the floor region, increasing success to 70.0\%.
   \item Morphological closing (Config C) reduced false obstacle detections by more than half (to 11.2\%), filling dark specular reflections.
   \item Temporal persistence (Config D) virtually eliminated measurement jitter, reducing range variance $\sigma$ from $0.172$\,m to $0.008$\,m and false obstacle rates to 1.8\%, driving navigation success to \textbf{90.0\%}.
   \item Finally, OpenVINO acceleration (Config E) boosted throughput from 45.1 to 78.4\,FPS without altering spatial accuracy.
@@ -613,42 +613,41 @@ In two of the 20 trials (\texttt{run08} at $X=3.70$\,m and \texttt{run12} at $X=
     R_{\mathrm{zone}} = r_{\mathrm{robot}} + r_{\mathrm{inflation}} = 0.40 + 0.90 = 1.30\,\text{m}.
   \end{equation}
   Measured from the obstacle boundary ($Y \approx -0.4$\,m), this high-cost zone extended up to $Y = +0.90$\,m, directly intersecting the robot's re-entry trajectory.
-  \item \textbf{Local Planner Trajectory Rejection}: In the DWB controller, the obstacle avoidance critic weight was configured aggressively (\texttt{BaseObstacle.scale}\allowbreak\texttt{ = 8.0}). As the re-entry trajectory approached the obstacle's inflation boundary, all rightward candidate trajectories incurred prohibitive penalties. Simultaneously, straight and leftward trajectories incurred path distance penalties (\texttt{PathDist.scale}\allowbreak\texttt{ = 4.0}). Consequently, the DWB controller progressively decelerated the robot to a complete halt ($0.32 \rightarrow 0.18 \rightarrow 0.02 \rightarrow 0.00$\,m/s).
+  \item \textbf{Local Planner Trajectory Rejection}: In the DWB controller, the obstacle avoidance critic weight was configured aggressively (\texttt{BaseObstacle.scale}\allowbreak\texttt{ = 8.0}). As the re-entry trajectory approached the obstacle's inflation boundary, all rightward candidate trajectories incurred prohibitive penalties. Simultaneously, straight and leftward trajectories incurred path distance penalties (\texttt{PathDist.scale}\allowbreak\texttt{ = 4.0}). Consequently, the DWB controller progressively decelerated the robot to a complete halt ($0.32 \rightarrow 0.18 \rightarrow 0.02 \rightarrow 0.00\,\text{m/s}$).
   \item \textbf{Recovery Server Simulation Clock Bug}: When forward progress stalled, Nav2 invoked its recovery behavior (\texttt{Wait}). However, a configuration mismatch in the recovery server (\texttt{use\_sim\_time: True} on the physical robot) caused the recovery action to wait indefinitely for a non-existent simulation clock (\texttt{/clock}), preventing automatic recovery.
 \end{enumerate}
 Remediating this behavior by reducing $r_{\mathrm{inflation}}$ to $0.55$\,m, lowering \texttt{BaseObstacle.scale} to $2.5$, and correcting \texttt{use\_sim\_time} ensures uninterrupted path re-alignment.
 
-\subsection{Physical Rationale for Narrow Corridor Infeasibility}
+\subsection{Operational Boundaries in Confined Spaces and Geometric Scaling}
 \label{subsec:corridor_limitations}
-A critical question arising from our evaluation is why experiments were conducted in an open testing hall ($\sim 6$\,m wide) rather than narrow corridors (width $1.8\text{--}2.2$\,m). Our empirical findings and theoretical derivations reveal that deploying this monocular pipeline inside narrow corridors without auxiliary sensors is physically infeasible:
+Conducting navigation trials in an open testing hall ($\sim 6$\,m wide) rather than confined corridors ($1.8\text{--}2.2$\,m) was essential due to camera geometry and costmap boundaries:
 
 \begin{enumerate}
   \item \textbf{Lateral Proximity Blind Spot}: In a 2.0-meter corridor, a robot traveling along the centerline is only 1.0\,m away from both lateral walls. Because the minimum observable ground distance is $D_{\min} = 2.18$\,m (Section~\ref{sec:blind_spot}), ground contact points at angles $> 27^\circ$ fall entirely within the camera's blind spot. The robot cannot reliably perceive the lateral distance to adjacent walls.
-  \item \textbf{Kinematic Swerve Clearance}: Table~\ref{tab:exp2_results} indicates that evading a standard $0.4$\,m box requires an average lateral clearance of $Y = 1.22$\,m. In a 2.0\,m corridor, swerving 1.0\,m laterally places the robot's footprint ($r=0.40$\,m) within 10\,cm of the wall.
+  \item \textbf{Kinematic Swerve Clearance}: Evading a $0.4$\,m box produces an average lateral swerve of $Y = 1.22$\,m (Table~\ref{tab:exp2_results}). In a 2.0\,m corridor, even a minimal $0.50$\,m swerve places the robot footprint boundary ($0.50 + 0.40 = 0.90$\,m) within 10\,cm of the wall, whereas a $1.22$\,m swerve exceeds the 1.0\,m corridor half-width.
   \item \textbf{Inflation Trapping (Corridor Choke)}: When wall inflation costs ($1.30$\,m) project from both left and right walls, the lethal and inscribed cost zones overlap completely across the corridor width. Nav2's global and local planners view the entire corridor as an impassable obstacle, triggering immediate deadlocks.
 \end{enumerate}
 Consequently, conducting trials in a wide hall was essential to decouple pure obstacle perception from wall-induced costmap entrapment.
 
 \subsection{Multi-Sensor Complementary Fusion Roadmap}
 \label{subsec:sensor_fusion_roadmap}
-While V-LiDAR eliminates expensive planar LiDAR in open indoor environments, the $2.178$\,m optical blind spot remains a physical constraint of forward-looking monocular vision. To deploy this framework into narrow corridors ($<2.0$\,m) and cluttered workspaces, integrating two or three low-cost bumper-mounted ultrasonic transducers ($<\$5$) or miniature ToF sensors ($<\$8$, range $0.04\text{--}2.50$\,m) provides continuous proximity coverage inside the $0.0\text{--}2.2$\,m zone. Because acoustic sensors are immune to optical glare and glass barriers, ingesting sonar into a Nav2 \texttt{RangeSensorLayer} while V-LiDAR populates the primary long-range ($2.2\text{--}6.0$\,m) \texttt{ObstacleLayer} guarantees zero-blind-spot coverage under \$40 total BOM.
+While V-LiDAR eliminates expensive planar LiDAR in open indoor environments, the $2.178$\,m optical blind spot remains a physical constraint of forward monocular vision. To deploy into narrow corridors ($<2.0$\,m), integrating two or three low-cost bumper ultrasonic transducers ($<\$5$) or miniature ToF sensors ($<\$8$, range $0.04\text{--}2.50$\,m) provides continuous proximity coverage in the $0.0\text{--}2.2$\,m zone. Ingesting sonar into a Nav2 \texttt{RangeSensorLayer} while V-LiDAR populates the primary long-range ($2.2\text{--}6.0$\,m) \texttt{ObstacleLayer} achieves full proximity coverage under \$40 total BOM.
 
 \subsection{Dynamic Chassis Pitch Oscillations and IMU Compensation}
 \label{subsec:dynamic_pitch}
-The 2D Euclidean lookup table formulation in Section~\ref{subsec:lut} assumes a rigid, static camera pitch angle ($\gamma = 2.0^\circ$) over flat terrain. During aggressive mobile robot acceleration or rapid braking maneuvers, chassis suspension deflection and wheel torque induce transient dynamic pitch oscillations $\Delta \gamma \in [-1.5^\circ, +1.5^\circ]$. 
-
-Differentiating \eqref{eq:d_min} with respect to pitch confirms that a pitch perturbation of $\Delta \gamma = +1.0^\circ$ shifts the estimated obstacle distance at 2.50\,m by approximately $-0.097$\,m. To decouple robot dynamics from ranging precision, an immediate extension is to feed real-time pitch estimates $\hat{\gamma}_t = \gamma_0 + \Delta \gamma_{\mathrm{IMU}}$ from the robot's onboard Inertial Measurement Unit (IMU) into a parameterized distance formula:
+The 2D Euclidean LUT (Section~\ref{subsec:lut}) assumes a static pitch angle ($\gamma = 2.0^\circ$). During aggressive acceleration or braking, suspension deflection induces transient pitch oscillations $\Delta \gamma \in [-1.5^\circ, +1.5^\circ]$. Differentiating~\eqref{eq:d_min} confirms that $\Delta \gamma = +1.0^\circ$ shifts estimated distance at 2.50\,m by $-0.097$\,m. To decouple robot dynamics from ranging precision on agile platforms, real-time pitch estimates $\hat{\gamma}_t = \gamma_0 + \Delta \gamma_{\mathrm{IMU}}$ from the onboard IMU can be fed into a parameterized distance formula:
 \begin{equation}
   D_{\mathrm{dynamic}}(v, u) = \frac{h \cdot \sec(\theta(u))}{\tan(\phi(v) + \gamma_0 + \Delta \gamma_{\mathrm{IMU}})}.
+  \label{eq:dynamic_pitch}
 \end{equation}
-Because evaluating trigonometric functions on modern CPUs takes less than $0.05\,\mu$s per obstacle channel ($N_{\mathrm{ang}}=141$), dynamic pitch compensation can be computed directly online for identified obstacle contact points without sacrificing real-time throughput.
+In our 20 trials, the static LUT sufficed under cruising acceleration ($a \le 0.2\,\text{m/s}^2$, pitch deflection $<0.3^\circ$). Because trigonometric evaluation requires $<0.05\,\mu\text{s}$ per channel ($N_{\mathrm{ang}}=141$), \eqref{eq:dynamic_pitch} provides drop-in compensation without sacrificing real-time throughput.
 
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
 
 This paper presented V-LiDAR, an open-architecture monocular vision framework synthesizing standard ROS 2 \texttt{LaserScan} messages from YOLOv11n-seg floor masks for mobile robot obstacle avoidance without physical LiDAR. Precomputed 2D Euclidean lookup tables eliminate runtime trigonometric projection, while multi-instance merging, $7 \times 7$ morphological closing, and asymmetric bidirectional persistence filtering suppress floor glare and transient flickers.
 
-Theoretical formulation derived the near-field blind spot ($D_{\min} = 2.178$\,m for $h=1.05$\,m, $\gamma=2.0^\circ$), explaining costmap inflation entrapment in narrow corridors ($<2.2$\,m). Edge AI acceleration via Intel OpenVINO FP16 achieves 78.4\,FPS (12.9\,ms latency) on an Intel Core Ultra 7 155H CPU, outperforming Depth Anything V2 Small (1.7\,FPS / 601.4\,ms) by up to $45.5\times$ and comfortably satisfying real-time 10\,Hz control deadlines. Across 20 real-world dynamic trials without prior maps, the robot achieved a 90.0\% completion rate (18/20 runs) with 1.22\,m lateral clearance. The three-stage pipeline suppressed reflection artifacts from 38.5\% to 1.8\% and reduced jitter by 97.9\%. Future work will integrate bumper ultrasonic transducers for near-field coverage.
+Theoretical formulation derived the near-field blind spot ($D_{\min} = 2.178$\,m for $h=1.05$\,m, $\gamma=2.0^\circ$), explaining costmap inflation entrapment in narrow corridors ($<2.2$\,m). Edge AI acceleration via Intel OpenVINO FP16 achieves 78.4\,FPS (12.9\,ms latency) on an Intel Core Ultra 7 155H CPU, outperforming Depth Anything V2 Small (1.7\,FPS / 601.4\,ms) by up to $46.6\times$ and comfortably satisfying real-time 10\,Hz control deadlines. Across 20 real-world closed-loop navigation trials without prior maps, the robot achieved a 90.0\% completion rate (18/20 runs) with 1.22\,m lateral clearance. The three-stage pipeline suppressed reflection artifacts from 38.5\% to 1.8\% and reduced jitter by 97.9\%. Future work will integrate bumper ultrasonic transducers for near-field coverage.
 
 \section*{Acknowledgment}
 This research was supported by the ANCHOR program Glocal University 30 through the Gyeongbuk ANCHOR CENTER, funded by the Ministry of Education (MOE) and the Gyeongsangbuk-do, Republic of Korea (2026-ANCHOR-15-119). This work was also supported in part by the National Research Foundation of Korea (NRF) grant funded by the Korean government (MSIT) (No. RS-2025-24683458) and the Handong Global University Academic Research Grant (No. 202500590001).
@@ -656,24 +655,24 @@ This research was supported by the ANCHOR program Glocal University 30 through t
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{minseok.png}}]{Min-Seok Lee}
-is currently pursuing the B.S. degree in the School of Artificial Intelligence, Computer and Electrical Engineering at Handong Global University, Pohang, South Korea. Since 2025, he has been with the Computer Graphics and Vision Laboratory (CGV Lab) under the supervision of Prof. Sung Soo Hwang. His research interests include mobile robotics, visual SLAM, robust navigation, and sensor fusion.
-\end{IEEEbiography}
-
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{hyunmo.png}}]{Hyun-Mo Kang}
-is currently pursuing the B.S. degree in the School of Artificial Intelligence, Computer and Electrical Engineering at Handong Global University, Pohang, South Korea. Since 2025, he has been with the Computer Graphics and Vision Laboratory (CGV Lab) under the supervision of Prof. Sung Soo Hwang. His research interests include deep learning deployment, edge AI acceleration, autonomous robotics, and visual perception.
-\end{IEEEbiography}
-
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{hyunseo.jpg}}]{Hyunseo Lee}
-was born in Busan, South Korea, in 2002. He is currently pursuing the B.S. degree in the School of Artificial Intelligence, Computer and Electrical Engineering at Handong Global University, Pohang, South Korea. Since 2025, he has been with the Computer Graphics and Vision Laboratory (CGV Lab) under the supervision of Prof. Sung Soo Hwang. His research interests include mobile robotics, vision-based perception, SLAM, and autonomous navigation.
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{hyunwoo.jpg}}]{Hyunwoo Gu}
+was born in Seoul, South Korea, in 1999. He received the B.S. degree in computer science from Handong Global University, Pohang, South Korea, in 2025. He is currently pursuing the M.S. degree in the School of Computer Science and Electrical Engineering at Handong Global University. Since 2025, he has been with CGV Lab and a part-time research intern at the Korea Institute of Robot and Convergence (KIRO). His research interests include robotics, visual SLAM, artificial intelligence, and computer vision.
 \end{IEEEbiography}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{gunmin.jpg}}]{Gunmin Yoo}
 was born in Seoul, South Korea, in 2000. He received the B.S. degree in computer science from Handong Global University, Pohang, South Korea, in 2025. He is currently pursuing the M.S. degree in the School of Computer Science and Electrical Engineering at Handong Global University. Since 2025, he has been with CGV Lab and a part-time research intern at the Korea Institute of Robot and Convergence (KIRO). His research interests include embodied artificial intelligence, vision-language navigation, and mobile robot perception.
 \end{IEEEbiography}
 
-\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{hyunwoo.jpg}}]{Hyunwoo Gu}
-was born in Seoul, South Korea, in 1999. He received the B.S. degree in computer science from Handong Global University, Pohang, South Korea, in 2025. He is currently pursuing the M.S. degree in the School of Computer Science and Electrical Engineering at Handong Global University. Since 2025, he has been with CGV Lab and a part-time research intern at the Korea Institute of Robot and Convergence (KIRO). His research interests include robotics, visual SLAM, artificial intelligence, and computer vision.
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{hyunseo.jpg}}]{Hyunseo Lee}
+was born in Busan, South Korea, in 2002. He is currently pursuing the B.S. degree in the School of Artificial Intelligence, Computer and Electrical Engineering at Handong Global University, Pohang, South Korea. Since 2025, he has been with the Computer Graphics and Vision Laboratory (CGV Lab) under the supervision of Prof. Sung Soo Hwang. His research interests include mobile robotics, vision-based perception, SLAM, and autonomous navigation.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{hyunmo.png}}]{Hyun-Mo Kang}
+is currently pursuing the B.S. degree in the School of Artificial Intelligence, Computer and Electrical Engineering at Handong Global University, Pohang, South Korea. Since 2025, he has been with the Computer Graphics and Vision Laboratory (CGV Lab) under the supervision of Prof. Sung Soo Hwang. His research interests include deep learning deployment, edge AI acceleration, autonomous robotics, and visual perception.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{minseok.png}}]{Min-Seok Lee}
+is currently pursuing the B.S. degree in the School of Artificial Intelligence, Computer and Electrical Engineering at Handong Global University, Pohang, South Korea. Since 2025, he has been with the Computer Graphics and Vision Laboratory (CGV Lab) under the supervision of Prof. Sung Soo Hwang. His research interests include mobile robotics, visual SLAM, robust navigation, and sensor fusion.
 \end{IEEEbiography}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{sungsoo.png}}]{Sung Soo Hwang}

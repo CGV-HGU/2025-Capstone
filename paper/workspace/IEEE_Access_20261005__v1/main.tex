@@ -461,7 +461,7 @@ Across all target geometries, distance error remained within $0.261$\,m. The low
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.92\linewidth]{experiment2_setup}
+  \includegraphics[width=0.88\linewidth]{experiment2_setup}
   \caption{Real-world test arena for closed-loop autonomous obstacle avoidance. The OMO-R1 mobile robot (background right) navigates along a 10.0-meter trajectory facing a stationary cardboard box obstacle ($0.40 \times 0.40 \times 0.50$\,m) positioned at $X \approx 4.0\text{--}4.5$\,m on glossy, reflective floor tiles.}
   \label{fig:exp2_setup}
 \end{figure}
@@ -469,7 +469,7 @@ Across all target geometries, distance error remained within $0.261$\,m. The low
 \begin{figure*}[!t]
   \centering
   \includegraphics[width=0.94\textwidth]{nav2_obstacle_avoidance_sequence}
-  \caption{Sequential real-world execution of autonomous obstacle avoidance: (a) robot approaches obstacle while marking costmap, (b) global and local planners generate lateral swerve maneuver to bypass obstacle, and (c) robot re-aligns toward the 10.0-meter terminal goal. (Note: The background PangolinViewer windows visible in telemetry recordings were from an auxiliary visual tracking node running in parallel for offline inspection; all online Nav2 local costmap marking and reactive path planning strictly operated on the 2D V-LiDAR LaserScan without 3D SLAM map feedback or loop closures.)}
+  \caption{Sequential real-world execution of autonomous obstacle avoidance: (a) robot approaches obstacle while marking costmap, (b) global and local planners generate lateral swerve maneuver to bypass obstacle, and (c) robot re-aligns toward the 10.0-meter terminal goal. (Note: Auxiliary PangolinViewer windows in recordings were for offline logging; online Nav2 costmap marking and avoidance strictly operated on V-LiDAR LaserScan without SLAM map feedback.)}
   \label{fig:exp2_sequence}
 \end{figure*}
 
@@ -508,20 +508,20 @@ Across all target geometries, distance error remained within $0.261$\,m. The low
 \end{table*}
 
 \subsubsection{Setup}
-To evaluate closed-loop autonomous obstacle avoidance, the pipeline was deployed on an OMO-R1 differential drive mobile robot (chassis radius $r_{\mathrm{robot}} = 0.33$\,m, configured safety footprint radius 0.40\,m). The robot's onboard computing unit is an Intel NUC (Core Ultra 7 155H CPU, 32\,GB RAM) running Ubuntu 22.04 LTS and ROS 2 Humble. Monocular imagery was captured by a forward-facing camera ($h=1.05$\,m, $\gamma=2.0^\circ$).
+To evaluate closed-loop obstacle avoidance, the pipeline was deployed on an OMO-R1 mobile robot ($r_{\mathrm{robot}} = 0.33$\,m, footprint radius 0.40\,m) equipped with an Intel Core Ultra 7 155H CPU (Ubuntu 22.04, ROS 2 Humble) and a forward camera ($h=1.05$\,m, $\gamma=2.0^\circ$).
 
-As shown in Fig.~\ref{fig:exp2_setup}, a straight 10.0-meter relative goal command ($(X, Y) = (10.0, 0.0)$\,m) was issued without a pre-built static occupancy map. A stationary cardboard box ($0.40 \times 0.40 \times 0.50$\,m) was placed at approximately $X \approx 4.0\text{--}4.5$\,m along the robot's centerline. Robot state estimation and trajectory tracking relied on calibrated onboard wheel odometry, while the synthesized LaserScan was ingested into the Nav2 local costmap for reactive avoidance without global mapping. While odometry effectively evaluates relative evasive clearance and goal progress, uncorrected odometric drift without external motion capture (MoCap) remains subject to minor wheel slip during angular swerves. The robot was tasked with autonomously detecting the obstacle, replanning around it, and navigating to the terminal waypoint across 20 consecutive trials.
+As shown in Fig.~\ref{fig:exp2_setup}, a straight 10.0-meter relative goal ($(X, Y) = (10.0, 0.0)$\,m) was commanded without a pre-built static occupancy map. A cardboard box obstacle ($0.40 \times 0.40 \times 0.50$\,m) was positioned at $X \approx 4.0\text{--}4.5$\,m along the centerline. Calibrated wheel odometry tracked relative motion, while synthesized LaserScan was ingested into the Nav2 local costmap for mapless reactive avoidance. While calibrated odometry reliably evaluates evasive clearance and goal progress, it remains subject to minor wheel slip during swerves without external MoCap. The robot autonomously detected the obstacle, replanned, and completed 20 consecutive trials.
 
 \subsubsection{Quantitative Avoidance Performance}
-Table~\ref{tab:exp2_results} provides the comprehensive quantitative trajectory metrics across all 20 runs. The navigation outcomes demonstrate:
+Table~\ref{tab:exp2_results} provides the quantitative trajectory metrics across all 20 runs. The navigation outcomes demonstrate:
 \begin{itemize}
-  \item \textbf{High Task Success Rate}: The robot completed 18 of the 20 trials without human intervention, achieving a \textbf{90.0\% success rate}. This confirms the high operational reliability of the integrated perception and planning pipeline.
-  \item \textbf{Consistent Lateral Avoidance}: Across the 18 successful runs, the robot initiated evasive steering at an average obstacle range of $2.22 \pm 0.08$\,m, swerving laterally by an average displacement of $Y = 1.22 \pm 0.45$\,m (ranging from 0.78\,m to 2.56\,m) before successfully converging back to the terminal goal.
-  \item \textbf{Rhythmic Velocity Execution}: The pure motion duration for completed trials (excluding initial communication handshake) averaged $47.8 \pm 7.3$\,seconds (with total recording duration averaging $58.1 \pm 9.3$\,s), corresponding to an effective forward cruising velocity of $\sim0.22\,\text{m/s}$ (with a configured maximum linear velocity of $0.30\,\text{m/s}$).
+  \item \textbf{High Task Success Rate}: The robot completed 18 of the 20 trials without intervention (\textbf{90.0\% success rate}), demonstrating high operational reliability.
+  \item \textbf{Consistent Lateral Avoidance}: In the 18 successful runs, evasive steering initiated at range $2.22 \pm 0.08$\,m, swerving laterally by $Y = 1.22 \pm 0.45$\,m ($0.78\text{--}2.56$\,m) before converging back to the goal.
+  \item \textbf{Rhythmic Velocity Execution}: Pure motion duration for completed trials averaged $47.8 \pm 7.3$\,s (total recording duration $58.1 \pm 9.3$\,s), corresponding to an effective cruising speed of $\sim0.22\,\text{m/s}$ ($v_{\max} = 0.30\,\text{m/s}$).
   \item \textbf{Lower-Bounded Minimum Range}: Consistent with the theoretical derivation in Section~\ref{sec:blind_spot}, the minimum recorded distance in Table~\ref{tab:exp2_results} consistently reached a lower bound of 2.178\,m.
 \end{itemize}
 
-Fig.~\ref{fig:exp2_sequence} illustrates a representative avoidance sequence across three key navigational phases. As visible in the live monitoring windows, the obstacle is identified at $\sim 4$\,m, projected onto the local costmap via the synthesized virtual LaserScan, and circumvented smoothly by Nav2's local controller without relying on 3D SLAM maps or external positioning infrastructure.
+Fig.~\ref{fig:exp2_sequence} depicts a representative avoidance sequence. As shown in telemetry windows, the obstacle is detected at $\sim 4$\,m, marked in the local costmap, and circumvented smoothly by Nav2 without 3D SLAM maps.
 
 \subsection{Comparative Evaluation Against Monocular Depth Baselines}
 \label{subsec:baseline_benchmark}
@@ -620,18 +620,18 @@ Remediating this behavior by reducing $r_{\mathrm{inflation}}$ to $0.55$\,m, low
 
 \subsection{Operational Boundaries in Confined Spaces and Geometric Scaling}
 \label{subsec:corridor_limitations}
-An important operational consideration is why navigation trials were conducted in an open testing hall ($\sim 6$\,m wide) rather than confined corridors (width $1.8\text{--}2.2$\,m). Our empirical findings and theoretical derivations demonstrate how camera geometry and costmap parameters define these operational boundaries:
+Conducting navigation trials in an open testing hall ($\sim 6$\,m wide) rather than confined corridors ($1.8\text{--}2.2$\,m) was essential due to camera geometry and costmap boundaries:
 
 \begin{enumerate}
   \item \textbf{Lateral Proximity Blind Spot}: In a 2.0-meter corridor, a robot traveling along the centerline is only 1.0\,m away from both lateral walls. Because the minimum observable ground distance is $D_{\min} = 2.18$\,m (Section~\ref{sec:blind_spot}), ground contact points at angles $> 27^\circ$ fall entirely within the camera's blind spot. The robot cannot reliably perceive the lateral distance to adjacent walls.
-  \item \textbf{Kinematic Swerve Clearance}: Table~\ref{tab:exp2_results} indicates that evading a standard $0.4$\,m box produces an average lateral swerve of $Y = 1.22$\,m in open space. In a 2.0\,m corridor with an obstacle at the centerline, even a minimal swerve of $0.50$\,m places the robot's footprint boundary ($0.50 + 0.40 = 0.90$\,m) within 10\,cm of the wall, whereas an unconstrained $1.22$\,m swerve physically exceeds the 1.0\,m corridor half-width.
+  \item \textbf{Kinematic Swerve Clearance}: Evading a $0.4$\,m box produces an average lateral swerve of $Y = 1.22$\,m (Table~\ref{tab:exp2_results}). In a 2.0\,m corridor, even a minimal $0.50$\,m swerve places the robot footprint boundary ($0.50 + 0.40 = 0.90$\,m) within 10\,cm of the wall, whereas a $1.22$\,m swerve exceeds the 1.0\,m corridor half-width.
   \item \textbf{Inflation Trapping (Corridor Choke)}: When wall inflation costs ($1.30$\,m) project from both left and right walls, the lethal and inscribed cost zones overlap completely across the corridor width. Nav2's global and local planners view the entire corridor as an impassable obstacle, triggering immediate deadlocks.
 \end{enumerate}
 Consequently, conducting trials in a wide hall was essential to decouple pure obstacle perception from wall-induced costmap entrapment.
 
 \subsection{Multi-Sensor Complementary Fusion Roadmap}
 \label{subsec:sensor_fusion_roadmap}
-While V-LiDAR eliminates expensive planar LiDAR in open indoor environments, the $2.178$\,m optical blind spot remains a physical constraint of forward-looking monocular vision. To deploy this framework into narrow corridors ($<2.0$\,m) and cluttered workspaces, integrating two or three low-cost bumper-mounted ultrasonic transducers ($<\$5$) or miniature ToF sensors ($<\$8$, range $0.04\text{--}2.50$\,m) provides continuous proximity coverage inside the $0.0\text{--}2.2$\,m zone. Because acoustic sensors are immune to optical glare and glass barriers, ingesting sonar into a Nav2 \texttt{RangeSensorLayer} while V-LiDAR populates the primary long-range ($2.2\text{--}6.0$\,m) \texttt{ObstacleLayer} represents a promising architectural roadmap to achieve continuous proximity coverage under \$40 total BOM.
+While V-LiDAR eliminates expensive planar LiDAR in open indoor environments, the $2.178$\,m optical blind spot remains a physical constraint of forward monocular vision. To deploy into narrow corridors ($<2.0$\,m), integrating two or three low-cost bumper ultrasonic transducers ($<\$5$) or miniature ToF sensors ($<\$8$, range $0.04\text{--}2.50$\,m) provides continuous proximity coverage in the $0.0\text{--}2.2$\,m zone. Ingesting sonar into a Nav2 \texttt{RangeSensorLayer} while V-LiDAR populates the primary long-range ($2.2\text{--}6.0$\,m) \texttt{ObstacleLayer} achieves full proximity coverage under \$40 total BOM.
 
 \subsection{Dynamic Chassis Pitch Oscillations and IMU Compensation}
 \label{subsec:dynamic_pitch}
@@ -651,7 +651,9 @@ This paper presented V-LiDAR, an open-architecture monocular vision framework sy
 
 Theoretical formulation derived the near-field blind spot ($D_{\min} = 2.178$\,m for $h=1.05$\,m, $\gamma=2.0^\circ$), explaining costmap inflation entrapment in narrow corridors ($<2.2$\,m). Edge AI acceleration via Intel OpenVINO FP16 achieves 78.4\,FPS (12.9\,ms latency) on an Intel Core Ultra 7 155H CPU, outperforming Depth Anything V2 Small (1.7\,FPS / 601.4\,ms) by up to $46.6\times$ and comfortably satisfying real-time 10\,Hz control deadlines. Across 20 real-world closed-loop navigation trials without prior maps, the robot achieved a 90.0\% completion rate (18/20 runs) with 1.22\,m lateral clearance. The three-stage pipeline suppressed reflection artifacts from 38.5\% to 1.8\% and reduced jitter by 97.9\%. Future work will integrate bumper ultrasonic transducers for near-field coverage.
 
+\newpage
 \section*{Acknowledgment}
+\vspace{8pt}
 This research was supported by the ANCHOR program Glocal University 30 through the Gyeongbuk ANCHOR CENTER, funded by the Ministry of Education (MOE) and the Gyeongsangbuk-do, Republic of Korea (2026-ANCHOR-15-119). This work was also supported in part by the National Research Foundation of Korea (NRF) grant funded by the Korean government (MSIT) (No. RS-2025-24683458) and the Handong Global University Academic Research Grant (No. 202500590001).
 
 \bibliographystyle{IEEEtran}
