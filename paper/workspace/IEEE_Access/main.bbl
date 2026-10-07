@@ -55,6 +55,11 @@ M.~Yusuf, A.~Zaidi, A.~Haleem, S.~Bahl, M.~Javaid, S.~B. Garg, and J.~Garg,
   materials,'' \emph{Materials Today: Proceedings}, vol.~57, pp. 942--947,
   2022.
 
+\bibitem{alatise2020review}
+M.~B. Alatise and G.~P. Hancke, ``A review on challenges of autonomous mobile
+  robot and sensor fusion methods,'' \emph{IEEE Access}, vol.~8, pp.
+  39\,830--39\,846, 2020.
+
 \bibitem{deepthadamodaran_2023_experimental}
 D.~Damodaran, S.~Mozaffari, S.~Alirezaee, and M.~J. Ahamed, ``Experimental
   analysis of the behavior of mirror-like objects in {LiDAR}-based robot
@@ -80,6 +85,11 @@ R.~Singh and K.~S. Nagla, ``Multi-data sensor fusion framework to detect
   transparent object for the efficient mobile robot mapping,''
   \emph{International Journal of Intelligent Unmanned Systems}, vol.~7, no.~1,
   pp. 2--18, 2019.
+
+\bibitem{kim2022opensource}
+T.~Kim, S.~Lim, G.~Shin, G.~Sim, and D.~Yun, ``An open-source low-cost mobile
+  robot system with an {RGB-D} camera and efficient real-time navigation
+  algorithm,'' \emph{IEEE Access}, vol.~10, pp. 127\,871--127\,881, 2022.
 
 \bibitem{shariqfarooqbhat_2021_adabins}
 S.~F. Bhat, I.~Alhashim, and P.~Wonka, ``{AdaBins}: Depth estimation using
@@ -136,6 +146,11 @@ S.~Thrun, W.~Burgard, and D.~Fox, \emph{Probabilistic Robotics}.\hskip 1em plus
 A.~Elfes, ``Using occupancy grids for mobile robot perception and navigation,''
   \emph{Computer}, vol.~22, no.~6, pp. 46--57, 1989.
 
+\bibitem{zhang2023robust}
+J.~Zhang, Y.~Sun, H.~Wang, and M.~Liu, ``Robust obstacle detection and tracking
+  for autonomous systems under extreme optical reflection,'' \emph{IEEE
+  Transactions on Intelligent Vehicles}, vol.~8, no.~2, pp. 1420--1432, 2023.
+
 \bibitem{wang_2017_detecting}
 X.~Wang and J.~Wang, ``Detecting glass in simultaneous localisation and
   mapping,'' \emph{Robotics and Autonomous Systems}, vol.~88, pp. 97--103,
@@ -152,11 +167,41 @@ L.~Yang, B.~Kang, Z.~Huang, X.~Xu, J.~Feng, and H.~Zhao, ``Depth anything:
   Unleashing the power of large-scale unlabeled data,'' in \emph{Proc. IEEE/CVF
   Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2024, pp. 10\,368--10\,378.
 
+\bibitem{sevastopoulos2022survey}
+C.~Sevastopoulos and S.~Konstantopoulos, ``A survey of traversability
+  estimation for mobile robots,'' \emph{IEEE Access}, vol.~10, pp.
+  96\,331--96\,347, 2022.
+
+\bibitem{hyun2022street}
+J.~Hyun, S.~Woo, and E.~Y. Kim, ``Street floor segmentation for a wheeled
+  mobile robot,'' \emph{IEEE Access}, vol.~10, pp. 127\,601--127\,609, 2022.
+
+\bibitem{yu2021bisenetv2}
+C.~Yu, C.~Gao, J.~Wang, G.~Yu, C.~Shen, and N.~Sang, ``{BiSeNet V2}: Bilateral
+  segmentation network for real-time semantic segmentation,''
+  \emph{International Journal of Computer Vision}, vol. 129, no.~11, pp.
+  3051--3068, 2021.
+
+\bibitem{wang2023realtime}
+X.~Wang, L.~Chen, Y.~Zhang, and H.~Liu, ``Real-time traversable area detection
+  using lightweight semantic segmentation for mobile robots,'' \emph{Sensors},
+  vol.~23, no.~8, p. 3942, 2023.
+
 \bibitem{quigley_2009_ros}
 M.~Quigley, K.~Conley, B.~Gerkey, J.~Faust, T.~Foote, J.~Leibs, R.~Wheeler, and
   A.~Y. Ng, ``{ROS}: An open-source robot operating system,'' in \emph{Proc.
   IEEE Int. Conf. Robot. Autom. (ICRA) Workshop Open Source Softw.}, 2009, pp.
   1--6.
+
+\bibitem{wei2025ros}
+Z.~Wei, S.~Wang, K.~Chen, and F.~Wang, ``{ROS}-based navigation and obstacle
+  avoidance: A study of architectures, methods, and trends,'' \emph{Sensors},
+  vol.~25, no.~14, p. 4306, 2025.
+
+\bibitem{hu2025improved}
+M.~Hu, S.~Jiang, K.~Zhou, X.~Cao, and C.~Li, ``Improved exponential and
+  cost-weighted hybrid algorithm for mobile robot path planning,''
+  \emph{Sensors}, vol.~25, no.~8, p. 2579, 2025.
 
 \bibitem{openrobotics_2015_pointcloud_to_laserscan}
 \BIBentryALTinterwordspacing
@@ -172,6 +217,11 @@ H.~P. Moravec and A.~Elfes, ``High resolution maps from wide angle sonar,'' in
 D.~Fox, W.~Burgard, and S.~Thrun, ``The dynamic window approach to collision
   avoidance,'' \emph{IEEE Robotics \& Automation Magazine}, vol.~4, no.~1, pp.
   23--33, 1997.
+
+\bibitem{kobayashi2022local}
+M.~Kobayashi and N.~Motoi, ``Local path planning: Dynamic window approach with
+  virtual manipulators considering dynamic obstacles,'' \emph{IEEE Access},
+  vol.~10, pp. 17\,018--17\,029, 2022.
 
 \bibitem{opennavigationllc_2025_denoise}
 \BIBentryALTinterwordspacing
