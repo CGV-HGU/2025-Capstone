@@ -262,7 +262,7 @@ This bidirectional persistence provides robust collision response while eliminat
 
 \subsection{Edge AI Optimization and Runtime Acceleration}
 \label{subsec:edge_acceleration}
-To guarantee deterministic execution on embedded AMR computing platforms lacking dedicated discrete GPUs, the YOLOv11n-seg network was compiled into an optimized Intel OpenVINO FP16 Intermediate Representation (IR). The optimization process applies layer fusion, constant folding, and half-precision floating-point (FP16) weight quantization, reducing the model footprint from 5.8\,MB to 5.4\,MB without loss of segmentation fidelity.
+To guarantee deterministic execution on embedded AMR computing platforms lacking dedicated discrete GPUs, the YOLOv11n-seg network was compiled into an optimized Intel OpenVINO FP16 Intermediate Representation (IR). The optimization process applies layer fusion, constant folding, and half-precision floating-point (FP16) precision conversion and graph optimization, reducing the model footprint from 5.8\,MB to 5.4\,MB without loss of segmentation fidelity.
 
 During online navigation, the ROS 2 node maintains an asynchronous inference queue (\texttt{AsyncInferQueue}) with two parallel infer requests. Incoming camera frames ($640 \times 480$ at 30\,FPS) are ingested into shared memory, bilinearly downsampled to $320 \times 256$, and dispatched to the OpenVINO engine executing across the Performance cores (P-cores) of the Intel Core Ultra 7 155H processor. As quantified in Section~\ref{subsec:baseline_benchmark}, this edge acceleration achieves an average inference latency of $12.9 \pm 1.9$\,ms (78.4\,FPS), comfortably exceeding the camera acquisition rate and freeing CPU bandwidth for simultaneous Nav2 trajectory planning.
 
@@ -475,7 +475,7 @@ Across all target geometries, distance error remained within $0.261$\,m. The low
 
 \begin{table*}[!t]
   \centering
-  \caption{Full Quantitative Results Across 20 Consecutive Real-World Obstacle Avoidance Trials}
+  \caption{Full Quantitative Results Across 20 Consecutive Real-World Obstacle Avoidance Trials (Mean $\pm$ SD metrics computed across the 18 successfully completed runs)}
   \label{tab:exp2_results}
   \begin{tabularx}{\textwidth}{lcccccX}
     \toprule
@@ -581,7 +581,7 @@ To isolate each module's algorithmic impact under identical conditions and elimi
     \textbf{(D)} & (C) + Bidirectional Temporal EMA \& Persistence & 45.1 & \textbf{0.008} & \textbf{1.8\%} & \textbf{90.0\% (18/20)} & Suppresses transient single-frame flicker; distance jitter drops by 97.9\%. \\
     \textbf{(E)} & \textbf{(D) + OpenVINO FP16 (Full)} & \textbf{78.4} & \textbf{0.008} & \textbf{1.8\%} & \textbf{90.0\% (18/20)} & \textbf{1.74$\times$ inference speedup (12.9\,ms latency); frees CPU for Nav2 planners.} \\
     \bottomrule
-    \multicolumn{7}{@{}p{\textwidth}@{}}{\footnotesize \textit{Note:} Success rates across Configs (A)--(E) denote simulated navigation completions where the replayed virtual scan streams were re-ingested into the DWB local planner to evaluate whether transient phantom obstacles triggered trajectory abortion or costmap entrapment.}
+    \multicolumn{7}{@{}p{\textwidth}@{}}{\footnotesize \textit{Note:} False Obs. represents the percentage of frames where specular reflections generated spurious readings ($<5.0$\,m) in clear floor sectors. Success rates across Configs (A)--(E) denote simulated completions where replayed scans were re-ingested into DWB planners to verify whether phantom obstacles induced path abortion.}
   \end{tabularx}
 \end{table*}
 
@@ -609,9 +609,9 @@ In two of the 20 trials (\texttt{run08} at $X=3.70$\,m and \texttt{run12} at $X=
 \end{figure}
 
 \begin{enumerate}
-  \item \textbf{Obstacle Inflation Zone Overlap}: In both runs, the robot executed lateral evasion to $Y \approx +0.90\text{--}1.07$\,m. However, as the robot straightened out parallel to the obstacle ($X \approx 4.5$\,m, $Y \approx -0.4$\,m) and attempted to re-align with the nominal goal line ($Y=0$), the local path had to steer rightward. With configured parameters $r_{\mathrm{robot}} = 0.40$\,m and $r_{\mathrm{inflation}} = 0.90$\,m, the obstacle's total inflated cost radius was:
+  \item \textbf{Obstacle Inflation Zone Overlap}: In both runs, the robot executed lateral evasion to $Y \approx +0.90\text{--}1.07$\,m. However, as the robot straightened out parallel to the obstacle ($X \approx 4.5$\,m, $Y \approx -0.4$\,m) and attempted to re-align with the nominal goal line ($Y=0$), the local path had to steer rightward. With configured Nav2 footprint radius $r_{\mathrm{footprint}} = 0.40$\,m (chassis radius $r_{\mathrm{robot}} = 0.33$\,m) and $r_{\mathrm{inflation}} = 0.90$\,m, the obstacle's total inflated cost radius was:
   \begin{equation}
-    R_{\mathrm{zone}} = r_{\mathrm{robot}} + r_{\mathrm{inflation}} = 0.40 + 0.90 = 1.30\,\text{m}.
+    R_{\mathrm{zone}} = r_{\mathrm{footprint}} + r_{\mathrm{inflation}} = 0.40 + 0.90 = 1.30\,\text{m}.
   \end{equation}
   Measured from the obstacle boundary ($Y \approx -0.4$\,m), this high-cost zone extended up to $Y = +0.90$\,m, directly intersecting the robot's re-entry trajectory.
   \item \textbf{Local Planner Trajectory Rejection}: In the DWB controller, the obstacle avoidance critic weight was configured aggressively (\texttt{BaseObstacle.scale}\allowbreak\texttt{ = 8.0}). As the re-entry trajectory approached the obstacle's inflation boundary, all rightward candidate trajectories incurred prohibitive penalties. Simultaneously, straight and leftward trajectories incurred path distance penalties (\texttt{PathDist.scale}\allowbreak\texttt{ = 4.0}). Consequently, the DWB controller progressively decelerated the robot to a complete halt ($0.32 \rightarrow 0.18 \rightarrow 0.02 \rightarrow 0.00\,\text{m/s}$).
