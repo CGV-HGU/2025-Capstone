@@ -1,5 +1,13 @@
 # IEEE Access 심사 결과 리뷰 및 후속 연구·재투고 플랜 (`Access-2026-51740`)
 
+> **현재 실행 계획:** 교수님과 합의한 이전 리뷰 대응 범위를 기준으로 정리한 [실험·피규어·기존 자료 활용 계획](planning/README.md)을 먼저 확인하세요. 기본안은 **2개 환경 × 3개 조건 × 10회 = 60회**, 필요 시 정적 baseline 입력 18클립입니다. 모두 **미실행 제안**이며 실험 3일과 분석·원고 반영 기간을 구분합니다.
+>
+> **팀원 첫 안내:** [무엇을 준비하고 3일 동안 무엇을 끝낼지](planning/00_Team_Briefing.md)
+>
+> [실험 세팅·일정](planning/01_Experiment_Setup_and_Three_Day_Plan.md) · [피규어·표 계획](planning/02_Figure_and_Table_Plan.md) · [추가 실험 없는 작업과 오프라인 실험 구분](planning/03_Existing_Data_and_Desk_Work_Plan.md) · [현장 계획표·기록 양식](planning/templates/README.md)
+>
+> 아래 Access 전체 대응 문서는 배경 자료입니다. 이전 리뷰 원문은 저장소에서 ICCAS로 보관돼 있으며, 별도 IJCAS 원문과의 동일성은 미확인입니다. 기존 보고서의 수치·원인 해석은 [직접 점검 기록과 제한](06_Advisor_Agreed_Scope_and_Next_Steps.md)을 함께 적용합니다.
+
 > **대상 논문**: *V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis for Autonomous Mobile Robot Obstacle Avoidance*  
 > **투고 저널 / ID**: IEEE Access / `Access-2026-51740`  
 > **판정 일자 / 결과**: `2026-11-12` / **Reject (Do not accept resubmissions)**  
@@ -17,6 +25,8 @@
 | **[`03_Revision_and_Experiment_Action_Plan.md`](./03_Revision_and_Experiment_Action_Plan.md)** | 로봇 PC(`cgv`) 점검 명령어, Track A(무실험)/Track B(소규모 실차) 플랜, 차기 저널 전략 | 로봇 접속 후 점검 및 실험·개정 실행 |
 | **[`04_Robot_PC_Asset_Audit_and_Log_Inventory.md`](./04_Robot_PC_Asset_Audit_and_Log_Inventory.md)** | 로봇 PC(`cgv`) 실물 자산 감사(40개 bag·Trash·모델·캐시) + Git 푸시 가능 로그 인벤토리 | 실제 PC 로그 기준 리뷰 대응 범위 확정 및 로컬 동기화 |
 | **[`05_Advisor_Report_Summary.md`](./05_Advisor_Report_Summary.md)** | 교수님 보고용 핵심 요약(3인 리뷰 요약 + 개선 가능 범위 A/B) | 교수님 대면/메일 보고 및 보완 범위 공유 |
+| **[`06_Advisor_Agreed_Scope_and_Next_Steps.md`](./06_Advisor_Agreed_Scope_and_Next_Steps.md)** | 교수님 합의 범위, 코드·CSV 및 SSH 직접 점검, 기존 해석의 제한 | 검증된 관측과 제안·미확인 사항 구분 |
+| **[`planning/`](./planning/README.md)** | 현재 실험·피규어·비실험 작업 계획과 60회/18클립 계획표 | 다음 작업의 우선순위·취득 항목·완료 기준 |
 
 > **푸시 가능 추출 로그**: [`.gitignore`](../../.gitignore)를 정비하여 [`experiments/logs/`](../../experiments/logs/) 내 기존 68 KB 벤치마크 로그와 신규 추출 경량 로그([`experiments/logs/pc_extracted/`](../../experiments/logs/pc_extracted/README.md), 총 ~1.08 MiB)가 Git 추적을 통해 로컬 PC로 동기화될 수 있도록 정리했습니다.
 
