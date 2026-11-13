@@ -15,6 +15,10 @@
 | **[`01_IEEE_Access_Decision_and_Raw_Reviews.md`](./01_IEEE_Access_Decision_and_Raw_Reviews.md)** | AE 결정문 및 Reviewer 1·2·3 리뷰·질의항목 원문 전문 | 리뷰어 정확한 워딩 대조 및 교수님 공유 |
 | **[`02_Review_Analysis_and_Asset_Audit_Report.md`](./02_Review_Analysis_and_Asset_Audit_Report.md)** | 3인 리뷰어 교차 분석 + 저장소/가중치(`best.pt`)/설정(`omo_r1.yaml`) 실사 보고서 | 기존 보유 자산과 반드시 추가해야 할 실험 구분 |
 | **[`03_Revision_and_Experiment_Action_Plan.md`](./03_Revision_and_Experiment_Action_Plan.md)** | 로봇 PC(`cgv`) 점검 명령어, Track A(무실험)/Track B(소규모 실차) 플랜, 차기 저널 전략 | 로봇 접속 후 점검 및 실험·개정 실행 |
+| **[`04_Robot_PC_Asset_Audit_and_Log_Inventory.md`](./04_Robot_PC_Asset_Audit_and_Log_Inventory.md)** | 로봇 PC(`cgv`) 실물 자산 감사(40개 bag·Trash·모델·캐시) + Git 푸시 가능 로그 인벤토리 | 실제 PC 로그 기준 리뷰 대응 범위 확정 및 로컬 동기화 |
+| **[`05_Advisor_Report_Summary.md`](./05_Advisor_Report_Summary.md)** | 교수님 보고용 핵심 요약(3인 리뷰 요약 + 개선 가능 범위 A/B) | 교수님 대면/메일 보고 및 보완 범위 공유 |
+
+> **푸시 가능 추출 로그**: [`.gitignore`](../../.gitignore)를 정비하여 [`experiments/logs/`](../../experiments/logs/) 내 기존 68 KB 벤치마크 로그와 신규 추출 경량 로그([`experiments/logs/pc_extracted/`](../../experiments/logs/pc_extracted/README.md), 총 ~1.08 MiB)가 Git 추적을 통해 로컬 PC로 동기화될 수 있도록 정리했습니다.
 
 ---
 

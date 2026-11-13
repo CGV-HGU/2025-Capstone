@@ -9,9 +9,17 @@
 # Data directory symlink
 /data
 
-# Experiment logs (keep folder structure via .gitkeep)
-/experiments/logs/*
+# Experiment logs (track lightweight tabular/text logs, ignore binaries/media)
+/experiments/logs/**
+!/experiments/logs/**/
 !/experiments/logs/.gitkeep
+!/experiments/logs/**/*.csv
+!/experiments/logs/**/*.md
+!/experiments/logs/**/*.tex
+!/experiments/logs/**/*.json
+!/experiments/logs/**/*.yaml
+!/experiments/logs/**/*.yml
+!/experiments/logs/**/*.txt
 
 # Temporary test artifacts
 /*.jpg

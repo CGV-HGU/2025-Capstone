@@ -1,0 +1,15 @@
+% Generated Table for IEEE Access Manuscript
+\begin{table*}[!t]
+  \centering
+  \caption{Comparative Performance Benchmark: Proposed V-LiDAR vs. Monocular Depth Estimation Baselines under Identical On-board CPU Execution}
+  \label{tab:baseline_comparison}
+  \begin{tabularx}{\textwidth}{lcccccc}
+    \toprule
+    Method / Architecture & Model Paradigm & Params (M) & Latency (ms) & Throughput (Hz) & $2.50\,\text{m}$ Ranging MAE (m) & Relative Error (\%) \\
+    \midrule
+    V-LiDAR & Floor Seg. + LUT & 2.84 & 19.7 $\pm$ 18.3 & 50.7 & 1.529 & 61.16\% \\
+    MiDaS v2.1 Small & ConvNet MDE & 21.32 & 42.9 $\pm$ 7.4 & 23.3 & 0.880 & 35.20\% \\
+    Depth Anything V2 Small & ViT MDE & 24.79 & 601.4 $\pm$ 26.5 & 1.7 & 3.298 & 131.92\% \\
+    \bottomrule
+  \end{tabularx}
+\end{table*}
