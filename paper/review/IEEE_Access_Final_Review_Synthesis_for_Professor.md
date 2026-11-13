@@ -7,6 +7,7 @@
 - **대상 원고**: IEEE Access (`Access-2026-51740`)
 - **원고 제목**: *V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis for Autonomous Mobile Robot Obstacle Avoidance*
 - **판정 결과**: **Reject (Do not accept resubmissions)**
+- **상세 근거 문서**: [리뷰 원문(01)](https://github.com/CGV-HGU/2025-Capstone/blob/post/paper/review/01_IEEE_Access_Decision_and_Raw_Reviews.md) · [사전 분석(02)](https://github.com/CGV-HGU/2025-Capstone/blob/post/paper/review/02_Review_Analysis_and_Asset_Audit_Report.md) · [실행 플랜(03)](https://github.com/CGV-HGU/2025-Capstone/blob/post/paper/review/03_Revision_and_Experiment_Action_Plan.md) · [로봇 PC 실물 감사(04)](https://github.com/CGV-HGU/2025-Capstone/blob/post/paper/review/04_Robot_PC_Asset_Audit_and_Log_Inventory.md)
 
 ---
 
@@ -42,20 +43,24 @@ IEEE Access는 일반 저널과 달리 **Major Revision(대폭 수정 후 재심
 
 ---
 
-## 3. 연구팀 보유 자산 실사 결과 (코드/가중치/로그 현황)
+## 3. 연구팀 보유 자산 실사 결과 (로봇 PC 실물 점검 완료)
 
-연구팀이 GitHub 저장소 및 가중치 파일을 전수 조사한 결과입니다:
+팀원(Glen02lee)이 로봇 온보드 PC(`/home/cgv`) 및 로컬 저장소를 실사하여 확보한 핵심 자산 내역입니다:
 
-1. **YOLOv11n-seg 학습 설정 및 실제 성능 수치 완전 확보 (`R3 #2` 즉시 해결 가능)**
-   - `best.pt` 메타데이터 확인 결과:
+1. **YOLOv11n-seg 학습 곡선 및 검증 지표 완전 확보 (`R3 #2` 즉시 해결 가능)**
+   - `best.pt` 메타데이터 및 `yolo11n_seg_train_results.csv` 추출 완료:
      - **입력 해상도 / 클래스**: `320×256`, 2클래스 (`0: person`, `1: floor`)
      - **학습 파라미터**: `epochs=100`, `batch=16`, `lr0=0.01`, `mosaic=1.0`, `randaugment`
      - **실측 검증 성능**: Mask Precision **0.805**, Recall **0.761**, **Mask mAP50 0.802**, **mAP50-95 0.562** (Box mAP50 0.804)
-   - *조치*: Section III-B에 해당 학습 스펙 및 성능 표를 즉시 반영할 수 있습니다.
-2. **로봇 PC(`cgv@100.96.194.210`) 내 기존 Rosbag 보관 상태**
-   - 로봇 온보드 PC의 `~/data/bags/`에 기존 주행 데이터(`vlidar_run01`, `vlidar_run02` 등)가 보존되어 있어, **로봇 추가 주행 없이도 오프라인으로 경량 MDE(`FastDepth`, `Lite-Mono`) 비교 및 Confidence 민감도 분석**이 가능합니다.
-3. **물리 2D LiDAR(YDLIDAR) 패키지 보유 확인**
-   - 로봇 제어 코드 내 `omo_r1_lidar.launch.py` 및 YDLIDAR 파라미터가 이미 구현되어 있어, 하드웨어 장착 시 **1~2일 내 즉시 1:1 비교 데이터 취득이 가능**한 상태입니다.
+   - *조치*: Section III-B에 100 에포크 학습 곡선과 하이퍼파라미터 및 성능 표를 즉시 반영할 수 있습니다.
+2. **`run08` 및 `run12` 실패 원인의 완벽한 실증 근거 확보**
+   - 로봇 PC에서 추출한 메트릭(`minimal_A_scen1_20runs_metrics.csv`) 확인 결과:
+     - 중도 정지한 `run08`과 `run12` 두 주행 모두 바닥 인식 성공률(`/floor_detector`)이 **100.0% True** (`1016/1016`, `689/689`)를 기록함.
+     - 즉, **인식 실패가 아니라 Nav2 Costmap 인플레이션 및 DWB 가중치 교착 때문이었음을 데이터로 명백히 입증** 가능.
+3. **로봇 PC 내 40개 Rosbag (총 30,706 프레임) 보존 확인**
+   - 다양한 환경(회전의자, 금속 카트, 계단실 광원, 역광, 좁은 복도 정수기/점자블록, 글레어 등)의 원본 rosbag이 보존되어 있어, **로봇 추가 주행 없이도 오프라인으로 경량 MDE(`FastDepth`, `Lite-Mono`) 비교 및 Confidence 민감도 분석**이 가능합니다.
+4. **물리 2D LiDAR 하드웨어 현황**
+   - 현재 로봇 PC에 드라이버 및 포트 매핑(`/dev/ttyLiDAR`)이 설치되어 있지 않으나, 패키지 설치 시 **1~2일 내 1:1 비교 데이터 취득이 가능**한 상태입니다.
 
 ---
 
@@ -68,7 +73,7 @@ IEEE Access는 일반 저널과 달리 **Major Revision(대폭 수정 후 재심
   - 기존의 *"라이다를 완전히 대체(LiDAR Replacement)"*라는 공격적 주장을 철회하고, **"개방형 실내 환경(2.2–6.0 m)을 위한 초저가 ROS 2 Nav2 통합 단안 계측 시스템 및 고반사/유리 환경 상호보완 센서(Complementary Modality)"**로 포지셔닝 전환.
   - 제목, 초록, 결론에 운용 한계(Operating Envelope: 평탄 바닥, 충분한 조도, 정적 장애물 중심)를 명확히 명시.
 * **A-2. YOLO 학습 데이터셋 표 삽입**: `best.pt`에서 추출한 mAP 0.802 및 하이퍼파라미터 표 수록.
-* **A-3. 경량 MDE 오프라인 벤치마크 보강**: 기존 bag 데이터를 활용하여 FastDepth, Lite-Mono 추론 속도 및 MAE 비교 추가.
+* **A-3. 경량 MDE 오프라인 벤치마크 보강**: 보존된 30,706 프레임 bag 데이터를 활용하여 FastDepth, Lite-Mono 추론 속도 및 MAE 비교 추가.
 * **A-4. 시계열 EMA 필터 지연 시간(약 200 ms) 및 소프트웨어 TCO 분석**: 보행자 속도별 탐지 지연 수식 및 하드웨어 대비 소프트웨어 복잡도 트레이드오프 서술.
 
 ### 4.2 [Track B] 1~2일 소규모 실차 보완 실험 (가장 강력 추천 / 논문 완성도 극대화)
