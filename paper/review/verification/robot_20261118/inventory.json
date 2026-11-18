@@ -1,0 +1,1957 @@
+{
+  "captured_robot_time": "2026-11-18T19:10:52.129552+09:00",
+  "bags": [
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run01",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run01",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 715
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 573
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 573
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2526
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 685
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 5840
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.031793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run01/minimal_A_scen1_run01_0.db3"
+      ],
+      "start_ns": 1789948696040774434,
+      "end_ns": 1789948764502253070,
+      "duration_s": 68.461478636
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run02",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run02",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 742
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 568
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 568
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2503
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 678
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 5798
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.037793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run02/minimal_A_scen1_run02_0.db3"
+      ],
+      "start_ns": 1789948869482830385,
+      "end_ns": 1789948937216525092,
+      "duration_s": 67.733694707
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run03",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run03",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 896
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 686
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 686
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 3067
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 826
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 7112
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.046793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run03/minimal_A_scen1_run03_0.db3"
+      ],
+      "start_ns": 1789948983644182525,
+      "end_ns": 1789949066469041917,
+      "duration_s": 82.824859392
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run04",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run04",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 687
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 451
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 451
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1974
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 536
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4566
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.053793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run04/minimal_A_scen1_run04_0.db3"
+      ],
+      "start_ns": 1789949150117181908,
+      "end_ns": 1789949203795774420,
+      "duration_s": 53.678592512
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run05",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run05",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 718
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 372
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 372
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1689
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 459
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 3930
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.060793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run05/minimal_A_scen1_run05_0.db3"
+      ],
+      "start_ns": 1789949255584674874,
+      "end_ns": 1789949302242523876,
+      "duration_s": 46.657849002
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run06",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run06",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 954
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 496
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 496
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2190
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 604
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 5123
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.064793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run06/minimal_A_scen1_run06_0.db3"
+      ],
+      "start_ns": 1789949511366095363,
+      "end_ns": 1789949571785808485,
+      "duration_s": 60.419713122
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run07",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run07",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 908
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 498
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 498
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2089
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 574
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4880
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.069793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run07/minimal_A_scen1_run07_0.db3"
+      ],
+      "start_ns": 1789949625153130680,
+      "end_ns": 1789949684024080439,
+      "duration_s": 58.870949759
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run08",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run08",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 1219
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 1016
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 1017
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 4656
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 1213
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 10622
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.077793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run08/minimal_A_scen1_run08_0.db3"
+      ],
+      "start_ns": 1789949730345824450,
+      "end_ns": 1789949851598184627,
+      "duration_s": 121.252360177
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run09",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run09",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 715
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 422
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 422
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1813
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 500
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4224
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.084793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run09/minimal_A_scen1_run09_0.db3"
+      ],
+      "start_ns": 1789950099393026945,
+      "end_ns": 1789950149330843502,
+      "duration_s": 49.937816557
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run10",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run10",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 997
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 514
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 514
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2116
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 592
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4993
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.090793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run10/minimal_A_scen1_run10_0.db3"
+      ],
+      "start_ns": 1789950322345402045,
+      "end_ns": 1789950383183577233,
+      "duration_s": 60.838175188
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run11",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run11",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 1043
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 529
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 529
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2262
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 626
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 5250
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.095793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run11/minimal_A_scen1_run11_0.db3"
+      ],
+      "start_ns": 1789950451499380945,
+      "end_ns": 1789950514033220380,
+      "duration_s": 62.533839435
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run12",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run12",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 1220
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 689
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 689
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 3068
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 812
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 7043
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.101793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run12/minimal_A_scen1_run12_0.db3"
+      ],
+      "start_ns": 1789950554642024004,
+      "end_ns": 1789950635782066915,
+      "duration_s": 81.140042911
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run13",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run13",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 731
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 425
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 426
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1846
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 503
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4293
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.109793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run13/minimal_A_scen1_run13_0.db3"
+      ],
+      "start_ns": 1789950701928219071,
+      "end_ns": 1789950752354047161,
+      "duration_s": 50.42582809
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run14",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run14",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 791
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 414
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 414
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1698
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 473
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4036
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.114793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run14/minimal_A_scen1_run14_0.db3"
+      ],
+      "start_ns": 1789950789553458159,
+      "end_ns": 1789950838984875104,
+      "duration_s": 49.431416945
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run15",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run15",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 719
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 415
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 415
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1738
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 480
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4159
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.118793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run15/minimal_A_scen1_run15_0.db3"
+      ],
+      "start_ns": 1789950876060557576,
+      "end_ns": 1789950926440116574,
+      "duration_s": 50.379558998
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run16",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run16",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 900
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 439
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 439
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1932
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 533
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4409
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.122793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run16/minimal_A_scen1_run16_0.db3"
+      ],
+      "start_ns": 1789951001535153162,
+      "end_ns": 1789951054811127445,
+      "duration_s": 53.275974283
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run17",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run17",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 923
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 469
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 469
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2001
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 558
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4676
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.127793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run17/minimal_A_scen1_run17_0.db3"
+      ],
+      "start_ns": 1789951094651662549,
+      "end_ns": 1789951150415566023,
+      "duration_s": 55.763903474
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run18",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run18",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 916
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 494
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 494
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2047
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 566
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4802
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.134793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run18/minimal_A_scen1_run18_0.db3"
+      ],
+      "start_ns": 1789951192881542180,
+      "end_ns": 1789951251375810419,
+      "duration_s": 58.494268239
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run19",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run19",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 913
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 499
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 499
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2057
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 576
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4846
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.139793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run19/minimal_A_scen1_run19_0.db3"
+      ],
+      "start_ns": 1789951293224755189,
+      "end_ns": 1789951352446260364,
+      "duration_s": 59.221505175
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen1_run20",
+      "path": "/home/cgv/data/bags/minimal_A_scen1_run20",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 869
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 474
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 468
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2042
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 564
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4773
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T14:25:03.144793",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/minimal_A_scen1_run20/minimal_A_scen1_run20_0.db3"
+      ],
+      "start_ns": 1789951388843058297,
+      "end_ns": 1789951445264986546,
+      "duration_s": 56.421928249
+    },
+    {
+      "group": "active",
+      "name": "minimal_A_scen2_run01",
+      "path": "/home/cgv/data/bags/minimal_A_scen2_run01",
+      "topics": [
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 656
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 568
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2398
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 568
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 963
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 5677
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-23T17:20:17.627174",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 68.366111198
+    },
+    {
+      "group": "active",
+      "name": "minimal_run02",
+      "path": "/home/cgv/data/bags/minimal_run02",
+      "topics": [
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 436
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 386
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1576
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 386
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 717
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 3796
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-02T19:16:01.708577",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 46.442537341
+    },
+    {
+      "group": "active",
+      "name": "minimal_run03",
+      "path": "/home/cgv/data/bags/minimal_run03",
+      "topics": [
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 719
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1619
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 402
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 402
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 473
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 3830
+        }
+      ],
+      "mtime": "2026-10-02T19:17:14.434592",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 47.245992088
+    },
+    {
+      "group": "active",
+      "name": "minimal_run04",
+      "path": "/home/cgv/data/bags/minimal_run04",
+      "topics": [
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 376
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 447
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 3836
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 376
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1653
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 791
+        }
+      ],
+      "mtime": "2026-10-02T19:18:23.871554",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 45.786009516
+    },
+    {
+      "group": "active",
+      "name": "minimal_run05",
+      "path": "/home/cgv/data/bags/minimal_run05",
+      "topics": [
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 405
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 701
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 350
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1499
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 350
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 3476
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-02T19:19:23.322373",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 41.512203321
+    },
+    {
+      "group": "active",
+      "name": "minimal_run06",
+      "path": "/home/cgv/data/bags/minimal_run06",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 128
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 237
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1070
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 237
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 291
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 2480
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-02T19:20:11.384033",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 29.063384661
+    },
+    {
+      "group": "active",
+      "name": "vlidar_run01",
+      "path": "/home/cgv/data/bags/vlidar_run01",
+      "topics": [
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 2034
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 561
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 561
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2388
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 652
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 5617
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-02T19:06:10.203984",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/vlidar_run01/vlidar_run01_0.db3"
+      ],
+      "start_ns": 1790935416988336892,
+      "end_ns": 1790935484750448911,
+      "duration_s": 67.762112019
+    },
+    {
+      "group": "active",
+      "name": "vlidar_run02",
+      "path": "/home/cgv/data/bags/vlidar_run02",
+      "topics": [
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 1552
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 447
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 447
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1931
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 515
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4511
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-02T19:30:09.158107",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/data/bags/vlidar_run02/vlidar_run02_0.db3"
+      ],
+      "start_ns": 1790936460380413006,
+      "end_ns": 1790936514235440907,
+      "duration_s": 53.855027901
+    },
+    {
+      "group": "trash",
+      "name": "minimal_A_scen1_run01",
+      "path": "/home/cgv/.local/share/Trash/files/minimal_A_scen1_run01",
+      "topics": [
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 689
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 710
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 3203
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 710
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 845
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 7348
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T00:01:10.870682",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 84.474577313
+    },
+    {
+      "group": "trash",
+      "name": "minimal_A_scen1_run09",
+      "path": "/home/cgv/.local/share/Trash/files/minimal_A_scen1_run09",
+      "topics": [
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 692
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 832
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 692
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 3049
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 699
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 7023
+        }
+      ],
+      "mtime": "2026-09-21T09:20:59.505348",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 83.437053411
+    },
+    {
+      "group": "trash",
+      "name": "minimal_run02",
+      "path": "/home/cgv/.local/share/Trash/files/minimal_run02",
+      "topics": [
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 510
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 4350
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 709
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 439
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1857
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 439
+        }
+      ],
+      "mtime": "2026-10-01T20:29:53.808720",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 52.204616606
+    },
+    {
+      "group": "trash",
+      "name": "minimal_run02.2",
+      "path": "/home/cgv/.local/share/Trash/files/minimal_run02.2",
+      "topics": [
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 1106
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 1331
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 1106
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 5184
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 0
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 11788
+        }
+      ],
+      "mtime": "2026-10-02T19:14:57.939681",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 133.662379138
+    },
+    {
+      "group": "trash",
+      "name": "minimal_run03",
+      "path": "/home/cgv/.local/share/Trash/files/minimal_run03",
+      "topics": [
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 446
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 773
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1567
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 385
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 385
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 3777
+        }
+      ],
+      "mtime": "2026-10-01T20:31:23.024867",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 45.68204362
+    },
+    {
+      "group": "trash",
+      "name": "nav_debug_avoidance",
+      "path": "/home/cgv/.local/share/Trash/files/nav_debug_avoidance",
+      "topics": [
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 1971
+        },
+        {
+          "name": "/cmd_vel",
+          "type": "geometry_msgs/msg/Twist",
+          "count": 771
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 542
+        },
+        {
+          "name": "/initialpose",
+          "type": "geometry_msgs/msg/PoseWithCovarianceStamped",
+          "count": 3
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 542
+        },
+        {
+          "name": "/local_plan",
+          "type": "nav_msgs/msg/Path",
+          "count": 376
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2323
+        },
+        {
+          "name": "/plan",
+          "type": "nav_msgs/msg/Path",
+          "count": 37
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 634
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 5483
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-09-21T00:18:57.313852",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/.local/share/Trash/files/nav_debug_avoidance/nav_debug_avoidance_0.db3"
+      ],
+      "start_ns": 1789917414484135212,
+      "end_ns": 1789917480151896872,
+      "duration_s": 65.66776166
+    },
+    {
+      "group": "trash",
+      "name": "vlidar_run01",
+      "path": "/home/cgv/.local/share/Trash/files/vlidar_run01",
+      "topics": [
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 266
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 2335
+        },
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 803
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 242
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1016
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 242
+        }
+      ],
+      "mtime": "2026-10-01T20:26:06.005764",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 28.133100162
+    },
+    {
+      "group": "trash",
+      "name": "vlidar_run01.2",
+      "path": "/home/cgv/.local/share/Trash/files/vlidar_run01.2",
+      "topics": [
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 381
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 381
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 1680
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 471
+        },
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 1411
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 3972
+        }
+      ],
+      "mtime": "2026-10-01T20:27:47.452086",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 47.172730074
+    },
+    {
+      "group": "trash",
+      "name": "vlidar_run01.3",
+      "path": "/home/cgv/.local/share/Trash/files/vlidar_run01.3",
+      "topics": [
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 2613
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 745
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 745
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 3172
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 869
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 7399
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-01T20:36:09.526519",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/.local/share/Trash/files/vlidar_run01.3/vlidar_run01_0.db3"
+      ],
+      "start_ns": 1790854480972642703,
+      "end_ns": 1790854569522816581,
+      "duration_s": 88.550173878
+    },
+    {
+      "group": "trash",
+      "name": "vlidar_run01.4",
+      "path": "/home/cgv/.local/share/Trash/files/vlidar_run01.4",
+      "topics": [
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 2305
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 647
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 647
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2876
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 769
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 6638
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-02T18:21:33.942389",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/.local/share/Trash/files/vlidar_run01.4/vlidar_run01_0.db3"
+      ],
+      "start_ns": 1790932896870218765,
+      "end_ns": 1790932973792686282,
+      "duration_s": 76.922467517
+    },
+    {
+      "group": "trash",
+      "name": "vlidar_run01.5",
+      "path": "/home/cgv/.local/share/Trash/files/vlidar_run01.5",
+      "topics": [
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 15895
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 4548
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 4548
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 22336
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 5806
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 50954
+        },
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        }
+      ],
+      "mtime": "2026-10-02T18:44:50.819292",
+      "source": "sqlite_readonly",
+      "database_files": [
+        "/home/cgv/.local/share/Trash/files/vlidar_run01.5/vlidar_run01_0.db3"
+      ],
+      "start_ns": 1790933708635265408,
+      "end_ns": 1790934290801779081,
+      "duration_s": 582.166513673
+    },
+    {
+      "group": "trash",
+      "name": "vlidar_run01.6",
+      "path": "/home/cgv/.local/share/Trash/files/vlidar_run01.6",
+      "topics": [
+        {
+          "name": "/tf_static",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 1
+        },
+        {
+          "name": "/tf",
+          "type": "tf2_msgs/msg/TFMessage",
+          "count": 6129
+        },
+        {
+          "name": "/scan",
+          "type": "sensor_msgs/msg/LaserScan",
+          "count": 707
+        },
+        {
+          "name": "/lidar_channel_distances",
+          "type": "std_msgs/msg/Float32MultiArray",
+          "count": 596
+        },
+        {
+          "name": "/odom",
+          "type": "nav_msgs/msg/Odometry",
+          "count": 2665
+        },
+        {
+          "name": "/floor_detector",
+          "type": "std_msgs/msg/Bool",
+          "count": 596
+        },
+        {
+          "name": "/camera/image_raw",
+          "type": "sensor_msgs/msg/Image",
+          "count": 2122
+        }
+      ],
+      "mtime": "2026-10-02T18:56:08.511372",
+      "source": "metadata_only_compressed_not_rechecked",
+      "duration_s": 70.72663676
+    }
+  ],
+  "matching_processes": [],
+  "ros_setup_exists": true
+}

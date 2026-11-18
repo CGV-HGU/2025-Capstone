@@ -1,0 +1,27 @@
+{
+  "inspection_date": "2026-11-18",
+  "host_alias": "omo-r1",
+  "robot_repo": "/home/cgv/ros2_ws",
+  "robot_branch": "post",
+  "robot_head": "b495e0e",
+  "local_head": "5add6fbaa983abc612f9dc548848a101069de725",
+  "operations": "Read-only SSH, read-only SQLite/CDR deserialization, representative image extraction. No ROS nodes, replay, inference, actuation, code or parameter changes.",
+  "source_sha256": {
+    "floor_detector.py": "4f0af97bee9b4cdcc7af7587ea9751ad0f288d93886ba782770a64dbaf329eaf",
+    "fake_lidar_with_tf.py": "81c99f5aa80cc044ca3fc7734616b8705f9d66fc5bc79fed4fe34ac3236aeb4c",
+    "omo_r1.yaml": "8d0ae2563a549105fbed8bcb58fc87fa2b571ab9de20ab9adc538bdab68739a1",
+    "best.pt": "adad7307fd2a6e9ee17a565ccfb0138800129536959bfdf01186c5b485461886"
+  },
+  "summary": {
+    "twenty_bags_have_camera": false,
+    "endpoint_x_at_least_9_5_m": 18,
+    "endpoint_proxy_is_verified_success": false,
+    "channel_hz_min_median_max": [
+      8.358452457056435,
+      8.422734705706848,
+      8.485990838004875
+    ]
+  },
+  "preview_contact_sheet": "/storage/emulated/0/Documents/VLidar_Review_20261118/rosbag_대표프레임_18장.jpg",
+  "integrity_scope": "26 bag folders inspected via SQLite; 14 compressed-only folders via metadata without decompression/revalidation. Not an assertion of complete bag integrity."
+}

@@ -1,0 +1,527 @@
+{
+  "selection": "Six uncompressed camera bags; camera-message quantiles 10%, 50%, 90%; no model inference or ROS node initialization.",
+  "frames": [
+    {
+      "group": "active",
+      "bag": "vlidar_run01",
+      "database": "/home/cgv/data/bags/vlidar_run01/vlidar_run01_0.db3",
+      "fraction": 0.1,
+      "frame_index": 203,
+      "message_id": 947,
+      "record_timestamp_ns": 1790935423757061324,
+      "relative_camera_time_s": 6.768724432,
+      "camera_header_s": 1790935423.7461634,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.041329301,
+        "header_s": 1790935423.7153077,
+        "finite_valid_channels": 83,
+        "min_m": 4.4007768630981445,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.007522341,
+        "x": 0.0,
+        "y": 0.0,
+        "yaw_deg": 0.0
+      },
+      "preview_jpeg_sha256": "e967d03f909d50ba9150a8bcd4faadc1c57b69eb1faebba30b5c1a5626284f32"
+    },
+    {
+      "group": "active",
+      "bag": "vlidar_run01",
+      "database": "/home/cgv/data/bags/vlidar_run01/vlidar_run01_0.db3",
+      "fraction": 0.5,
+      "frame_index": 1016,
+      "message_id": 5745,
+      "record_timestamp_ns": 1790935450843306669,
+      "relative_camera_time_s": 33.854969777,
+      "camera_header_s": 1790935450.8425176,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.027548718,
+        "header_s": 1790935450.8153512,
+        "finite_valid_channels": 127,
+        "min_m": 3.5708115100860596,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.006620404,
+        "x": 5.197403858079286,
+        "y": -0.6417633952852724,
+        "yaw_deg": -7.334678701610156
+      },
+      "preview_jpeg_sha256": "d1c4b43c29f2d15a8fbd80bda040880b48906aa6477c509c8932068722afd248"
+    },
+    {
+      "group": "active",
+      "bag": "vlidar_run01",
+      "database": "/home/cgv/data/bags/vlidar_run01/vlidar_run01_0.db3",
+      "fraction": 0.9,
+      "frame_index": 1830,
+      "message_id": 10576,
+      "record_timestamp_ns": 1790935477985816165,
+      "relative_camera_time_s": 60.997479273,
+      "camera_header_s": 1790935477.9748077,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.029673846,
+        "header_s": 1790935478.0150774,
+        "finite_valid_channels": 127,
+        "min_m": 4.198471546173096,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": -0.007019432,
+        "x": 9.769943889004479,
+        "y": -0.010854749463167173,
+        "yaw_deg": 7.520450607529625
+      },
+      "preview_jpeg_sha256": "513db5480885321afbac74d7eeb1cb5ac9165f7060ba0bad0c570a2dbac46b1f"
+    },
+    {
+      "group": "active",
+      "bag": "vlidar_run02",
+      "database": "/home/cgv/data/bags/vlidar_run02/vlidar_run02_0.db3",
+      "fraction": 0.1,
+      "frame_index": 155,
+      "message_id": 1234,
+      "record_timestamp_ns": 1790936467701708220,
+      "relative_camera_time_s": 5.166858455,
+      "camera_header_s": 1790936467.6902874,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.009862293,
+        "header_s": 1790936467.6913903,
+        "finite_valid_channels": 80,
+        "min_m": 4.7662739753723145,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.006260208,
+        "x": 0.0,
+        "y": 0.0,
+        "yaw_deg": 0.0
+      },
+      "preview_jpeg_sha256": "258f756e6c0c5cf83c55cb7fff5f727ce6e05b6146664845dc0e8b0d2891af98"
+    },
+    {
+      "group": "active",
+      "bag": "vlidar_run02",
+      "database": "/home/cgv/data/bags/vlidar_run02/vlidar_run02_0.db3",
+      "fraction": 0.5,
+      "frame_index": 776,
+      "message_id": 4875,
+      "record_timestamp_ns": 1790936488401286027,
+      "relative_camera_time_s": 25.866436262,
+      "camera_header_s": 1790936488.390405,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.009331568,
+        "header_s": 1790936488.3914616,
+        "finite_valid_channels": 127,
+        "min_m": 5.755406856536865,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": -0.004227227,
+        "x": 6.224491454929991,
+        "y": -0.6096600419297405,
+        "yaw_deg": 8.254821281335404
+      },
+      "preview_jpeg_sha256": "f35d9d2d517c11b794027e86e0a069ded78b3016c4bf20dc649adbb26f54362f"
+    },
+    {
+      "group": "active",
+      "bag": "vlidar_run02",
+      "database": "/home/cgv/data/bags/vlidar_run02/vlidar_run02_0.db3",
+      "fraction": 0.9,
+      "frame_index": 1396,
+      "message_id": 8474,
+      "record_timestamp_ns": 1790936509066036729,
+      "relative_camera_time_s": 46.531186964,
+      "camera_header_s": 1790936509.0547757,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.026079965,
+        "header_s": 1790936509.0913877,
+        "finite_valid_channels": 127,
+        "min_m": 4.4646501541137695,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": -0.008442286,
+        "x": 9.627778015602734,
+        "y": 0.013597350919501188,
+        "yaw_deg": 1.6279167658212952
+      },
+      "preview_jpeg_sha256": "c78c3004a03bea94419144cb9f09edd7efec93c93fa7ed3a316c115dd6af4fdd"
+    },
+    {
+      "group": "trash",
+      "bag": "nav_debug_avoidance",
+      "database": "/home/cgv/.local/share/Trash/files/nav_debug_avoidance/nav_debug_avoidance_0.db3",
+      "fraction": 0.1,
+      "frame_index": 197,
+      "message_id": 943,
+      "record_timestamp_ns": 1789917421044331759,
+      "relative_camera_time_s": 6.560196547,
+      "camera_header_s": 1789917421.042626,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.030155905,
+        "header_s": 1789917421.0129633,
+        "finite_valid_channels": 77,
+        "min_m": 2.578368663787842,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": -0.007801678,
+        "x": 0.0,
+        "y": 0.0,
+        "yaw_deg": 0.0
+      },
+      "preview_jpeg_sha256": "25b5782f6ecc20442a74251d5ae4daca969cdc6a4b12c7ae333e560c298babdd"
+    },
+    {
+      "group": "trash",
+      "bag": "nav_debug_avoidance",
+      "database": "/home/cgv/.local/share/Trash/files/nav_debug_avoidance/nav_debug_avoidance_0.db3",
+      "fraction": 0.5,
+      "frame_index": 985,
+      "message_id": 6075,
+      "record_timestamp_ns": 1789917447306935975,
+      "relative_camera_time_s": 32.822800763,
+      "camera_header_s": 1789917447.3062465,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.006566305,
+        "header_s": 1789917447.312965,
+        "finite_valid_channels": 127,
+        "min_m": 2.177725315093994,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.005506375,
+        "x": 2.850248134924811,
+        "y": 0.17194302579972803,
+        "yaw_deg": 0.9353385408137918
+      },
+      "preview_jpeg_sha256": "63525d3d9a506abb29b4a971fe0d0faa22a1b9275b6ea1b727c7c3f3b385d04f"
+    },
+    {
+      "group": "trash",
+      "bag": "nav_debug_avoidance",
+      "database": "/home/cgv/.local/share/Trash/files/nav_debug_avoidance/nav_debug_avoidance_0.db3",
+      "fraction": 0.9,
+      "frame_index": 1773,
+      "message_id": 11476,
+      "record_timestamp_ns": 1789917473573796644,
+      "relative_camera_time_s": 59.089661432,
+      "camera_header_s": 1789917473.5724835,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.039495186,
+        "header_s": 1789917473.6128526,
+        "finite_valid_channels": 127,
+        "min_m": 3.5359654426574707,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.004174637,
+        "x": 9.827632450305844,
+        "y": 0.1276901464484579,
+        "yaw_deg": 0.12213220580382231
+      },
+      "preview_jpeg_sha256": "6a15879cc4de9c24497599471ffa01873996a0d33a69b05e83f85907ed3d132e"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.3",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.3/vlidar_run01_0.db3",
+      "fraction": 0.1,
+      "frame_index": 261,
+      "message_id": 1588,
+      "record_timestamp_ns": 1790854491146177240,
+      "relative_camera_time_s": 8.685401087,
+      "camera_header_s": 1790854491.1453373,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.01244189,
+        "header_s": 1790854491.1582563,
+        "finite_valid_channels": 112,
+        "min_m": 4.310144424438477,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.007740568,
+        "x": 0.4863701346277333,
+        "y": 0.03905135853208525,
+        "yaw_deg": 8.59003789243126
+      },
+      "preview_jpeg_sha256": "c69d50eb4d4cd180f7ffc6ac822aee6206ea3f89ffcded773786951d8055ebef"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.3",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.3/vlidar_run01_0.db3",
+      "fraction": 0.5,
+      "frame_index": 1306,
+      "message_id": 7744,
+      "record_timestamp_ns": 1790854525978539956,
+      "relative_camera_time_s": 43.517763803,
+      "camera_header_s": 1790854525.9778104,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.019979438,
+        "header_s": 1790854525.9582562,
+        "finite_valid_channels": 127,
+        "min_m": 3.0383989810943604,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.008855546,
+        "x": 6.0930792717623365,
+        "y": 0.42389254427549145,
+        "yaw_deg": -3.5527056007425073
+      },
+      "preview_jpeg_sha256": "6b8fa9d345ffba176cb450d6d8a4dcedb2659aecb02317225ab4f0c7ae63db84"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.3",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.3/vlidar_run01_0.db3",
+      "fraction": 0.9,
+      "frame_index": 2351,
+      "message_id": 13948,
+      "record_timestamp_ns": 1790854560822012571,
+      "relative_camera_time_s": 78.361236418,
+      "camera_header_s": 1790854560.8109064,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.037795021,
+        "header_s": 1790854560.8584566,
+        "finite_valid_channels": 91,
+        "min_m": 2.1828293800354004,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": -0.011548779,
+        "x": 9.976264209596689,
+        "y": 8.160885205565107,
+        "yaw_deg": 130.12543437393654
+      },
+      "preview_jpeg_sha256": "521c5cf30e786456d2942d6557cf4025c1408c84f8e5c565613cc64fe12da01c"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.4",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.4/vlidar_run01_0.db3",
+      "fraction": 0.1,
+      "frame_index": 230,
+      "message_id": 1425,
+      "record_timestamp_ns": 1790932904657256834,
+      "relative_camera_time_s": 7.663402316,
+      "camera_header_s": 1790932904.6463885,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.04799899,
+        "header_s": 1790932904.704821,
+        "finite_valid_channels": 76,
+        "min_m": 4.3941121101379395,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.007451432,
+        "x": 0.0,
+        "y": 0.0,
+        "yaw_deg": 0.0
+      },
+      "preview_jpeg_sha256": "8d767fc3a9346507d297fb242e9ffa589d9bb95e1e3eee7c23c1626a32314c63"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.4",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.4/vlidar_run01_0.db3",
+      "fraction": 0.5,
+      "frame_index": 1152,
+      "message_id": 6853,
+      "record_timestamp_ns": 1790932935389800321,
+      "relative_camera_time_s": 38.395945803,
+      "camera_header_s": 1790932935.3788505,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.01555197,
+        "header_s": 1790932935.4048688,
+        "finite_valid_channels": 78,
+        "min_m": 4.326927185058594,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.012526559,
+        "x": 7.845439294102237,
+        "y": 1.0854647950168201,
+        "yaw_deg": 45.46302444368693
+      },
+      "preview_jpeg_sha256": "80c2bd17f4dde110886a5fca205d9bfa747ac86e505430d6fdc6e55ca2d6d8d6"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.4",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.4/vlidar_run01_0.db3",
+      "fraction": 0.9,
+      "frame_index": 2074,
+      "message_id": 12477,
+      "record_timestamp_ns": 1790932966122754928,
+      "relative_camera_time_s": 69.12890041,
+      "camera_header_s": 1790932966.1114058,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.017211489,
+        "header_s": 1790932966.104867,
+        "finite_valid_channels": 78,
+        "min_m": 4.326931476593018,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.016189138,
+        "x": 5.93099103033466,
+        "y": 8.4816694756786,
+        "yaw_deg": 163.4551815237248
+      },
+      "preview_jpeg_sha256": "2d1ba1e874a30f32839de972c3d5a7ed43919c23a9f9328a4bb03b02fdb61c4a"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.5",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.5/vlidar_run01_0.db3",
+      "fraction": 0.1,
+      "frame_index": 1589,
+      "message_id": 9514,
+      "record_timestamp_ns": 1790933763139760611,
+      "relative_camera_time_s": 52.963905394,
+      "camera_header_s": 1790933763.1287928,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.048295474,
+        "header_s": 1790933763.1874597,
+        "finite_valid_channels": 127,
+        "min_m": 3.084667682647705,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": -0.007215063,
+        "x": 6.809818368836259,
+        "y": 3.4399802311431866,
+        "yaw_deg": -104.14951358650039
+      },
+      "preview_jpeg_sha256": "26fc4ee1a06e6effed7c556ac39a5693d50cc3f20936c41db5b0ab8c14adb7dc"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.5",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.5/vlidar_run01_0.db3",
+      "fraction": 0.5,
+      "frame_index": 7947,
+      "message_id": 48298,
+      "record_timestamp_ns": 1790933975053616513,
+      "relative_camera_time_s": 264.877761296,
+      "camera_header_s": 1790933975.0425384,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": 0.034637689,
+        "header_s": 1790933975.0874848,
+        "finite_valid_channels": 127,
+        "min_m": 2.381742477416992,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": 0.007656551,
+        "x": 6.614357620349243,
+        "y": 2.830145612515367,
+        "yaw_deg": -98.98005208570328
+      },
+      "preview_jpeg_sha256": "60c3bfaf116298881b3c24d11ed48846b09c9508d9d45f2aceabe03c10f64f03"
+    },
+    {
+      "group": "trash",
+      "bag": "vlidar_run01.5",
+      "database": "/home/cgv/.local/share/Trash/files/vlidar_run01.5/vlidar_run01_0.db3",
+      "fraction": 0.9,
+      "frame_index": 14305,
+      "message_id": 90079,
+      "record_timestamp_ns": 1790934207294026969,
+      "relative_camera_time_s": 497.118171752,
+      "camera_header_s": 1790934207.2932131,
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "nearest_scan": {
+        "record_delta_s": -0.005419869,
+        "header_s": 1790934207.2874548,
+        "finite_valid_channels": 127,
+        "min_m": 2.381742477416992,
+        "range_min": 0.10000000149011612,
+        "range_max": 10.0
+      },
+      "nearest_odom": {
+        "record_delta_s": -0.004943786,
+        "x": 6.614357620349243,
+        "y": 2.830145612515367,
+        "yaw_deg": -98.98005208570328
+      },
+      "preview_jpeg_sha256": "18cee47edaf404f741e18da0a339522cf1c5e247e7f79f6e586a6d2a51c2b42d"
+    }
+  ]
+}

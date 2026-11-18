@@ -1,0 +1,114 @@
+{
+  "scope": "Local source/CSV audit; synthetic function probes; no model inference or robot execution.",
+  "source_sha256": {
+    "src/freespace_detection/freespace_detection/floor_detector.py": "4f0af97bee9b4cdcc7af7587ea9751ad0f288d93886ba782770a64dbaf329eaf",
+    "src/fake_lidar_with_tf/fake_lidar_with_tf/fake_lidar_with_tf.py": "81c99f5aa80cc044ca3fc7734616b8705f9d66fc5bc79fed4fe34ac3236aeb4c",
+    "experiments/benchmark_depth_baselines.py": "e5fadb1803521c7819ccfd1f4ef8f1fed99dfced68e2a1c23b3e672f8ddbb4eb",
+    "experiments/run_dual_bag_benchmark.py": "db1ca07c23c859e73a2878e29830747b9c2bee1483fc53249504967f52aa7d97"
+  },
+  "synthetic_class_union": {
+    "input": "A 90x60 non-floor rectangle; person mask fills the same rectangle.",
+    "remaining_nonfloor_pixels_floor_only": 5400,
+    "remaining_nonfloor_pixels_floor_plus_person": 0,
+    "limitation": "Supplied masks only; does not measure real model/person detection accuracy."
+  },
+  "synthetic_temporal_filter": {
+    "input_m": [
+      null,
+      3.0,
+      3.0,
+      null,
+      null
+    ],
+    "output_m": [
+      null,
+      null,
+      3.0,
+      3.0,
+      null
+    ],
+    "null_means": "positive infinity",
+    "timing_note": "One extra processing sample before confirming onset; not a measured millisecond latency."
+  },
+  "synthetic_stale_scan": {
+    "input_update_count": 1,
+    "timer_times_s": [
+      0.0,
+      5.0
+    ],
+    "output_ranges_equal": true,
+    "limitation": "Direct timer invocation with stub messages/clock; no ROS runtime or robot."
+  },
+  "synthetic_no_detection_ranging": {
+    "valid_input_ranges": 0,
+    "ground_truth_m": 2.5,
+    "reported_estimate_m": 2.85,
+    "reported_error_m": 0.35,
+    "reported_mae_m": 0.35
+  },
+  "inventory_csv": {
+    "bags": 40,
+    "groups": {
+      "active_data_bags": 28,
+      "trash_files": 12
+    },
+    "with_camera": 9,
+    "camera_messages": 30706,
+    "status": {
+      "OK_DB3": 26,
+      "OK_ZSTD": 13,
+      "CORRUPT_ZSTD: mal_run02_0.db3.zstd : Read error (39) : premature end": 1
+    }
+  },
+  "twenty_run_csv": {
+    "rows": 20,
+    "camera_messages": 0,
+    "plan_messages": 0,
+    "endpoint_x_at_least_9_5m": 18,
+    "has_action_or_success_outcome": false
+  },
+  "legacy_runner_reaggregation": {
+    "input_rows": 200,
+    "selected_rows": 59,
+    "selection": "robot_x < 3.8 and 2.18 <= gt_distance <= 5.0 and finite(vl_dist)",
+    "caution": "Reproduces legacy CSV aggregation, not independent ground truth validation.",
+    "vl": {
+      "mae_m": 1.529289410053871,
+      "latency_ms_mean": 19.72201559052337,
+      "latency_ms_population_sd": 18.28830018082881
+    },
+    "midas": {
+      "mae_m": 0.8795996024206825,
+      "latency_ms_mean": 42.92961698491126,
+      "latency_ms_population_sd": 7.436408337964344
+    },
+    "da": {
+      "mae_m": 3.2980690095584317,
+      "latency_ms_mean": 601.3774509757059,
+      "latency_ms_population_sd": 26.461543197579967
+    }
+  },
+  "committed_luts": {
+    "declared_channels": 141,
+    "mapped_channels": 127,
+    "mapped_min_channel": 7,
+    "mapped_max_channel": 133,
+    "minimum_finite_2d_range_m": 2.1776927923966585,
+    "caution": "A LUT support bound, not measured obstacle clearance."
+  },
+  "illustrative_wilson_intervals": {
+    "9_of_10": [
+      0.5958499732047616,
+      0.982123786904927
+    ],
+    "10_of_10": [
+      0.7224672001371109,
+      1.0
+    ],
+    "18_of_20": [
+      0.6989663547715128,
+      0.9721335187862319
+    ],
+    "note": "Statistical illustrations, not new experimental outcomes."
+  }
+}

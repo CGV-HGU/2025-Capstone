@@ -1,12 +1,20 @@
 # IEEE Access 심사 결과 리뷰 및 후속 연구·재투고 플랜 (`Access-2026-51740`)
 
-> **현재 실행 계획:** 교수님과 합의한 이전 리뷰 대응 범위를 기준으로 정리한 [실험·피규어·기존 자료 활용 계획](planning/README.md)을 먼저 확인하세요. 기본안은 **2개 환경 × 3개 조건 × 10회 = 60회**, 필요 시 정적 baseline 입력 18클립입니다. 모두 **미실행 제안**이며 실험 3일과 분석·원고 반영 기간을 구분합니다.
+> **별도 원고 확인(11/18): [ICCAS–IJCAS 저장소의 실제 IJCAS 원고 점검](10_IJCAS_Manuscript_Repository_Check_20261118.md).** 새 저장소 `main@078bffc`의 IJCAS 본문 492행과 그림 7개를 확인했다. 정적 거리 실험의 세 물체와 단일 박스 주행 39/50회를 구분하고, 오차 정의·현재 코드와의 버전 차이·학습 자료 출처를 반영해 아래 실행 초안을 보정했다.
+
+> **현재 실행 초안(11/18): [로봇 원본 점검을 반영한 코드 개선·IJCAS 실험 계획](planning/04_Robot_Checked_Code_and_Experiment_Plan_20261118.md).** 로봇의 20회 기록과 영상 있는 6개 bag의 대표 프레임을 직접 읽었다. 관측/측정 오류 정리, 필터 검증, 3장소×2배치 60회 및 정적36클립을 제안하며 구현·새 실험은 아직 수행하지 않았다. [원본 점검 근거](verification/robot_20261118/README.md) · [미실행 v2 계획표](planning/templates/proposal_v2_20261118/README.md). 기존 v1과 합산하지 않는다.
+
+> **최신 사용자 확인(11/18):** [IJCAS AE 코멘트 기준 실험 우선순위와 3D LiDAR 활용 판단](09_IJCAS_Review_Priority_and_3D_LiDAR_Option_20261118.md)을 먼저 확인하세요. 사용자가 IJCAS 코멘트를 직접 제공했으며, 요구는 `LiDAR or alternative baseline`입니다. 2D LiDAR는 없고 3D 장비는 보유 가능성만 언급됐습니다. 환경 확장·실패/조명 검증·공정한 시각 baseline을 주 경로로 권장하며 물리 비교는 준비 상태와 주장에 따른 선택지입니다.
+>
+> **미팅 자료(11/16):** [PDF 분석과 비교 실험 갱신안](08_Week12_Meeting_Analysis_and_Updated_Experiment_Strategy_20261118.md)에는 오석 코너·직선 복도·물리 2D LiDAR **후보**와 선택적 비교 주행 수가 있습니다. 수행 여부와 반복 수는 확정되지 않았습니다. [코드·CSV 직접 점검](07_Post_Branch_Audit_and_IJCAS_Priorities_20261118.md)도 함께 적용합니다.
+>
+> **기존 실행 제안(11/13):** [실험·피규어·기존 자료 활용 계획](planning/README.md)의 기본안은 **2개 환경 × 3개 조건 × 10회 = 60회**, 필요 시 정적 baseline 입력 18클립입니다. 이는 V-LiDAR 한 방식의 **미실행 제안**이며 물리 LiDAR 비교까지 자동으로 포함하지 않습니다. 최신 미팅에 맞춘 범위가 확정되면 실험표도 함께 갱신합니다.
 >
 > **팀원 첫 안내:** [무엇을 준비하고 3일 동안 무엇을 끝낼지](planning/00_Team_Briefing.md)
 >
 > [실험 세팅·일정](planning/01_Experiment_Setup_and_Three_Day_Plan.md) · [피규어·표 계획](planning/02_Figure_and_Table_Plan.md) · [추가 실험 없는 작업과 오프라인 실험 구분](planning/03_Existing_Data_and_Desk_Work_Plan.md) · [현장 계획표·기록 양식](planning/templates/README.md)
 >
-> 아래 Access 전체 대응 문서는 배경 자료입니다. 이전 리뷰 원문은 저장소에서 ICCAS로 보관돼 있으며, 별도 IJCAS 원문과의 동일성은 미확인입니다. 기존 보고서의 수치·원인 해석은 [직접 점검 기록과 제한](06_Advisor_Agreed_Scope_and_Next_Steps.md)을 함께 적용합니다.
+> 아래 Access 전체 대응 문서는 배경 자료입니다. 이전 단문 리뷰는 ICCAS라는 경로에 보관돼 있었지만 사용자가 IJCAS AE 코멘트임을 확인해 제공했으므로 현재 해석은 09의 원문을 따릅니다. 기존 보고서의 수치·원인 해석은 [직접 점검 기록과 제한](06_Advisor_Agreed_Scope_and_Next_Steps.md)을 함께 적용합니다.
 
 > **대상 논문**: *V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis for Autonomous Mobile Robot Obstacle Avoidance*  
 > **투고 저널 / ID**: IEEE Access / `Access-2026-51740`  
@@ -26,7 +34,10 @@
 | **[`04_Robot_PC_Asset_Audit_and_Log_Inventory.md`](./04_Robot_PC_Asset_Audit_and_Log_Inventory.md)** | 로봇 PC(`cgv`) 실물 자산 감사(40개 bag·Trash·모델·캐시) + Git 푸시 가능 로그 인벤토리 | 실제 PC 로그 기준 리뷰 대응 범위 확정 및 로컬 동기화 |
 | **[`05_Advisor_Report_Summary.md`](./05_Advisor_Report_Summary.md)** | 교수님 보고용 핵심 요약(3인 리뷰 요약 + 개선 가능 범위 A/B) | 교수님 대면/메일 보고 및 보완 범위 공유 |
 | **[`06_Advisor_Agreed_Scope_and_Next_Steps.md`](./06_Advisor_Agreed_Scope_and_Next_Steps.md)** | 교수님 합의 범위, 코드·CSV 및 SSH 직접 점검, 기존 해석의 제한 | 검증된 관측과 제안·미확인 사항 구분 |
-| **[`planning/`](./planning/README.md)** | 현재 실험·피규어·비실험 작업 계획과 60회/18클립 계획표 | 다음 작업의 우선순위·취득 항목·완료 기준 |
+| **[`07_Post_Branch_Audit_and_IJCAS_Priorities_20261118.md`](./07_Post_Branch_Audit_and_IJCAS_Priorities_20261118.md)** | 코드·CSV 재현과 합성 입력 확인, 실험 전 보완 항목 | 원고·측정·실제 실행의 연결 점검 |
+| **[`08_Week12_Meeting_Analysis_and_Updated_Experiment_Strategy_20261118.md`](./08_Week12_Meeting_Analysis_and_Updated_Experiment_Strategy_20261118.md)** | 최신 미팅 PDF, 물리 LiDAR 후보·장소·일정·비교 실험·피규어 갱신 | 최신 후보와 확정/미실행 상태 구분 |
+| **[`09_IJCAS_Review_Priority_and_3D_LiDAR_Option_20261118.md`](./09_IJCAS_Review_Priority_and_3D_LiDAR_Option_20261118.md)** | 사용자 확인 IJCAS AE 원문, LiDAR/대체 baseline 해석, 장비 제약·3D 투영 선택지 | 현재 자원과 리뷰에 맞춘 실험 우선순위 |
+| **[`planning/`](./planning/README.md)** | 11/13 기준 실험·피규어·비실험 작업 계획과 60회/18클립 계획표 | 기존 제안의 취득 항목·완료 기준 참고 |
 
 > **푸시 가능 추출 로그**: [`.gitignore`](../../.gitignore)를 정비하여 [`experiments/logs/`](../../experiments/logs/) 내 기존 68 KB 벤치마크 로그와 신규 추출 경량 로그([`experiments/logs/pc_extracted/`](../../experiments/logs/pc_extracted/README.md), 총 ~1.08 MiB)가 Git 추적을 통해 로컬 PC로 동기화될 수 있도록 정리했습니다.
 
