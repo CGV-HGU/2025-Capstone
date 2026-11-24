@@ -59,10 +59,11 @@
 | 모델 / 기법 | 백엔드 (CPU) | Params | Steady 지연 (`mean ± std`) | P50 / P95 (ms) | Steady FPS | 동적 MAE (m) | 유효율 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **V-LiDAR (제안)** | OpenVINO FP16 | `2.84 M` | **`14.18 ± 1.97 ms`** | `14.1 / 17.2` | **`70.5 Hz`** | **`0.152 m`** | `100.0%` |
+| **V-LiDAR (동일 백엔드 기준)** | PyTorch CPU | `2.83 M` | `17.97 ± 3.18 ms` | `18.3 / 21.9` | `55.7 Hz` | `0.152 m` | `100.0%` |
 | **MiDaS v2.1 Small** | PyTorch CPU | `21.32 M` | `36.53 ± 3.12 ms` | `35.4 / 42.8` | `27.4 Hz` | `0.811 m` *(2-fold OOS)* | `100.0%` |
 | **Depth Anything V2 Small** | PyTorch CPU | `24.79 M` | `570.06 ± 12.85 ms` | `567.4 / 596.7` | `1.8 Hz` | `0.519 m` *(2-fold OOS)* | `100.0%` |
 
-*(참고: `Lite-Mono`, `FastDepth`는 현재 로봇 PC에 패키지·체크포인트 캐시가 없어 이번 오프라인 실행에서 제외됨. `V-LiDAR`는 `DA-V2 Small` 대비 정확도 `3.4×`(`0.152 m` vs `0.519 m`), 추론 속도 `40.2×`(`14.18 ms` vs `570.06 ms`) 우위를 공정한 동일 기준에서 입증.)*
+*(공정성 주석: ① 동일 PyTorch CPU 백엔드에서도 V-LiDAR(`17.97 ms`)는 MiDaS(`36.53 ms`) 대비 `2.0×`, DA-V2(`570.06 ms`) 대비 `31.7×` 빠르며(OpenVINO 기준 `40.2×`), ② MDE의 `infer_disparity` 출력 역시 전체 가로폭 최대치가 아니라 V-LiDAR와 동일한 **장애물 방위각 중심 `rel_angle_deg ± 5.0°` 수평 창**(`extract_bearing_disparity`)에서만 추출하여 평가했습니다. `Lite-Mono`·`FastDepth`는 로컬 PC 캐시 부재로 현 실행에서 제외됨.)*
 
 ### 2-3. 글레어 · 역광 · 좁은 복도 실패 분석 요약 ([`glare_backlight_failure_audit.csv`](../../experiments/logs/glare_backlight_failure_audit.csv))
 | Bag (장면) | 샘플 수 | 단독 OpenVINO Steady 지연 | 평균 바닥 면적 | ROI 통과율(`>=95%`) | 상단 오탐 차단(`y<120`) | 핵심 진단 |
