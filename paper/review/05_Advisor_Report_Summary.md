@@ -34,20 +34,21 @@
    - 하단 ROI만 보고 15초마다 costmap 전체를 삭제하던 `clear_all_costmaps()` 자동 호출을 기본 비활성화(`enable_auto_costmap_clear=False`)했습니다.
    - `omo_r1.yaml` (`local_costmap`·`global_costmap`)에 `raytrace_min_range: 2.18`(사각지대 셀 보존), `inf_is_valid: False`, `expected_update_rate: 0.5`(10 Hz 기준 0.5초 타임아웃), `observation_persistence: 0.0`을 적용했습니다.
    - `floor_detector.py`가 카메라 획득 `header.stamp`를 보존해 `/scan`을 직접 발행하도록 변경하고, `fake_lidar_with_tf.py`는 `lidar_x_offset` TF 파라미터화 및 `0.5 s` stale 만료 차단 릴레이로 정비했습니다.
-3. **벤치마크 평가 버그 제거**:
+3. **벤치마크 평가 버그 및 MDE 상대 깊이 보정 수정**:
    - `benchmark_depth_baselines.py`의 `GT + 0.35` 및 예외 고정상수 fallback을 제거(미검출 시 `NaN`/`not_measured`)하고, `/odom` yaw 추적·방위각 창 정렬·센서 외인자 보정(`--sensor-offset-x`)을 반영했습니다.
+   - `Depth Anything V2 Small`의 기존 `3.277 m` 오차가 `predicted_depth`(상대 역깊이·disparity)에 선형 `min-max` 정규화를 걸어 **원근 부호가 정반대로 뒤집힌 버그** 때문임을 확인·수정했습니다. 공정성을 위해 `MiDaS`와 `DA-V2 Small` 모두 **2-fold 교차 어파인 보정(`1/d = s·disp + t`, `run01` 보정→`run02` 평가 및 역방향)**을 적용해 Out-of-Sample MAE를 산출했습니다.
    - *(정정)* 기존 `run08/12` 실패 사례는 *"비전 100% 정상 확정"*이 아니라 ***"하단 ROI 95% 채움 조건(`/floor_detector=True`)은 유지되었으나 영상·경로·costmap 토픽 미기록으로 비전 전체 정상 단정 불가, Costmap/파라미터(`raytrace_min_range: 2.18`, `clear_all_costmaps` 비활성화) 보완 필요"***로 서술을 정정했습니다.
 
 ### 2-2. 재현 가능한 동적 벤치마크 비교표 (`vlidar_run01` + `vlidar_run02` 총 200프레임)
-원본 로그: [`baseline_benchmark_report.md`](../../experiments/logs/baseline_benchmark_report.md) · [`baseline_latex_table.tex`](../../experiments/logs/baseline_latex_table.tex) (콜드 웜업 프레임 0 제외 steady-state 기준, `n=59/59` 유효 구간 `2.18–5.0 m`, `in_fov=1`)
+원본 로그: [`baseline_benchmark_report.md`](../../experiments/logs/baseline_benchmark_report.md) · [`baseline_latex_table.tex`](../../experiments/logs/baseline_latex_table.tex) (모델별 **독립 추론 루프**로 CPU 캐시 간섭 제거, 프레임 0 콜드 웜업 제외 steady-state 기준, `n=59/59` 유효 구간 `2.18–5.0 m`, `in_fov=1`)
 
 | 모델 / 기법 | 백엔드 (CPU) | Params | Steady 지연 (`mean ± std`) | P50 / P95 (ms) | Steady FPS | 동적 MAE (m) | 유효율 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **V-LiDAR (제안)** | OpenVINO FP16 | `2.84 M` | **`17.79 ± 3.39 ms`** *(단독 `13.3–14.3 ms`)* | `17.5 / 23.2` | **`56.2 Hz`** *(단독 `~70–75 Hz`)* | **`0.152 m`** | `100.0%` |
-| **MiDaS v2.1 Small** | PyTorch CPU | `21.32 M` | `41.03 ± 5.16 ms` | `38.7 / 48.8` | `24.4 Hz` | `0.838 m` | `100.0%` |
-| **Depth Anything V2 Small** | PyTorch CPU | `24.79 M` | `590.32 ± 27.73 ms` | `588.8 / 638.5` | `1.7 Hz` | `3.277 m` | `100.0%` |
+| **V-LiDAR (제안)** | OpenVINO FP16 | `2.84 M` | **`14.18 ± 1.97 ms`** | `14.1 / 17.2` | **`70.5 Hz`** | **`0.152 m`** | `100.0%` |
+| **MiDaS v2.1 Small** | PyTorch CPU | `21.32 M` | `36.53 ± 3.12 ms` | `35.4 / 42.8` | `27.4 Hz` | `0.811 m` *(2-fold OOS)* | `100.0%` |
+| **Depth Anything V2 Small** | PyTorch CPU | `24.79 M` | `570.06 ± 12.85 ms` | `567.4 / 596.7` | `1.8 Hz` | `0.519 m` *(2-fold OOS)* | `100.0%` |
 
-*(참고: `Lite-Mono`, `FastDepth`는 현재 로봇 PC에 패키지·체크포인트 캐시가 없어 이번 오프라인 실행에서 제외됨. 필요 시 D1/D2 신규 클립 평가 단계에서 추가 검토.)*
+*(참고: `Lite-Mono`, `FastDepth`는 현재 로봇 PC에 패키지·체크포인트 캐시가 없어 이번 오프라인 실행에서 제외됨. `V-LiDAR`는 `DA-V2 Small` 대비 정확도 `3.4×`(`0.152 m` vs `0.519 m`), 추론 속도 `40.2×`(`14.18 ms` vs `570.06 ms`) 우위를 공정한 동일 기준에서 입증.)*
 
 ### 2-3. 글레어 · 역광 · 좁은 복도 실패 분석 요약 ([`glare_backlight_failure_audit.csv`](../../experiments/logs/glare_backlight_failure_audit.csv))
 | Bag (장면) | 샘플 수 | 단독 OpenVINO Steady 지연 | 평균 바닥 면적 | ROI 통과율(`>=95%`) | 상단 오탐 차단(`y<120`) | 핵심 진단 |

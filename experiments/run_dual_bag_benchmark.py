@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
 Dual Rosbag Baseline Benchmark Runner
-Evaluates V-LiDAR vs MiDaS vs Depth Anything V2 across both vlidar_run01 and vlidar_run02
-using yaw- and sensor-extrinsic-aware bearing tracking (no synthetic fallbacks).
+Evaluates V-LiDAR vs MiDaS vs Depth Anything V2 across vlidar_run01 & vlidar_run02:
+- Isolated per-model inference loops (eliminating cross-model CPU cache thrashing)
+- Strict 2-fold out-of-sample affine disparity calibration for relative MDE baselines
+- Ex-warmup steady-state latency and yaw/extrinsic-corrected ranging accuracy
 """
 
 import argparse
+import csv
 import os
 import sys
 
@@ -17,12 +20,23 @@ from benchmark_depth_baselines import (
     MiDaSWrapper,
     VLiDARWrapper,
     _fmt_num,
+    apply_affine_disparity_calibration,
     export_latex_table,
     export_markdown_report,
+    fit_affine_disparity_calibration,
     print_header,
     run_rosbag_dynamic_benchmark,
     summarize_dynamic_records,
 )
+
+
+def _rewrite_csv(path, records):
+    if not records:
+        return
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=records[0].keys())
+        writer.writeheader()
+        writer.writerows(records)
 
 
 def main():
@@ -37,7 +51,7 @@ def main():
     logs_dir = os.path.join(base_dir, "experiments", "logs")
     os.makedirs(logs_dir, exist_ok=True)
 
-    print_header("Dual-Rosbag Baseline Benchmark: V-LiDAR vs MiDaS vs Depth Anything V2")
+    print_header("Dual-Rosbag Baseline Benchmark: Isolated Loops & 2-Fold MDE Calibration")
     print("  • Target Hardware: On-board Embedded CPU (Intel Core Ultra 7 155H)")
     print("  • Datasets: vlidar_run01 & vlidar_run02")
 
@@ -49,7 +63,7 @@ def main():
     bag01 = os.path.expanduser("~/data/bags/vlidar_run01")
     bag02 = os.path.expanduser("~/data/bags/vlidar_run02")
 
-    print("\n📂 [2/4] Running Dynamic Benchmark on vlidar_run01 (Obs X=4.4m)...")
+    print("\n📂 [2/4] Running Isolated Benchmark Loops on vlidar_run01 (Obs X=4.4m)...")
     csv01 = os.path.join(logs_dir, "benchmark_run01.csv")
     records01 = run_rosbag_dynamic_benchmark(
         bag01,
@@ -61,9 +75,9 @@ def main():
         max_frames=args.max_frames,
         output_csv=csv01,
         sensor_offset_x=args.sensor_offset_x,
-    )
+    ) or []
 
-    print("\n📂 [3/4] Running Dynamic Benchmark on vlidar_run02 (Obs X=4.7m)...")
+    print("\n📂 [3/4] Running Isolated Benchmark Loops on vlidar_run02 (Obs X=4.7m)...")
     csv02 = os.path.join(logs_dir, "benchmark_run02.csv")
     records02 = run_rosbag_dynamic_benchmark(
         bag02,
@@ -75,14 +89,32 @@ def main():
         max_frames=args.max_frames,
         output_csv=csv02,
         sensor_offset_x=args.sensor_offset_x,
-    )
+    ) or []
 
-    print("\n📊 [4/4] Aggregating Metrics Across Both Sessions...")
-    all_records = (records01 or []) + (records02 or [])
-    if not all_records:
-        print("❌ Error: No records extracted.")
+    if not records01 or not records02:
+        print("❌ Error: Missing records from one or both bags.")
         return
 
+    # 2-fold out-of-sample affine disparity calibration:
+    # Fit (s, t) strictly on session A -> apply to session B, and vice versa.
+    for disp_key, dist_key, label in [
+        ("midas_disp", "midas_dist", "MiDaS Small"),
+        ("da_disp", "da_dist", "Depth Anything V2 Small"),
+    ]:
+        cal_1to2 = fit_affine_disparity_calibration(records01, disp_key)
+        cal_2to1 = fit_affine_disparity_calibration(records02, disp_key)
+        if cal_1to2:
+            apply_affine_disparity_calibration(records02, disp_key, dist_key, *cal_1to2)
+            print(f"  📐 {label} fit(run01->run02): s={cal_1to2[0]:.5f}, t={cal_1to2[1]:.5f}")
+        if cal_2to1:
+            apply_affine_disparity_calibration(records01, disp_key, dist_key, *cal_2to1)
+            print(f"  📐 {label} fit(run02->run01): s={cal_2to1[0]:.5f}, t={cal_2to1[1]:.5f}")
+
+    _rewrite_csv(csv01, records01)
+    _rewrite_csv(csv02, records02)
+
+    print("\n📊 [4/4] Aggregating Metrics Across Both Sessions...")
+    all_records = records01 + records02
     results = [
         summarize_dynamic_records(all_records, vl_wrapper.name, "vl_dist", "vl_latency_ms", vl_wrapper.count_parameters()),
         summarize_dynamic_records(all_records, midas_wrapper.name, "midas_dist", "midas_latency_ms", midas_wrapper.count_parameters()),
@@ -95,7 +127,7 @@ def main():
     export_markdown_report(results, md_path)
 
     print("\n" + "=" * 116)
-    print("🏆 DUAL-ROSBAG BENCHMARK SUMMARY (Yaw & Bearing Corrected, Ex-Warmup Steady-State Latency)")
+    print("🏆 DUAL-ROSBAG BENCHMARK SUMMARY (Isolated Model Loops + 2-Fold OOS Calibrated MDE)")
     print("=" * 116)
     print(f"{'Model / Architecture':<38} | {'Params':<8} | {'Steady Lat (ms)':<16} | {'P95 (ms)':<8} | {'FPS':<6} | {'MAE (m)':<8} | {'Valid %':<8}")
     print("-" * 116)

@@ -41,6 +41,51 @@ def extract_yaw_from_quat(q) -> float:
     return math.atan2(siny_cosp, cosy_cosp)
 
 
+def extract_bearing_disparity(
+    channel_disp: np.ndarray,
+    rel_angle_deg: float,
+    half_window_deg: float = 5.0,
+) -> float:
+    """Extract median raw disparity around target bearing `rel_angle_deg` (image column order)."""
+    num_ch = len(channel_disp)
+    step_deg = 0.5
+    center_idx = int(round((35.0 - rel_angle_deg) / step_deg))
+    half_bins = int(round(half_window_deg / step_deg))
+    lo = max(0, center_idx - half_bins)
+    hi = min(num_ch, center_idx + half_bins + 1)
+    if lo >= hi:
+        return float("nan")
+    window = np.asarray(channel_disp[lo:hi], dtype=float)
+    valid = window[np.isfinite(window)]
+    return float(np.median(valid)) if valid.size > 0 else float("nan")
+
+
+def fit_affine_disparity_calibration(calib_records, disp_key, min_range=2.18, max_range=5.0):
+    """Fit 1 / gt = s * disp + t via least squares on a separate calibration split."""
+    pts = [
+        (r[disp_key], 1.0 / r["gt_distance"])
+        for r in calib_records
+        if r["in_fov"] == 1 and min_range <= r["gt_distance"] <= max_range and np.isfinite(r[disp_key])
+    ]
+    if len(pts) < 2:
+        return None
+    disps = np.array([p[0] for p in pts], dtype=float)
+    inv_gts = np.array([p[1] for p in pts], dtype=float)
+    A = np.vstack([disps, np.ones_like(disps)]).T
+    s, t = np.linalg.lstsq(A, inv_gts, rcond=None)[0]
+    return float(s), float(t)
+
+
+def apply_affine_disparity_calibration(records, disp_key, dist_key, s, t):
+    for r in records:
+        disp = r[disp_key]
+        if r["in_fov"] == 1 and np.isfinite(disp):
+            inv_d = min(max(s * disp + t, 0.05), 10.0)
+            r[dist_key] = float(min(max(1.0 / inv_d, 0.2), 10.0))
+        else:
+            r[dist_key] = float("nan")
+
+
 def extract_bearing_scan_distance(
     channel_dist: np.ndarray,
     rel_angle_deg: float,
@@ -198,14 +243,16 @@ class VLiDARWrapper:
 
 
 class MiDaSWrapper:
-    """Wrapper for Baseline 1: MiDaS Small (torch.hub)."""
+    """Wrapper for Baseline 1: MiDaS Small (torch.hub) with affine inverse-depth calibration."""
 
-    def __init__(self, device="cpu"):
+    def __init__(self, device="cpu", scale_s=0.000515, shift_t=0.1130):
         self.name = "MiDaS v2.1 Small (Baseline 1)"
         self.device = device
         self.target_w = 320
         self.target_h = 256
         self.num_channels = 141
+        self.scale_s = scale_s
+        self.shift_t = shift_t
 
         try:
             import torch
@@ -229,7 +276,7 @@ class MiDaSWrapper:
             return total_params / 1e6
         return 21.4
 
-    def infer(self, img_bgr):
+    def infer_disparity(self, img_bgr):
         if not getattr(self, "is_loaded", False) or self.model is None:
             raise RuntimeError("MiDaS model is not loaded (requires 'timm')")
 
@@ -247,29 +294,33 @@ class MiDaSWrapper:
                 align_corners=False,
             ).squeeze()
 
-        depth_inv = prediction.cpu().numpy()
-        eps = 1e-4
-        depth_metric = 1000.0 / (depth_inv + eps)
-        depth_metric = np.clip(depth_metric, 0.2, 10.0)
+        disp_map = prediction.cpu().numpy()
+        # Horizontal band rows [120:200]: max disparity = closest obstacle in column
+        col_disp = disp_map[120:200, :].max(axis=0)
+        step = len(col_disp) / float(self.num_channels)
+        channel_disp = np.array([col_disp[int(i * step)] for i in range(self.num_channels)], dtype=np.float32)
+        return channel_disp, disp_map
 
-        h_slice = depth_metric[120:200, :]
-        col_min = h_slice.min(axis=0)
+    def disparity_to_metric(self, disp_arr):
+        inv_depth = np.clip(self.scale_s * np.asarray(disp_arr, dtype=np.float32) + self.shift_t, 0.05, 10.0)
+        return np.clip(1.0 / inv_depth, 0.2, 10.0)
 
-        step = len(col_min) / float(self.num_channels)
-        channel_dist = np.array([col_min[int(i * step)] for i in range(self.num_channels)], dtype=np.float32)
-
-        return channel_dist, depth_metric
+    def infer(self, img_bgr):
+        channel_disp, disp_map = self.infer_disparity(img_bgr)
+        return self.disparity_to_metric(channel_disp), self.disparity_to_metric(disp_map)
 
 
 class DepthAnythingV2Wrapper:
-    """Wrapper for Baseline 2: Depth Anything V2 Small."""
+    """Wrapper for Baseline 2: Depth Anything V2 Small with affine inverse-depth calibration."""
 
-    def __init__(self, device="cpu"):
+    def __init__(self, device="cpu", scale_s=0.06997, shift_t=0.05277):
         self.name = "Depth Anything V2 Small (Baseline 2)"
         self.device = device
         self.target_w = 320
         self.target_h = 256
         self.num_channels = 141
+        self.scale_s = scale_s
+        self.shift_t = shift_t
 
         try:
             from transformers import AutoImageProcessor, AutoModelForDepthEstimation
@@ -291,7 +342,7 @@ class DepthAnythingV2Wrapper:
             return total_params / 1e6
         return 24.8
 
-    def infer(self, img_bgr):
+    def infer_disparity(self, img_bgr):
         if not getattr(self, "is_loaded", False) or self.model is None:
             raise RuntimeError("Depth Anything V2 model is not loaded (requires 'transformers')")
 
@@ -309,21 +360,20 @@ class DepthAnythingV2Wrapper:
             mode="bicubic",
             align_corners=False,
         ).squeeze()
-        depth_map = prediction.cpu().numpy()
+        # Depth Anything V2 Small outputs relative inverse depth (higher = closer)
+        disp_map = prediction.cpu().numpy()
+        col_disp = disp_map[120:200, :].max(axis=0)
+        step = len(col_disp) / float(self.num_channels)
+        channel_disp = np.array([col_disp[int(i * step)] for i in range(self.num_channels)], dtype=np.float32)
+        return channel_disp, disp_map
 
-        d_min, d_max = depth_map.min(), depth_map.max()
-        if d_max > d_min:
-            depth_metric = (depth_map - d_min) / (d_max - d_min) * 5.0 + 0.5
-        else:
-            depth_metric = depth_map
+    def disparity_to_metric(self, disp_arr):
+        inv_depth = np.clip(self.scale_s * np.asarray(disp_arr, dtype=np.float32) + self.shift_t, 0.05, 10.0)
+        return np.clip(1.0 / inv_depth, 0.2, 10.0)
 
-        h_slice = depth_metric[120:200, :]
-        col_min = h_slice.min(axis=0)
-
-        step = len(col_min) / float(self.num_channels)
-        channel_dist = np.array([col_min[int(i * step)] for i in range(self.num_channels)], dtype=np.float32)
-
-        return channel_dist, depth_metric
+    def infer(self, img_bgr):
+        channel_disp, disp_map = self.infer_disparity(img_bgr)
+        return self.disparity_to_metric(channel_disp), self.disparity_to_metric(disp_map)
 
 
 # ==============================================================================
@@ -563,9 +613,7 @@ def run_rosbag_dynamic_benchmark(
     from cv_bridge import CvBridge
 
     bridge = CvBridge()
-    records = []
-    print("\n🚀 Running Synchronized Dynamic Evaluation (yaw + extrinsic bearing-tracked)...")
-
+    decoded_frames = []
     for idx, (ts_ns, data) in enumerate(img_rows):
         ts_sec = ts_ns / 1e9
         img_msg = deserialize_message(data, img_type)
@@ -588,17 +636,6 @@ def run_rosbag_dynamic_benchmark(
         rel_angle_deg = math.degrees(wrap_to_pi(math.atan2(dy, dx) - yaw))
         in_fov = abs(rel_angle_deg) <= fov_half_deg
 
-        # Offline V-LiDAR re-inference along true obstacle bearing
-        t0 = time.perf_counter()
-        scan_vl, _ = vl_wrapper.infer(cv_img)
-        t_vl = (time.perf_counter() - t0) * 1000.0
-        dist_vl = (
-            extract_bearing_scan_distance(scan_vl, rel_angle_deg, half_window_deg, is_ros_laserscan_order=False)
-            if in_fov
-            else float("nan")
-        )
-
-        # Separate column for recorded onboard /scan (never mixed into vl_dist)
         onboard_scan_dist = float("nan")
         if in_fov and len(scan_times) > 0:
             closest_scan_idx = int(np.argmin(np.abs(scan_times - ts_sec)))
@@ -607,33 +644,7 @@ def run_rosbag_dynamic_benchmark(
                     scan_msgs[closest_scan_idx], rel_angle_deg, half_window_deg, is_ros_laserscan_order=True
                 )
 
-        # Evaluate MiDaS
-        if getattr(midas_wrapper, "is_loaded", False):
-            t0 = time.perf_counter()
-            scan_m, _ = midas_wrapper.infer(cv_img)
-            t_m = (time.perf_counter() - t0) * 1000.0
-            dist_m = (
-                extract_bearing_scan_distance(scan_m, rel_angle_deg, half_window_deg, is_ros_laserscan_order=False)
-                if in_fov
-                else float("nan")
-            )
-        else:
-            t_m, dist_m = float("nan"), float("nan")
-
-        # Evaluate Depth Anything V2
-        if getattr(da_wrapper, "is_loaded", False):
-            t0 = time.perf_counter()
-            scan_da, _ = da_wrapper.infer(cv_img)
-            t_da = (time.perf_counter() - t0) * 1000.0
-            dist_da = (
-                extract_bearing_scan_distance(scan_da, rel_angle_deg, half_window_deg, is_ros_laserscan_order=False)
-                if in_fov
-                else float("nan")
-            )
-        else:
-            t_da, dist_da = float("nan"), float("nan")
-
-        records.append({
+        decoded_frames.append({
             "frame": idx,
             "timestamp": ts_sec,
             "robot_x": rx,
@@ -642,20 +653,84 @@ def run_rosbag_dynamic_benchmark(
             "rel_angle_deg": rel_angle_deg,
             "in_fov": int(in_fov),
             "gt_distance": gt_dist,
-            "vl_dist": dist_vl,
-            "vl_latency_ms": t_vl,
             "onboard_scan_dist": onboard_scan_dist,
-            "midas_dist": dist_m,
-            "midas_latency_ms": t_m,
-            "da_dist": dist_da,
-            "da_latency_ms": t_da,
+            "cv_img": cv_img,
         })
 
-        if (idx + 1) % 25 == 0 or (idx + 1) == len(img_rows):
-            print(
-                f"   [{idx + 1}/{len(img_rows)}] GT={gt_dist:.2f}m yaw={math.degrees(yaw):+.1f}° "
-                f"brg={rel_angle_deg:+.1f}°(fov={int(in_fov)}) | V-LiDAR={dist_vl:.2f}m ({t_vl:.1f}ms)"
-            )
+    print(f"\n🚀 Running Isolated Per-Model Loops on {len(decoded_frames)} frames (zero cross-model cache thrashing)...")
+
+    # Pass 1: V-LiDAR
+    vl_dists, vl_lats = [], []
+    print("  [1/3] V-LiDAR loop...")
+    for f in decoded_frames:
+        t0 = time.perf_counter()
+        scan_vl, _ = vl_wrapper.infer(f["cv_img"])
+        t_vl = (time.perf_counter() - t0) * 1000.0
+        dist_vl = (
+            extract_bearing_scan_distance(scan_vl, f["rel_angle_deg"], half_window_deg, is_ros_laserscan_order=False)
+            if f["in_fov"] == 1
+            else float("nan")
+        )
+        vl_dists.append(dist_vl)
+        vl_lats.append(t_vl)
+
+    # Pass 2: MiDaS Small
+    m_disps, m_dists, m_lats = [], [], []
+    if getattr(midas_wrapper, "is_loaded", False):
+        print("  [2/3] MiDaS Small loop...")
+        for f in decoded_frames:
+            t0 = time.perf_counter()
+            disp_m, _ = midas_wrapper.infer_disparity(f["cv_img"])
+            t_m = (time.perf_counter() - t0) * 1000.0
+            raw_d = extract_bearing_disparity(disp_m, f["rel_angle_deg"], half_window_deg) if f["in_fov"] == 1 else float("nan")
+            dist_m = float(midas_wrapper.disparity_to_metric(raw_d)) if np.isfinite(raw_d) else float("nan")
+            m_disps.append(raw_d)
+            m_dists.append(dist_m)
+            m_lats.append(t_m)
+    else:
+        m_disps = [float("nan")] * len(decoded_frames)
+        m_dists = [float("nan")] * len(decoded_frames)
+        m_lats = [float("nan")] * len(decoded_frames)
+
+    # Pass 3: Depth Anything V2 Small
+    da_disps, da_dists, da_lats = [], [], []
+    if getattr(da_wrapper, "is_loaded", False):
+        print("  [3/3] Depth Anything V2 Small loop...")
+        for f in decoded_frames:
+            t0 = time.perf_counter()
+            disp_da, _ = da_wrapper.infer_disparity(f["cv_img"])
+            t_da = (time.perf_counter() - t0) * 1000.0
+            raw_d = extract_bearing_disparity(disp_da, f["rel_angle_deg"], half_window_deg) if f["in_fov"] == 1 else float("nan")
+            dist_da = float(da_wrapper.disparity_to_metric(raw_d)) if np.isfinite(raw_d) else float("nan")
+            da_disps.append(raw_d)
+            da_dists.append(dist_da)
+            da_lats.append(t_da)
+    else:
+        da_disps = [float("nan")] * len(decoded_frames)
+        da_dists = [float("nan")] * len(decoded_frames)
+        da_lats = [float("nan")] * len(decoded_frames)
+
+    records = []
+    for i, f in enumerate(decoded_frames):
+        records.append({
+            "frame": f["frame"],
+            "timestamp": f["timestamp"],
+            "robot_x": f["robot_x"],
+            "robot_y": f["robot_y"],
+            "robot_yaw_deg": f["robot_yaw_deg"],
+            "rel_angle_deg": f["rel_angle_deg"],
+            "in_fov": f["in_fov"],
+            "gt_distance": f["gt_distance"],
+            "vl_dist": vl_dists[i],
+            "vl_latency_ms": vl_lats[i],
+            "onboard_scan_dist": f["onboard_scan_dist"],
+            "midas_disp": m_disps[i],
+            "midas_dist": m_dists[i],
+            "midas_latency_ms": m_lats[i],
+            "da_disp": da_disps[i],
+            "da_dist": da_dists[i],
+            "da_latency_ms": da_lats[i],
+        })
 
     if output_csv and records:
         with open(output_csv, "w", newline="", encoding="utf-8") as f:

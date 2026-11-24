@@ -63,4 +63,4 @@
 4. **녹화 종료(Ctrl+C) 직후 자동 검증 항목**:
    - `record_rosbag.sh` 종료 시 자동 출력되는 `ros2 bag info`에서 **`/camera/image_raw`, `/scan`, `/odom`, `/plan`, `/local_costmap/costmap`, `/navigate_to_pose/_action/status` 메시지 수 > 0** 확인
    - `trial_outcome.json` 내 `nav_status` (`SUCCEEDED` / `TIMEOUT` / `STATUS_*`), `pure_motion_s`, `travel_x_m` 기록 확인
-   - `df -h ~/data/bags` 잔여 디스크 용량 확인 (현재 ZSTD 압축 적용; 40회 본 평가 전 여유 용량 확보)
+   - `df -h ~/data/bags` 잔여 디스크 용량 확인 (`2026-11-24` 기준 여유 **`133 GB`**; 기존 30 Hz `/camera/image_raw` `.db3.zstd` 실측 용량 약 **`14.5–14.7 MB/s`** = 55~65초 주행당 약 `0.8–1.0 GB` → `40회 주행 + 36정적 클립` 총 예상 **`37–46 GB`**로 여유 공간 내 수용 가능, 파일럿 시 ZSTD 압축 CPU 점유로 V-LiDAR 10 Hz 주기가 밀리지 않는지도 함께 확인)
