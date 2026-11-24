@@ -53,12 +53,12 @@
    ./scripts/record_rosbag.sh nav pilot_placeA_S1_01
    ```
    - 포함 토픽: `/camera/image_raw`, `/camera/camera_info`, `/scan`, `/lidar_channel_distances`, `/floor_detector`, `/tf`, `/tf_static`, `/odom`, `/cmd_vel`, `/plan`, `/local_plan`, `/local_costmap/costmap`, `/local_costmap/costmap_updates`, `/global_costmap/costmap`, `/initialpose`, `/goal_pose`, `/navigate_to_pose/_action/status`, `/navigate_to_pose/_action/feedback`, `/rosout`
-3. **Nav2 목표 전송 및 결과 JSON 자동 저장** (터미널 3):
+3. **Nav2 목표 전송 및 결과 JSON 자동 저장** (터미널 3 — bag 폴더 충돌 방지를 위해 별도 `~/data/trial_outcomes/`에 저장):
    ```bash
    cd ~/ros2_ws && source install/setup.bash
    python3 scripts/test_avoidance_goal.py -x 10.0 -t 120.0 \
      --trial-id pilot_placeA_S1_01 \
-     --out-json ~/data/bags/nav_pilot_placeA_S1_01/trial_outcome.json
+     --out-json ~/data/trial_outcomes/pilot_placeA_S1_01.json
    ```
 4. **녹화 종료(Ctrl+C) 직후 자동 검증 항목**:
    - `record_rosbag.sh` 종료 시 자동 출력되는 `ros2 bag info`에서 **`/camera/image_raw`, `/scan`, `/odom`, `/plan`, `/local_costmap/costmap`, `/navigate_to_pose/_action/status` 메시지 수 > 0** 확인
