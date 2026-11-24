@@ -1,25 +1,38 @@
 #!/usr/bin/env python3
 """
 Dual Rosbag Baseline Benchmark Runner
-Evaluates V-LiDAR vs MiDaS vs Depth Anything V2 across both vlidar_run01 and vlidar_run02.
-Produces per-run and combined aggregate metrics for IEEE Access Table III.
+Evaluates V-LiDAR vs MiDaS vs Depth Anything V2 across both vlidar_run01 and vlidar_run02
+using yaw- and sensor-extrinsic-aware bearing tracking (no synthetic fallbacks).
 """
 
+import argparse
 import os
 import sys
-import numpy as np
 
-# Add repo root to path
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(base_dir, "experiments"))
 
 from benchmark_depth_baselines import (
-    VLiDARWrapper, MiDaSWrapper, DepthAnythingV2Wrapper,
-    run_rosbag_dynamic_benchmark, export_latex_table, export_markdown_report,
-    print_header
+    DepthAnythingV2Wrapper,
+    MiDaSWrapper,
+    VLiDARWrapper,
+    _fmt_num,
+    export_latex_table,
+    export_markdown_report,
+    print_header,
+    run_rosbag_dynamic_benchmark,
+    summarize_dynamic_records,
 )
 
+
 def main():
+    parser = argparse.ArgumentParser(description="Dual-Rosbag Baseline Benchmark Runner")
+    parser.add_argument("--use-openvino", action="store_true", default=True, help="Use OpenVINO FP16 for V-LiDAR")
+    parser.add_argument("--no-openvino", action="store_false", dest="use_openvino", help="Use PyTorch .pt for V-LiDAR")
+    parser.add_argument("--sensor-offset-x", type=float, default=0.0, help="Sensor X offset relative to odom origin (m)")
+    parser.add_argument("--max-frames", type=int, default=100, help="Max sampled frames per bag")
+    args = parser.parse_args()
+
     scripts_dir = os.path.join(base_dir, "src", "freespace_detection", "scripts")
     logs_dir = os.path.join(base_dir, "experiments", "logs")
     os.makedirs(logs_dir, exist_ok=True)
@@ -29,7 +42,7 @@ def main():
     print("  • Datasets: vlidar_run01 & vlidar_run02")
 
     print("\n📦 [1/4] Initializing Perception Models...")
-    vl_wrapper = VLiDARWrapper(scripts_dir, device="cpu", use_openvino=True)
+    vl_wrapper = VLiDARWrapper(scripts_dir, device="cpu", use_openvino=args.use_openvino)
     midas_wrapper = MiDaSWrapper(device="cpu")
     da_wrapper = DepthAnythingV2Wrapper(device="cpu")
 
@@ -39,15 +52,29 @@ def main():
     print("\n📂 [2/4] Running Dynamic Benchmark on vlidar_run01 (Obs X=4.4m)...")
     csv01 = os.path.join(logs_dir, "benchmark_run01.csv")
     records01 = run_rosbag_dynamic_benchmark(
-        bag01, vl_wrapper, midas_wrapper, da_wrapper,
-        obs_x=4.4, obs_y=0.0, max_frames=100, output_csv=csv01
+        bag01,
+        vl_wrapper,
+        midas_wrapper,
+        da_wrapper,
+        obs_x=4.4,
+        obs_y=0.0,
+        max_frames=args.max_frames,
+        output_csv=csv01,
+        sensor_offset_x=args.sensor_offset_x,
     )
 
     print("\n📂 [3/4] Running Dynamic Benchmark on vlidar_run02 (Obs X=4.7m)...")
     csv02 = os.path.join(logs_dir, "benchmark_run02.csv")
     records02 = run_rosbag_dynamic_benchmark(
-        bag02, vl_wrapper, midas_wrapper, da_wrapper,
-        obs_x=4.7, obs_y=0.0, max_frames=100, output_csv=csv02
+        bag02,
+        vl_wrapper,
+        midas_wrapper,
+        da_wrapper,
+        obs_x=4.7,
+        obs_y=0.0,
+        max_frames=args.max_frames,
+        output_csv=csv02,
+        sensor_offset_x=args.sensor_offset_x,
     )
 
     print("\n📊 [4/4] Aggregating Metrics Across Both Sessions...")
@@ -56,36 +83,10 @@ def main():
         print("❌ Error: No records extracted.")
         return
 
-    # Frontal approach phase where the robot is facing the obstacle before lateral evasion
-    valid_rec = [r for r in all_records if r["robot_x"] < 3.8 and 2.18 <= r["gt_distance"] <= 5.0 and np.isfinite(r["vl_dist"])]
-    if not valid_rec:
-        valid_rec = all_records
-
     results = [
-        {
-            "name": "V-LiDAR (Proposed: YOLO11-seg + LUT)",
-            "params_m": round(vl_wrapper.count_parameters(), 2),
-            "mean_latency_ms": round(np.mean([r["vl_latency_ms"] for r in all_records]), 1),
-            "std_latency_ms": round(np.std([r["vl_latency_ms"] for r in all_records]), 1),
-            "throughput_fps": round(1000.0 / np.mean([r["vl_latency_ms"] for r in all_records]), 1),
-            "mae_m": round(np.nanmean([abs(r["vl_dist"] - r["gt_distance"]) for r in valid_rec]), 3)
-        },
-        {
-            "name": "MiDaS v2.1 Small (Baseline 1)",
-            "params_m": round(midas_wrapper.count_parameters(), 2),
-            "mean_latency_ms": round(np.mean([r["midas_latency_ms"] for r in all_records]), 1),
-            "std_latency_ms": round(np.std([r["midas_latency_ms"] for r in all_records]), 1),
-            "throughput_fps": round(1000.0 / np.mean([r["midas_latency_ms"] for r in all_records]), 1),
-            "mae_m": round(np.nanmean([abs(r["midas_dist"] - r["gt_distance"]) for r in valid_rec]), 3)
-        },
-        {
-            "name": "Depth Anything V2 Small (Baseline 2)",
-            "params_m": round(da_wrapper.count_parameters(), 2),
-            "mean_latency_ms": round(np.mean([r["da_latency_ms"] for r in all_records]), 1),
-            "std_latency_ms": round(np.std([r["da_latency_ms"] for r in all_records]), 1),
-            "throughput_fps": round(1000.0 / np.mean([r["da_latency_ms"] for r in all_records]), 1),
-            "mae_m": round(np.nanmean([abs(r["da_dist"] - r["gt_distance"]) for r in valid_rec]), 3)
-        }
+        summarize_dynamic_records(all_records, vl_wrapper.name, "vl_dist", "vl_latency_ms", vl_wrapper.count_parameters()),
+        summarize_dynamic_records(all_records, midas_wrapper.name, "midas_dist", "midas_latency_ms", midas_wrapper.count_parameters()),
+        summarize_dynamic_records(all_records, da_wrapper.name, "da_dist", "da_latency_ms", da_wrapper.count_parameters()),
     ]
 
     latex_path = os.path.join(logs_dir, "baseline_latex_table.tex")
@@ -93,20 +94,26 @@ def main():
     export_latex_table(results, latex_path)
     export_markdown_report(results, md_path)
 
-    print("\n" + "=" * 80)
-    print("🏆 DUAL-ROSBAG FINAL BENCHMARK SUMMARY (Table III for IEEE Access)")
-    print("=" * 80)
-    print(f"{'Model / Architecture':<38} | {'Params (M)':<10} | {'Latency (ms)':<14} | {'FPS':<8} | {'MAE (m)':<8}")
-    print("-" * 80)
+    print("\n" + "=" * 116)
+    print("🏆 DUAL-ROSBAG BENCHMARK SUMMARY (Yaw & Bearing Corrected, Ex-Warmup Steady-State Latency)")
+    print("=" * 116)
+    print(f"{'Model / Architecture':<38} | {'Params':<8} | {'Steady Lat (ms)':<16} | {'P95 (ms)':<8} | {'FPS':<6} | {'MAE (m)':<8} | {'Valid %':<8}")
+    print("-" * 116)
     for r in results:
-        lat_str = f"{r['mean_latency_ms']:.1f} ± {r['std_latency_ms']:.1f}"
-        print(f"{r['name']:<38} | {r['params_m']:<10.2f} | {lat_str:<14} | {r['throughput_fps']:<8.1f} | {r['mae_m']:<8.3f}")
-    print("=" * 80)
-    print(f"\n✅ Generated Artifacts:")
-    print(f"  • LaTeX Table : {latex_path}")
-    print(f"  • MD Report   : {md_path}")
-    print(f"  • Run 01 CSV  : {csv01}")
-    print(f"  • Run 02 CSV  : {csv02}")
+        lat_str = (
+            f"{r['steady_mean_latency_ms']:.2f} ± {r['steady_std_latency_ms']:.2f}"
+            if r.get("steady_mean_latency_ms") is not None
+            else "not_measured"
+        )
+        print(
+            f"{r['name']:<38} | {r['params_m']:<8.2f} | {lat_str:<16} | "
+            f"{_fmt_num(r.get('steady_p95_latency_ms'), '.1f'):<8} | "
+            f"{_fmt_num(r.get('steady_fps'), '.1f'):<6} | {_fmt_num(r['mae_m'], '.3f'):<8} | "
+            f"{_fmt_num(r['detection_rate_pct'], '.1f'):<8}"
+        )
+    print("=" * 116)
+    print(f"\n✅ Generated Artifacts:\n  • LaTeX Table : {latex_path}\n  • MD Report   : {md_path}\n  • Run 01 CSV  : {csv01}\n  • Run 02 CSV  : {csv02}")
+
 
 if __name__ == "__main__":
     main()

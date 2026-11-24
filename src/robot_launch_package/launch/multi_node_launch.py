@@ -10,6 +10,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     use_rviz = LaunchConfiguration('use_rviz', default='false')
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    lidar_x_offset = LaunchConfiguration('lidar_x_offset', default='-0.55')
 
     omo_r1_bringup = os.path.join(
         get_package_share_directory('omo_r1_bringup'),
@@ -45,6 +46,11 @@ def generate_launch_description():
             'use_sim_time',
             default_value='false',
             description='Use simulation clock'
+        ),
+        DeclareLaunchArgument(
+            'lidar_x_offset',
+            default_value='-0.55',
+            description='base_link -> lidar_link X offset in meters (measure physically before trial)'
         ),
 
         # cam2image 노드
@@ -89,6 +95,9 @@ def generate_launch_description():
             package='fake_lidar_with_tf',
             executable='fake_lidar_with_tf',
             name='fake_lidar_node',
+            parameters=[
+                {'lidar_x_offset': lidar_x_offset},
+            ]
         ),
 
     ])

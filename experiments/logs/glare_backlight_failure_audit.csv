@@ -1,0 +1,7 @@
+bag,condition,total_frames,sampled_frames,steady_lat_ms_mean,steady_lat_ms_p95,floor_area_pct_mean,floor_area_pct_min,roi_clear_pct,zero_floor_frames,upper_fp_dropped,near_blind_center_pct,center_min_median_m
+vlidar_run01,Reference hall + box (2026-10-02),2034,100,13.34,16.51,30.15,23.84,88.0,0,0,5.0,4.394
+vlidar_run02,Reference hall + box (2026-10-02),1552,100,14.05,17.03,28.23,0.0,88.0,12,1,12.0,5.46
+nav_debug_avoidance,Swivel chair obstacle,1971,100,14.11,16.13,29.33,0.0,73.0,1,0,25.0,4.139
+vlidar_run01.3,Metal wheeled cart + stairwell glare,2613,100,13.94,16.86,29.72,0.0,62.0,2,2,23.0,4.468
+vlidar_run01.4,Low-angle window backlight/reflection + box,2305,100,13.81,16.96,35.31,31.07,86.0,0,32,6.0,4.327
+vlidar_run01.5,Narrow corridor + water purifier/tactile paving + door glare,15895,200,14.34,17.76,17.22,0.0,7.0,1,0,2.0,4.153

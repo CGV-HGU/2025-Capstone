@@ -170,7 +170,7 @@ local_costmap:
           topic: /scan  # 센서 데이터 토픽 이름
           sensor_frame: lidar_link  # 비워두면 메시지에서 frame_id 사용
           observation_persistence: 0.0  # 센서 데이터 유지 시간 (s)
-          expected_update_rate: 10.0  # 예상 갱신 주기 (s)
+          expected_update_rate: 0.5  # 예상 갱신 주기 (s; 10 Hz 기준 0.5초 내 갱신 없으면 stale 경고)
           data_type: "LaserScan"  # LaserScan 또는 PointCloud2
 
           min_obstacle_height: 0.0  # 최소 장애물 높이
@@ -185,7 +185,7 @@ local_costmap:
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
           raytrace_max_range: 6.0  # 레이 트레이싱 최대 거리
-          raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
+          raytrace_min_range: 2.18  # 근거리 사각지대(D_min=2.178m) 장애물 셀 보존 (배경 광선에 의한 삭제 차단)
     
       static_layer:
         map_subscribe_transient_local: True
@@ -227,7 +227,7 @@ global_costmap:
           topic: /scan  # 센서 데이터 토픽 이름
           sensor_frame: lidar_link  # 비워두면 메시지에서 frame_id 사용
           observation_persistence: 0.0  # 센서 데이터 유지 시간 (s)
-          expected_update_rate: 10.0  # 예상 갱신 주기 (s)
+          expected_update_rate: 0.5  # 예상 갱신 주기 (s; 10 Hz 기준 0.5초 내 갱신 없으면 stale 경고)
           data_type: "LaserScan"  # LaserScan 또는 PointCloud2
 
           min_obstacle_height: 0.0  # 최소 장애물 높이
@@ -242,7 +242,7 @@ global_costmap:
           obstacle_min_range: 0.0  # 장애물 마킹 최소 거리
 
           raytrace_max_range: 6.0  # 레이 트레이싱 최대 거리
-          raytrace_min_range: 0.0  # 레이 트레이싱 최소 거리
+          raytrace_min_range: 2.18  # 근거리 사각지대(D_min=2.178m) 장애물 셀 보존
 
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"

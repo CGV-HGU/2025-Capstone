@@ -1,22 +1,11 @@
 # 📊 Baseline Comparative Benchmark Report
-Generated on: 2026-10-02 19:53:10  
-Hardware Target: On-board Embedded CPU (Intel Core Ultra / x86_64)
+Generated on: 2026-11-24 12:58:40  
+Hardware Target: On-board Embedded CPU (Intel Core Ultra 7 155H / x86_64)
 
 ## 1. Quantitative Benchmark Results
 
-| Model / Method | Architecture Paradigm | Params (M) | Latency (ms) | Throughput (FPS) | $2.50\text{m}$ Distance (m) | Ranging MAE (m) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **V-LiDAR (Proposed: YOLO11-seg + LUT)** | Floor Seg + LUT | 2.84 M | 19.7 ± 18.3 ms | 50.7 Hz | 2.718 m | **1.529 m** |
-| **MiDaS v2.1 Small (Baseline 1)** | Dense MDE | 21.32 M | 42.9 ± 7.4 ms | 23.3 Hz | 2.718 m | **0.88 m** |
-| **Depth Anything V2 Small (Baseline 2)** | Dense MDE | 24.79 M | 601.4 ± 26.5 ms | 1.7 Hz | 2.718 m | **3.298 m** |
-
----
-
-## 2. Key Academic Insights for IEEE Access Manuscript
-
-1. **Lightweight Edge Feasibility**:
-   - The proposed V-LiDAR requires only **2.8M parameters** (~1/9th of Depth Anything V2 Small), operating at **>70 Hz** on standard CPU.
-   - Foundation MDE models (Depth Anything V2) incur high ViT computational latency (>150ms on CPU), making them less suitable for high-speed reactive obstacle avoidance.
-
-2. **Metric Ranging Fidelity**:
-   - Ground-plane calibrated LUT projection maintains bounded ranging errors (MAE = 0.218m at 2.50m reference distance) without scale ambiguity.
+| Model / Method | Status | Params (M) | All-Frame Latency (ms) | Steady Latency (ex-warmup, ms) | Steady P50 / P95 (ms) | Steady FPS | Est. Dist (m) | Ranging MAE (m) | Valid Rate (%) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **V-LiDAR (Proposed: YOLO11-seg + LUT)** | measured (n=59/59) | 2.84 M | 19.7 ± 26.89 | 17.79 ± 3.39 | 17.5 / 23.2 | 56.2 Hz | N/A | **0.152 m** | 100.0% |
+| **MiDaS v2.1 Small (Baseline 1)** | measured (n=59/59) | 21.32 M | 41.16 ± 5.32 | 41.03 ± 5.16 | 38.7 / 48.8 | 24.4 Hz | N/A | **0.838 m** | 100.0% |
+| **Depth Anything V2 Small (Baseline 2)** | measured (n=59/59) | 24.79 M | 590.84 ± 28.71 | 590.32 ± 27.73 | 588.8 / 638.5 | 1.7 Hz | N/A | **3.277 m** | 100.0% |

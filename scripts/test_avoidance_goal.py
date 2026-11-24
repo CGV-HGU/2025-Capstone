@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import json
+import math
+import os
 import sys
 import time
 import argparse
@@ -12,7 +15,7 @@ from tf2_ros import Buffer, TransformListener
 import math
 
 class AvoidanceGoalSender(Node):
-    def __init__(self, rel_x=10.0, rel_y=0.0, rel_yaw_deg=0.0, timeout_sec=60.0):
+    def __init__(self, rel_x=10.0, rel_y=0.0, rel_yaw_deg=0.0, timeout_sec=60.0, out_json=None, trial_id=None):
         super().__init__('avoidance_goal_sender')
         self._action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.init_pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
@@ -21,6 +24,8 @@ class AvoidanceGoalSender(Node):
         self.rel_y = rel_y
         self.rel_yaw_rad = math.radians(rel_yaw_deg)
         self.timeout_sec = timeout_sec
+        self.out_json = out_json
+        self.trial_id = trial_id
         self.timeout_timer = None
         self.goal_handle = None
 
@@ -169,7 +174,7 @@ class AvoidanceGoalSender(Node):
         if self.goal_handle:
             self.get_logger().info('Canceling active goal...')
             self.goal_handle.cancel_goal_async()
-        self.print_summary(outcome_str=f"❌ 타임아웃 중도 정지 ({self.timeout_sec:.1f}s 초과)")
+        self.print_summary(outcome_str=f"❌ 타임아웃 중도 정지 ({self.timeout_sec:.1f}s 초과)", nav_status="TIMEOUT")
         rclpy.shutdown()
 
     def feedback_callback(self, feedback_msg):
@@ -185,14 +190,17 @@ class AvoidanceGoalSender(Node):
         status = future.result().status
         if status == 4:
             outcome_str = "✅ 목표 도달 완주 성공 (SUCCESS)"
+            nav_status = "SUCCEEDED"
         else:
             outcome_str = f"⚠️ 중도 종료 (Nav2 Status: {status})"
-        self.print_summary(outcome_str=outcome_str)
+            nav_status = f"STATUS_{status}"
+        self.print_summary(outcome_str=outcome_str, nav_status=nav_status)
         rclpy.shutdown()
 
-    def print_summary(self, outcome_str=""):
+    def print_summary(self, outcome_str="", nav_status="UNKNOWN"):
         pure_duration = (self.t_motion_end - self.t_motion_start) if (self.t_motion_start and self.t_motion_end) else 0.0
         init_delay = (self.t_motion_start - self.t_script_start) if (self.t_script_start and self.t_motion_start) else 0.0
+        total_duration = (self.t_motion_end - self.t_script_start) if self.t_motion_end else 0.0
 
         print("\n" + "=" * 65)
         print("🏁 [주행 완료 - 순수 주행 정밀 실측 결과 (Pure Motion Report)]")
@@ -205,6 +213,28 @@ class AvoidanceGoalSender(Node):
         print(f"📌  최종 판정 (Navigation Outcome)   : {outcome_str}")
         print("=" * 65 + "\n")
 
+        if self.out_json:
+            os.makedirs(os.path.dirname(os.path.abspath(self.out_json)), exist_ok=True)
+            payload = {
+                "trial_id": self.trial_id,
+                "nav_status": nav_status,
+                "outcome": outcome_str,
+                "goal_rel_x_m": self.rel_x,
+                "goal_rel_y_m": self.rel_y,
+                "goal_rel_yaw_deg": round(math.degrees(self.rel_yaw_rad), 2),
+                "timeout_sec": self.timeout_sec,
+                "pure_motion_s": round(pure_duration, 3),
+                "total_duration_s": round(total_duration, 3),
+                "init_delay_s": round(init_delay, 3),
+                "travel_x_m": round(self.max_x, 3),
+                "max_lat_y_m": round(self.max_y_deviation, 3),
+                "max_v_mps": round(self.max_v, 3),
+                "max_w_rps": round(self.max_w, 3),
+            }
+            with open(self.out_json, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, indent=2)
+            print(f"💾 Trial outcome JSON saved: {self.out_json}")
+
 def main():
     parser = argparse.ArgumentParser(description='Send relative navigation goal (straight or cornering) for avoidance test.')
     parser.add_argument('-d', '--distance', type=float, default=None, help='Straight distance in meters (shortcut for -x)')
@@ -214,6 +244,8 @@ def main():
     parser.add_argument('--corner', choices=['left', 'right'], default=None, help='Preset corner turn (e.g. --corner left sets x=4.0, y=3.0, a=90)')
 
     parser.add_argument('-t', '--timeout', type=float, default=60.0, help='Navigation timeout in seconds (default: 60.0s)')
+    parser.add_argument('--out-json', type=str, default=None, help='Save structured Nav2 outcome JSON to file')
+    parser.add_argument('--trial-id', type=str, default=None, help='Optional trial ID for JSON record')
 
     args, _ = parser.parse_known_args()
 
@@ -236,7 +268,14 @@ def main():
         rel_angle = -90.0
 
     rclpy.init()
-    sender = AvoidanceGoalSender(rel_x=rel_x, rel_y=rel_y, rel_yaw_deg=rel_angle, timeout_sec=args.timeout)
+    sender = AvoidanceGoalSender(
+        rel_x=rel_x,
+        rel_y=rel_y,
+        rel_yaw_deg=rel_angle,
+        timeout_sec=args.timeout,
+        out_json=args.out_json,
+        trial_id=args.trial_id,
+    )
     if sender.initialize_and_send_goal():
         try:
             rclpy.spin(sender)

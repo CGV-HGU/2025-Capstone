@@ -1,48 +1,72 @@
-# [교수님 보고용] IEEE Access 심사 요약 및 개선 가능 범위 (`Access-2026-51740`)
+# [교수님 보고용] V-LiDAR 후속 투고 전략 · 코드 패치 검증 · 축소 실차 계획 요약
 
-- **대상 논문**: *V-LiDAR: Real-Time Monocular Floor Segmentation and Virtual 2D Scan Synthesis for Autonomous Mobile Robot Obstacle Avoidance*
-- **심사 결과**: **Reject (Do not accept resubmissions)** — 판정일 `2026-11-12` (AE: Dr. Kumaradevan Punithakumar)
-- **상세 근거 문서**: [리뷰 원문(`01`)](./01_IEEE_Access_Decision_and_Raw_Reviews.md) · [사전 분석(`02`)](./02_Review_Analysis_and_Asset_Audit_Report.md) · [실행 플랜(`03`)](./03_Revision_and_Experiment_Action_Plan.md) · [로봇 PC 실물 감사(`04`)](./04_Robot_PC_Asset_Audit_and_Log_Inventory.md)
-
----
-
-## 1. 심사 결과 핵심 요약
-
-- **판정 요약**: 3인의 리뷰어 모두 **원고의 체계성·가독성(R2 Q3, R1 체크리스트 4개 전원 `Yes`)과 참고문헌 적절성(전원 부적절 문헌 `No`)은 긍정적으로 평가**했습니다. 다만 **물리 LiDAR 비교, 환경·거리 다양화, 학습 데이터 명세 등 신규 실험/검증 요구가 커서** IEEE Access 운영 방침상 단기 수정 대신 `Reject (재투고 불가)`로 결정되었습니다.
-- **투고 직전 수정 효과**: Table 6 SIL Offline Replay 투명화, MDE affine 스케일 보정, 과도한 Claim 완화, AI 활용 공시 반영으로 형식적·윤리적 결함 지적은 피했습니다.
-
-### 리뷰어 3인 평가 및 핵심 지적
-
-| 리뷰어 | 체크리스트 / 평가 기조 | 긍정 평가 | 핵심 보완 요구 |
-| :--- | :--- | :--- | :--- |
-| **Reviewer 1** | **4개 항목 전부 `Yes`** (부적절 문헌 `No`) | 연구 기여·기술적 타당성·서술 포괄성 모두 인정 | ① 카메라 높이($h$)·틸트($\gamma$) 변경 실험<br>② 경량 실시간 MDE(`FastDepth`, `Lite-Mono`)·반사 오탐 지표 비교<br>③ 반사바닥·유리벽·저조도·동적 보행자 테스트<br>*(비고: Comment #3에 본 연구와 무관한 PatchTST 등 3편 인용 제안 포함)* |
-| **Reviewer 2** | **모티베이션·안전성 정면 비판** | 논문이 체계적이고 잘 작성·정리됨 | ① **$2.18\text{ m}$ 사각지대 및 초음파/ToF 보완 권고가 '카메라 단독 LiDAR 대체' 주장을 약화**<br>② 학습·라벨링·캘리브레이션 등 **S/W 총소유비용(TCO)** 누락<br>③ 고사양 PC(`Core Ultra 7 155H`) 외 저사양 임베디드 보드 검증 부재<br>④ EMA/Persistence **동적 지연** 및 신뢰도(`c_conf`) **불확실성/OOD** 부재<br>⑤ 기존 Virtual LiDAR·카메라 회피 선행연구 비교 부족 |
-| **Reviewer 3** | **가장 건설적 (5대 필수 보완 제시)** | 문제 실용성, 구현 난이도, 솔직한 실패(`run08/12`) 분석 호평; *"ROS 2 Nav2 통합 시스템 엔지니어링 기여"*로 규정 | ① **동일 로봇 물리 2D LiDAR 비교** (`RPLIDAR/YDLIDAR`)<br>② **YOLOv11n-seg 데이터셋·분할·학습·정확도(mAP/mIoU) 공개**<br>③ `2.50 m` 단일 거리/홀 $\rightarrow$ **다중 거리(`2.2–6.0 m`)·다양한 환경·동적 장애물 확장**<br>④ **`run08/12` Nav2 수정 설정 재주행(Before/After)**<br>⑤ **Operating Envelope(`2.2–6.0 m`, 밝은 개방 실내) 명시 및 톤다운** |
-
-### 3인 공통 지적
-1. **실험 공간·거리·장애물 다양성 부족** (`R1 #4`, `R2 #8·#10`, `R3 #3`): `2.50 m` 정지 측정 1지점(25프레임) + 넓은 홀 10 m 직진(박스 1개)에 국한됨.
-2. **비교 Baseline 타당성 부족** (`R1 #2`, `R2 #4`, `R3 #1`): 동일 로봇 물리 2D LiDAR 비교 0건 및 경량 MDE/Virtual LiDAR 비교 부재.
-3. **'LiDAR 대체' 포지셔닝 과장 vs $2.18\text{ m}$ 사각지대** (`R1 #1`, `R2 #1·#9`, `R3 #5`): 적용 한계 대비 주장 범위가 과대함.
+- **작성/갱신 일자**: `2026-11-24` (원본 `2026-11-13` 요약본에 로봇 PC 코드 패치·실측 재평가·저널 정책 교차검증 반영)
+- **이전 심사 배경**:
+  - **IEEE Access (`Access-2026-51740`, `2026-11-12` Reject)**: Major Revision 없는 저널 구조 + 물리 2D LiDAR 미비교, YOLO 학습 프로토콜 누락, 단일 홀/단일 거리(`2.50 m`), `run08/12` 수정 후 재주행 미제시 지적.
+  - **IJCAS AE 코멘트 (`docs/reviews/comment.txt`)**: 경량성 및 한계 명시(`<= 0.261 m`, `78% = 39/50`) 호평, 단 ① 단일 복도·단일 박스 예비 수준, ② `22%` 실패율, ③ 광택 바닥/조명 민감도, ④ **`"comparison against a LiDAR or alternative baseline is missing"`** 지적.
+- **연계 문서**: [06_Advisor_Agreed_Scope_and_Next_Steps.md](./06_Advisor_Agreed_Scope_and_Next_Steps.md) · [09_IJCAS_Review_Priority_and_3D_LiDAR_Option_20261118.md](./09_IJCAS_Review_Priority_and_3D_LiDAR_Option_20261118.md) · [05_Reduced_40Run_Pilot_and_Calibration_Checklist.md](./planning/05_Reduced_40Run_Pilot_and_Calibration_Checklist.md)
 
 ---
 
-## 2. 개선 가능 범위 구분 (로봇 PC 실물 자산 감사 기반)
+## 1. 차기 타겟 저널 확정안: **IJCAS 집중** (물리 2D LiDAR 미사용)
 
-로봇 PC(`/home/cgv`) 내 코드·가중치·rosbag 전수 조사 결과([`04` 보고서](./04_Robot_PC_Asset_Audit_and_Log_Inventory.md)), **추가 주행 없이 개선 가능한 항목(A)**과 **실차/물리 센서가 필수인 항목(B)**으로 명확히 나뉩니다.
+현재 로봇 PC(`/home/cgv`)에 **물리 2D LiDAR 실물·드라이버(`/dev/ttyLiDAR`, `ydlidar_ros2_driver`)가 부재**하고, 교수님 지침(**게재료 300만 원 이내 · 빠른 정리**)을 반영한 비교 결과는 다음과 같습니다.
 
-### A. 추가 실차 주행 없이 바로 / 오프라인으로 개선 가능한 부분
+| 후보 저널 | 비용 (APC) | 심사 특징 / 속도 | 블라인드 | 적합성 판단 |
+| :--- | :---: | :--- | :---: | :--- |
+| **IJCAS (1순위 추천)** | **`$300` (약 42만 원)** *(2026~ 페이지차지 폐지)* | 1차 약 `1.5~3개월` / 전체 `4~6개월` | Single-blind | **가장 현실적**: AE 코멘트(`LiDAR or alternative baseline`)에 맞춰 **MDE 대조 + 다환경 실차**로 방어 가능하며, `exp/20261123-ijcas-p0` 원고·실험 계획이 이미 준비됨 |
+| **ETRI Journal (대안)** | **`$0` (무료)** | 1차 메타 `~8주` / 실제 승인 `3~6개월` | Double-anonymous | 비용은 유리하나 **이중 익명화(학교·로봇 로고 제거)** 공수 및 ICT 중심 스코프 적합성 점검 필요 |
+| **IEEE Sensors Journal (비추천)** | **OA `$2,800`** *(구독 8p 초과 시 `$175`/p)* | 1차 약 `6~12주` | Single-blind | Q1 센서 저널이라 물리 LiDAR 없이 리젝 위험이 높고, OA 기준 **300만 원 예산 초과** 및 8쪽 압축 부담 |
 
-| 항목 | 해당 지적 | PC 보유 근거 및 실행 내용 |
-| :--- | :---: | :--- |
-| **1. 논문 스코프·TCO·동적 지연 수식 보강** | `R2 #1·#2·#5·#9`, `R3 #5` | - `'LiDAR 대체'` $\rightarrow$ **`'개방형·조명 확보 실내(2.2–6.0 m) ROS 2 Nav2 통합 계측/회피 시스템'`**으로 포지셔닝 조정<br>- S/W 비용(라벨링·학습·캘리브레이션) 공정 비교(TCO) 추가<br>- `10 Hz` 기준 $N_{\mathrm{onset}}=2$ (`200 ms`) + EMA($\alpha=0.6$) 동적 탐지 지연 정량화 |
-| **2. YOLO 학습/검증 지표 보강** | `R3 #2` *(부분)* | - [`best.pt`](../../src/freespace_detection/scripts/best.pt)에서 추출한 [`yolo11n_seg_train_results.csv`](../../experiments/logs/pc_extracted/yolo11n_seg_train_results.csv)로 **100 에포크 곡선·하이퍼파라미터(`batch=16`, `imgsz=320`, `lr0=0.01`)·Mask 정확도(`mAP50=0.80222`, `mAP50-95=0.56231`, `P=0.80468`, `R=0.76136`)** 즉시 반영 가능<br>- *(단, 원본 이미지 장수·train/val/test 분할만 학습 PC/Roboflow 기록에서 추가 확인 필요)* |
-| **3. `run08`·`run12` 실패 원인 입증 강화** | 실패 분석 보강 | - [`minimal_A_scen1_20runs_metrics.csv`](../../experiments/logs/pc_extracted/minimal_A_scen1_20runs_metrics.csv) 상 두 실패 주행 모두 주행 중 `/floor_detector` **`100.0%` True**(`1016/1016`, `689/689`) 유지 확인 $\rightarrow$ 바닥 인식 실패가 아니라 Nav2 costmap 교착임을 직접 뒷받침 가능 |
-| **4. PC 잔존 40개 Bag(`30,706프레임`) 기반 오프라인 실험** | `R1 #2`, `R2 #6·#7`, `R1 #4·R2 #10` *(일부)* | - Active(`28개`) + 휴지통(`12개`)에 남은 **회전의자(`nav_debug_avoidance`), 금속 카트+계단실 광원(`vlidar_run01.3`), 창문 역광+박스(`vlidar_run01.4`), 좁은 복도 정수기·점자블록+출입구 글레어(`vlidar_run01.5`, `floor_true=7.74%`)** 프레임 재사용 가능:<br>  ① 경량 MDE(`FastDepth`, `Lite-Mono` 등) 비교 확장 + [`benchmark_depth_baselines.py`](../../experiments/benchmark_depth_baselines.py) **yaw 미보정 오차 버그 수정** 재평가<br>  ② `c_conf` 민감도 / [`usb_webcam_calibration.yaml`](../../experiments/logs/pc_extracted/usb_webcam_calibration.yaml) 기반 `cv2.undistort` 유무 비교 / CPU 코어 제한 지연 시뮬레이션 |
+> **확인 필요 사항**: IJCAS 포털 판정 메일 원문에서 이번 재제출이 **재투고(Resubmit)** 트랙인지 **신규 투고(New Submission)**인지 메일함에서 최종 확인이 필요합니다.
 
-### B. 로봇 실차 가동 / 물리 센서가 반드시 필요한 부분
+---
 
-| 필수 보완 항목 | 해당 지적 | PC 감사상 불가 사유 및 필요 조치 |
-| :--- | :---: | :--- |
-| **1. 동일 로봇 물리 2D LiDAR 동시 비교** | **`R3 #1`** *(핵심)* | - 현재 로봇 PC에 `/dev/ttyLiDAR` 장치 및 `ydlidar_ros2_driver`가 없어 기존 로그만으로 대체 불가<br>- 물리 LiDAR(`YDLIDAR`/`RPLIDAR`) 장착 시 `/scan_lidar` 동시 녹화 1~2일이면 `R3 #1` 1:1 비교와 `R3 #3` 다중거리 GT를 동시에 확보 가능 |
-| **2. 수정 Nav2 파라미터 10회 실차 재주행** | **`R3 #4`** | - [`omo_r1.yaml`](../../src/omo_r1_navigation2/param/omo_r1.yaml) 최신 설정(`use_sim_time: False`, `inflation_radius: 0.75`, `cost_scaling_factor: 2.7`, `BaseObstacle.scale: 5.0`)으로 **10 m 박스 코스 재주행 Before/After 비교표** 필요 |
-| **3. 유리벽·저조도·보행자·카메라 틸트($\gamma$) 실측** | **`R1 #1·#4`**, **`R3 #3`** | - PC의 360° 영상(`OH3F.mp4`)은 투영 모델이 달라 핀홀 LUT 정량 GT로 쓸 수 없어 스팟 테스트 필요 |
+## 2. 코드 결함 패치 및 완전 재현 벤치마크 결과 (`2026-11-24` 완료)
+
+기존 IEEE Access 원고의 미연결 수치(`0.192 m`, `12.9 ms`, `18/20` 미검증 주행)를 **전면 폐기**하고, 로봇 PC 실제 코드([floor_detector.py](../../src/freespace_detection/freespace_detection/floor_detector.py), [fake_lidar_with_tf.py](../../src/fake_lidar_with_tf/fake_lidar_with_tf/fake_lidar_with_tf.py), [omo_r1.yaml](../../src/omo_r1_navigation2/param/omo_r1.yaml), [benchmark_depth_baselines.py](../../experiments/benchmark_depth_baselines.py))의 치명적 결함 4종을 수정한 뒤 재측정했습니다.
+
+### 2-1. 핵심 코드 패치 및 안전성 검증 완료
+1. **OpenVINO FP16 CPU 실제 연결 + `cls=0` 바닥 라벨 역전 수정 & 보행자 분리 검증 PASS**:
+   - `best.pt` / `best_openvino_model` 메타데이터는 `{0: 'person', 1: 'floor'}`이지만 실제 학습 가중치는 **바닥을 `cls=0`으로 예측**함을 실측으로 발견(`cls=1`은 80프레임 중 0건).
+   - `floor_class_id=0` 명시 매핑 및 상단(`y < 120`) 고립 오탐 차단 가드(`min_floor_scan_pixels=50`)를 적용했고, 실제 성인 보행자 포함 이미지([experiment1_setup.jpeg](../../IJCAS/ICCAS/IJCAS/paper/experiment1_setup.jpeg), [live_view.png](../../IJCAS/ICCAS/IJCAS/paper/live_view.png))에서 **보행자 전신·박스·쓰레기통이 비바닥(장애물)으로 정상 분리**됨을 확인했습니다.
+2. **사각지대(`2.18 m`) 장애물 보존형 Costmap 관리 & Stale Scan 차단**:
+   - 하단 ROI만 보고 15초마다 costmap 전체를 삭제하던 `clear_all_costmaps()` 자동 호출을 기본 비활성화(`enable_auto_costmap_clear=False`)했습니다.
+   - `omo_r1.yaml` (`local_costmap`·`global_costmap`)에 `raytrace_min_range: 2.18`(사각지대 셀 보존), `inf_is_valid: False`, `expected_update_rate: 0.5`(10 Hz 기준 0.5초 타임아웃), `observation_persistence: 0.0`을 적용했습니다.
+   - `floor_detector.py`가 카메라 획득 `header.stamp`를 보존해 `/scan`을 직접 발행하도록 변경하고, `fake_lidar_with_tf.py`는 `lidar_x_offset` TF 파라미터화 및 `0.5 s` stale 만료 차단 릴레이로 정비했습니다.
+3. **벤치마크 평가 버그 제거**:
+   - `benchmark_depth_baselines.py`의 `GT + 0.35` 및 예외 고정상수 fallback을 제거(미검출 시 `NaN`/`not_measured`)하고, `/odom` yaw 추적·방위각 창 정렬·센서 외인자 보정(`--sensor-offset-x`)을 반영했습니다.
+   - *(정정)* 기존 `run08/12` 실패 사례는 *"비전 100% 정상 확정"*이 아니라 ***"하단 ROI 95% 채움 조건(`/floor_detector=True`)은 유지되었으나 영상·경로·costmap 토픽 미기록으로 비전 전체 정상 단정 불가, Costmap/파라미터(`raytrace_min_range: 2.18`, `clear_all_costmaps` 비활성화) 보완 필요"***로 서술을 정정했습니다.
+
+### 2-2. 재현 가능한 동적 벤치마크 비교표 (`vlidar_run01` + `vlidar_run02` 총 200프레임)
+원본 로그: [`baseline_benchmark_report.md`](../../experiments/logs/baseline_benchmark_report.md) · [`baseline_latex_table.tex`](../../experiments/logs/baseline_latex_table.tex) (콜드 웜업 프레임 0 제외 steady-state 기준, `n=59/59` 유효 구간 `2.18–5.0 m`, `in_fov=1`)
+
+| 모델 / 기법 | 백엔드 (CPU) | Params | Steady 지연 (`mean ± std`) | P50 / P95 (ms) | Steady FPS | 동적 MAE (m) | 유효율 |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **V-LiDAR (제안)** | OpenVINO FP16 | `2.84 M` | **`17.79 ± 3.39 ms`** *(단독 `13.3–14.3 ms`)* | `17.5 / 23.2` | **`56.2 Hz`** *(단독 `~70–75 Hz`)* | **`0.152 m`** | `100.0%` |
+| **MiDaS v2.1 Small** | PyTorch CPU | `21.32 M` | `41.03 ± 5.16 ms` | `38.7 / 48.8` | `24.4 Hz` | `0.838 m` | `100.0%` |
+| **Depth Anything V2 Small** | PyTorch CPU | `24.79 M` | `590.32 ± 27.73 ms` | `588.8 / 638.5` | `1.7 Hz` | `3.277 m` | `100.0%` |
+
+*(참고: `Lite-Mono`, `FastDepth`는 현재 로봇 PC에 패키지·체크포인트 캐시가 없어 이번 오프라인 실행에서 제외됨. 필요 시 D1/D2 신규 클립 평가 단계에서 추가 검토.)*
+
+### 2-3. 글레어 · 역광 · 좁은 복도 실패 분석 요약 ([`glare_backlight_failure_audit.csv`](../../experiments/logs/glare_backlight_failure_audit.csv))
+| Bag (장면) | 샘플 수 | 단독 OpenVINO Steady 지연 | 평균 바닥 면적 | ROI 통과율(`>=95%`) | 상단 오탐 차단(`y<120`) | 핵심 진단 |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| `vlidar_run01` (기준 홀+박스) | 100 / 2,034 | `13.34 ms` (P95 `16.51`) | `30.15%` | `88.0%` | `0` | 안정적 기준 조건 |
+| `vlidar_run02` (기준 홀+박스) | 100 / 1,552 | `14.05 ms` (P95 `17.03`) | `28.23%` | `88.0%` | `1` | 근접/가림 구간 `zero_floor` 12프레임 포함 |
+| `nav_debug_avoidance` (회전의자) | 100 / 1,971 | `14.11 ms` (P95 `16.13`) | `29.33%` | `73.0%` | `0` | 의자 다리·근접 회피로 정면 `<2.2 m` 빈도 `25%` |
+| `vlidar_run01.3` (금속 카트+계단광) | 100 / 2,613 | `13.94 ms` (P95 `16.86`) | `29.72%` | `62.0%` | `2` | 계단실 눈부심·카트 구조로 ROI 통과율 하락 |
+| `vlidar_run01.4` (창문 저각도 역광+박스) | 100 / 2,305 | `13.81 ms` (P95 `16.96`) | `35.31%` | `86.0%` | **`32`** | **상단(`y<120`) 반사/역광 고립 오탐 32%를 패치 가드로 전부 차단** |
+| `vlidar_run01.5` (좁은 복도+출입구 글레어) | 200 / 15,895 | `14.34 ms` (P95 `17.76`) | **`17.22%`** | **`7.0%`** | `0` | 좁은 복도·점자블록·글레어 환경에서 운용 한계 정량 확인 |
+
+---
+
+## 3. 실속형 축소 실차 실험 및 파일럿 계획
+
+기존 `proposal_v2_20261118`의 3장소(60회) 계획을 일정에 맞춰 **명확히 대비되는 2장소 × 2배치 × 10회 = 총 40회** + **D1/D2 정적 클립(줄자/거리계 독립 GT)**으로 압축했습니다.
+
+1. **줄자 실측 및 파일럿 1회 선행**: [`05_Reduced_40Run_Pilot_and_Calibration_Checklist.md`](./planning/05_Reduced_40Run_Pilot_and_Calibration_Checklist.md) 절차에 따라 `base_link` ↔ 카메라 렌즈 X 오프셋 실측(`lidar_x_offset` 고정) 후, 개정된 [`scripts/record_rosbag.sh`](../../scripts/record_rosbag.sh)(ZSTD 압축 영상 + `/scan`, `/odom`, `/plan`, `local/global costmap`, `/navigate_to_pose/_action/status`)와 [`scripts/test_avoidance_goal.py`](../../scripts/test_avoidance_goal.py)(`--out-json` 결과 저장)로 누락 없는 1회 파일럿 검증.
+2. **실차 본 평가 (40회)**:
+   - **장소 A (균일 조명 · 저반사 직선)** vs **장소 B (광택 바닥 · 창가 반사/역광)**
+   - **S1 (단일 박스 `(4.5, 0)m`)** vs **S2 (복수·이형 장애물: 박스 `(3.5, +0.35)m` + 의자/카트 `(7.0, -0.35)m`)**, 각 조건 10회(실패·타임아웃·개입 전수 포함).
+3. **정적 비교 (D1/D2)**: 줄자/레이저 거리계 독립 GT로 **MDE 보정 split(배치 1)과 평가 split(배치 2·3)을 분리**하고 조명 조건별 오탐·미검출 분포 확보.

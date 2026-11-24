@@ -3,57 +3,107 @@
 ==============================================================================
 Baseline Comparison Benchmark Tool: V-LiDAR vs. MiDaS vs. Depth Anything V2
 ==============================================================================
-This script benchmarks the three competing monocular obstacle perception paradigms:
-1. Proposed V-LiDAR: YOLOv11n-seg + Floor Boundary LUT (O(1) Geometric Projection)
+Benchmarks three monocular obstacle perception pipelines on identical RGB inputs:
+1. Proposed V-LiDAR: YOLOv11n-seg (floor class) + 2D Ground LUT
 2. Baseline 1: MiDaS Small (Convolutional Lightweight MDE)
-3. Baseline 2: Depth Anything V2 Small (Vision Transformer SOTA MDE)
-
-Metrics Evaluated:
-- Model Parameters (Params in Millions)
-- Model Weights Size (MB)
-- Inference Latency (Mean, Std, P95 in ms)
-- Throughput / Frame Rate (FPS / Hz)
-- Static Ranging Error at Ground-Truth Reference Distance (MAE, m)
-
-Outputs:
-- Formatted Terminal ASCII Table
-- Markdown Summary Report (experiments/logs/baseline_benchmark_report.md)
-- LaTeX Table Snippet for IEEE Access Manuscript (experiments/logs/baseline_latex_table.tex)
+3. Baseline 2: Depth Anything V2 Small (Vision Transformer MDE)
 ==============================================================================
 """
 
-import os
-import sys
-import time
 import argparse
-import json
-import numpy as np
-import cv2
+import csv
+import glob
 import math
+import os
+import sqlite3
+import subprocess
+import time
 
-# Set random seed for reproducibility
+import cv2
+import numpy as np
+
 np.random.seed(42)
+
 
 def print_header(title):
     print("\n" + "=" * 75)
     print(f"🔬 {title}")
     print("=" * 75)
 
+
+def wrap_to_pi(angle_rad: float) -> float:
+    return (angle_rad + math.pi) % (2.0 * math.pi) - math.pi
+
+
+def extract_yaw_from_quat(q) -> float:
+    siny_cosp = 2.0 * (q.w * q.z + q.x * q.y)
+    cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def extract_bearing_scan_distance(
+    channel_dist: np.ndarray,
+    rel_angle_deg: float,
+    half_window_deg: float = 5.0,
+    max_valid_range: float = 8.0,
+    is_ros_laserscan_order: bool = False,
+) -> float:
+    """
+    Extract median valid range around target bearing `rel_angle_deg` (ROS convention: +left, -right).
+    - `channel_dist` from V-LiDAR/MDE wrappers uses image column order: idx 0 = +35 deg (left), idx 140 = -35 deg (right).
+    - `LaserScan.ranges` uses ROS convention: idx 0 = -35 deg (right), idx 140 = +35 deg (left).
+    """
+    num_ch = len(channel_dist)
+    step_deg = 0.5
+    if is_ros_laserscan_order:
+        center_idx = int(round((rel_angle_deg - (-35.0)) / step_deg))
+    else:
+        center_idx = int(round((35.0 - rel_angle_deg) / step_deg))
+
+    half_bins = int(round(half_window_deg / step_deg))
+    lo = max(0, center_idx - half_bins)
+    hi = min(num_ch, center_idx + half_bins + 1)
+    if lo >= hi:
+        return float("nan")
+
+    window = np.asarray(channel_dist[lo:hi], dtype=float)
+    valid = window[np.isfinite(window) & (window > 0.1) & (window < max_valid_range)]
+    if valid.size == 0:
+        return float("nan")
+    return float(np.median(valid))
+
+
 # ==============================================================================
 # 1. Model Wrapper Classes
 # ==============================================================================
 
+
 class VLiDARWrapper:
-    """Wrapper for the Proposed V-LiDAR System (YOLOv11n-seg + LUT)."""
-    def __init__(self, scripts_dir, device="cpu", use_openvino=False):
+    """Wrapper for the Proposed V-LiDAR System (YOLOv11n-seg + LUT, aligned with floor_detector.py)."""
+
+    def __init__(
+        self,
+        scripts_dir,
+        device="cpu",
+        use_openvino=False,
+        conf_threshold=0.15,
+        floor_class_id=0,
+        min_floor_scan_pixels=50,
+        closing_ksize=7,
+        closing_iters=2,
+    ):
         self.name = "V-LiDAR (Proposed: YOLO11-seg + LUT)"
         self.device = device
         self.target_w = 320
         self.target_h = 256
         self.num_channels = 141
         self.y_min_scan = 120
+        self.conf_threshold = conf_threshold
+        self.floor_class_id = floor_class_id
+        self.min_floor_scan_pixels = min_floor_scan_pixels
+        self.closing_ksize = closing_ksize
+        self.closing_iters = closing_iters
 
-        # Load LUTs
         col_lut_path = os.path.join(scripts_dir, "col_to_ch_lut.npy")
         dist_2d_path = os.path.join(scripts_dir, "distance_lut_2d.npy")
         dist_1d_path = os.path.join(scripts_dir, "distance_lut.npy")
@@ -70,14 +120,12 @@ class VLiDARWrapper:
             self.distance_lut = np.load(dist_1d_path)
             self.is_2d = False
         else:
-            # Fallback theoretical LUT (h=1.05m, tilt=2.0 deg)
-            self.distance_lut = np.full((self.target_h, self.target_w), 2.5, dtype=np.float32)
-            self.is_2d = True
+            raise FileNotFoundError(f"Distance LUT not found in {scripts_dir}")
 
         self.row_indices = np.arange(self.y_min_scan, self.target_h)[:, None]
 
-        # Load Model
         from ultralytics import YOLO
+
         openvino_dir = os.path.join(scripts_dir, "best_openvino_model")
         pt_path = os.path.join(scripts_dir, "best.pt")
 
@@ -88,56 +136,51 @@ class VLiDARWrapper:
             self.model = YOLO(pt_path, task="segment")
             self.model_backend = f"PyTorch ({device})"
         else:
-            # Fallback to standard yolo11n-seg
-            print("  [V-LiDAR] 'best.pt' not found, loading pretrained 'yolo11n-seg.pt'...")
-            self.model = YOLO("yolo11n-seg.pt", task="segment")
-            self.model_backend = f"PyTorch ({device})"
+            raise FileNotFoundError(f"Model weights not found: {pt_path}")
 
     def count_parameters(self):
         try:
             total_params = sum(p.numel() for p in self.model.model.parameters())
             return total_params / 1e6
         except Exception:
-            return 2.84  # Standard YOLOv11n-seg parameter count in Millions
+            return 2.84
 
-    def infer(self, img_bgr):
-        # Resize to fixed input resolution
-        small_frame = cv2.resize(img_bgr, (self.target_w, self.target_h), interpolation=cv2.INTER_LINEAR)
-        
-        # 1) YOLO Segmentation
-        results = self.model(small_frame, device=self.device, conf=0.25, verbose=False)
-        
-        # 2) Mask Extraction & Bitwise-OR merging
+    def _extract_floor_mask(self, results) -> np.ndarray:
+        """Select only `floor_class_id` instances intersecting y >= y_min_scan (no cross-class fallback)."""
         floor_masks = []
         for res in results:
-            if res.masks is not None and len(res.masks.data) > 0:
-                if res.boxes is not None and len(res.boxes) > 0:
-                    for i, box in enumerate(res.boxes):
-                        cls_id = int(box.cls.item())
-                        cls_name = res.names.get(cls_id, '')
-                        if cls_id == 1 or cls_name == 'floor':
-                            floor_masks.append(res.masks.data[i].cpu().numpy().astype(np.uint8))
-                    if not floor_masks:
-                        # Fallback if no explicit floor label identified
-                        for i in range(len(res.boxes)):
-                            floor_masks.append(res.masks.data[i].cpu().numpy().astype(np.uint8))
-                else:
-                    for m in res.masks.data:
-                        floor_masks.append(m.cpu().numpy().astype(np.uint8))
-                break
+            if res.masks is None or len(res.masks.data) == 0:
+                continue
+            if res.boxes is not None and len(res.boxes) == len(res.masks.data):
+                cls_ids = res.boxes.cls.cpu().numpy().astype(int)
+                for m, cls_id in zip(res.masks.data, cls_ids):
+                    if cls_id != self.floor_class_id:
+                        continue
+                    m_bin = (m.cpu().numpy() > 0.5).astype(np.uint8)
+                    if int(m_bin[self.y_min_scan :, :].sum()) < self.min_floor_scan_pixels:
+                        continue
+                    floor_masks.append(m_bin)
+            break
 
         if floor_masks:
-            mask = np.bitwise_or.reduce(floor_masks)
-        else:
-            mask = np.zeros((self.target_h, self.target_w), dtype=np.uint8)
+            return np.bitwise_or.reduce(floor_masks)
+        return np.zeros((self.target_h, self.target_w), dtype=np.uint8)
 
-        # 3) Morphological closing (5x5)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    def infer(self, img_bgr):
+        small_frame = cv2.resize(img_bgr, (self.target_w, self.target_h), interpolation=cv2.INTER_LINEAR)
+        results = self.model(
+            small_frame,
+            device=self.device,
+            conf=self.conf_threshold,
+            verbose=False,
+        )
 
-        # 4) O(1) LUT scan projection
+        mask = self._extract_floor_mask(results)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (self.closing_ksize, self.closing_ksize))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=self.closing_iters)
+
         channel_dist = np.full(self.num_channels, np.inf, dtype=np.float32)
-        sub_mask = mask[self.y_min_scan:, :]
+        sub_mask = mask[self.y_min_scan :, :]
         obs_rows = np.where(sub_mask == 0, self.row_indices, -1)
         max_y = obs_rows.max(axis=0)
 
@@ -156,6 +199,7 @@ class VLiDARWrapper:
 
 class MiDaSWrapper:
     """Wrapper for Baseline 1: MiDaS Small (torch.hub)."""
+
     def __init__(self, device="cpu"):
         self.name = "MiDaS v2.1 Small (Baseline 1)"
         self.device = device
@@ -165,6 +209,7 @@ class MiDaSWrapper:
 
         try:
             import torch
+
             print("  [MiDaS] Loading MiDaS_small via torch.hub...")
             self.model = torch.hub.load("intel-isl/MiDaS", "MiDaS_small", trust_repo=True)
             self.model.to(device)
@@ -175,21 +220,21 @@ class MiDaSWrapper:
             self.is_loaded = True
         except Exception as e:
             print(f"  [MiDaS] Loading failed: {e}")
-            print("  💡 Tip: To run actual MiDaS inference, install: pip install timm")
             self.model = None
             self.is_loaded = False
 
     def count_parameters(self):
-        if getattr(self, 'is_loaded', False) and self.model is not None:
+        if getattr(self, "is_loaded", False) and self.model is not None:
             total_params = sum(p.numel() for p in self.model.parameters())
             return total_params / 1e6
-        return 21.4  # Official MiDaS v2.1 Small parameter count in Millions
+        return 21.4
 
     def infer(self, img_bgr):
-        if not getattr(self, 'is_loaded', False) or self.model is None:
+        if not getattr(self, "is_loaded", False) or self.model is None:
             raise RuntimeError("MiDaS model is not loaded (requires 'timm')")
 
         import torch
+
         img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         input_batch = self.transform(img_rgb).to(self.device)
 
@@ -202,12 +247,11 @@ class MiDaSWrapper:
                 align_corners=False,
             ).squeeze()
 
-        depth_inv = prediction.cpu().numpy()  # Inverse relative disparity
+        depth_inv = prediction.cpu().numpy()
         eps = 1e-4
         depth_metric = 1000.0 / (depth_inv + eps)
         depth_metric = np.clip(depth_metric, 0.2, 10.0)
 
-        # Slice 2D scan from horizontal region (rows 120~200)
         h_slice = depth_metric[120:200, :]
         col_min = h_slice.min(axis=0)
 
@@ -219,6 +263,7 @@ class MiDaSWrapper:
 
 class DepthAnythingV2Wrapper:
     """Wrapper for Baseline 2: Depth Anything V2 Small."""
+
     def __init__(self, device="cpu"):
         self.name = "Depth Anything V2 Small (Baseline 2)"
         self.device = device
@@ -228,6 +273,7 @@ class DepthAnythingV2Wrapper:
 
         try:
             from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+
             model_id = "depth-anything/Depth-Anything-V2-Small-hf"
             print(f"  [Depth Anything V2] Loading {model_id} from HuggingFace...")
             self.processor = AutoImageProcessor.from_pretrained(model_id)
@@ -236,21 +282,21 @@ class DepthAnythingV2Wrapper:
             self.is_loaded = True
         except Exception as e:
             print(f"  [Depth Anything V2] HF loader failed: {e}")
-            print("  💡 Tip: To run actual Depth Anything V2 inference, install: pip install transformers")
             self.model = None
             self.is_loaded = False
 
     def count_parameters(self):
-        if getattr(self, 'is_loaded', False) and self.model is not None:
+        if getattr(self, "is_loaded", False) and self.model is not None:
             total_params = sum(p.numel() for p in self.model.parameters())
             return total_params / 1e6
-        return 24.8  # Depth-Anything-V2-Small official parameter count in Millions
+        return 24.8
 
     def infer(self, img_bgr):
-        if not getattr(self, 'is_loaded', False) or self.model is None:
+        if not getattr(self, "is_loaded", False) or self.model is None:
             raise RuntimeError("Depth Anything V2 model is not loaded (requires 'transformers')")
 
         import torch
+
         img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         inputs = self.processor(images=img_rgb, return_tensors="pt").to(self.device)
         with torch.no_grad():
@@ -284,28 +330,26 @@ class DepthAnythingV2Wrapper:
 # 2. Benchmark Engine
 # ==============================================================================
 
+
 def run_speed_benchmark(model_wrapper, dummy_frame, warmup_iters=10, test_iters=50):
     print(f"\n⚡ Benchmarking: {model_wrapper.name}...")
-    
-    # Warmup
+
     for _ in range(warmup_iters):
         _ = model_wrapper.infer(dummy_frame)
 
-    # Timed runs
     latencies = []
     for _ in range(test_iters):
         t0 = time.perf_counter()
         _ = model_wrapper.infer(dummy_frame)
         t1 = time.perf_counter()
-        latencies.append((t1 - t0) * 1000.0)  # Convert to ms
+        latencies.append((t1 - t0) * 1000.0)
 
     latencies = np.array(latencies)
-    mean_lat = np.mean(latencies)
-    std_lat = np.std(latencies)
-    p95_lat = np.percentile(latencies, 95)
-    fps = 1000.0 / mean_lat
-
-    params_m = model_wrapper.count_parameters()
+    mean_lat = float(np.mean(latencies))
+    std_lat = float(np.std(latencies))
+    p95_lat = float(np.percentile(latencies, 95))
+    fps = 1000.0 / mean_lat if mean_lat > 0 else 0.0
+    params_m = float(model_wrapper.count_parameters())
 
     print(f"   • Parameters : {params_m:.2f} M")
     print(f"   • Latency    : {mean_lat:.2f} ± {std_lat:.2f} ms (P95: {p95_lat:.2f} ms)")
@@ -313,6 +357,7 @@ def run_speed_benchmark(model_wrapper, dummy_frame, warmup_iters=10, test_iters=
 
     return {
         "name": model_wrapper.name,
+        "status": "measured",
         "params_m": round(params_m, 2),
         "mean_latency_ms": round(mean_lat, 2),
         "std_latency_ms": round(std_lat, 2),
@@ -323,21 +368,16 @@ def run_speed_benchmark(model_wrapper, dummy_frame, warmup_iters=10, test_iters=
 
 def evaluate_ranging_accuracy(model_wrapper, test_image, ground_truth_dist=2.50):
     """
-    Evaluates ranging error (MAE) against ground truth distance (e.g. 2.50m)
-    across the frontal center scan channels (channels 60~80 of 141).
+    Evaluates ranging error (MAE) against ground truth distance across frontal center scan channels.
+    Returns (NaN, NaN, NaN) on miss/non-detection rather than fabricating GT-based fallback values.
     """
     scan, _ = model_wrapper.infer(test_image)
-    center_channels = scan[60:81]  # Frontal +/- 5 deg
-    valid_center = center_channels[np.isfinite(center_channels)]
-
-    if len(valid_center) > 0:
-        estimated_dist = float(np.median(valid_center))
-    else:
-        estimated_dist = ground_truth_dist + 0.35  # Fallback error estimation
+    estimated_dist = extract_bearing_scan_distance(scan, rel_angle_deg=0.0, half_window_deg=5.0)
+    if not np.isfinite(estimated_dist):
+        return float("nan"), float("nan"), float("nan")
 
     error = estimated_dist - ground_truth_dist
     mae = abs(error)
-
     return round(estimated_dist, 3), round(error, 3), round(mae, 3)
 
 
@@ -345,23 +385,36 @@ def evaluate_ranging_accuracy(model_wrapper, test_image, ground_truth_dist=2.50)
 # 3. Report & LaTeX Table Generator
 # ==============================================================================
 
+
+def _fmt_num(val, fmt=".3f"):
+    if val is None or (isinstance(val, float) and not np.isfinite(val)):
+        return "N/A"
+    return format(val, fmt)
+
+
 def export_latex_table(results_list, output_path):
-    latex_code = """% Generated Table for IEEE Access Manuscript
+    latex_code = """% Generated Table (Measured Values Only; No Synthetic Fallbacks)
 \\begin{table*}[!t]
   \\centering
   \\caption{Comparative Performance Benchmark: Proposed V-LiDAR vs. Monocular Depth Estimation Baselines under Identical On-board CPU Execution}
   \\label{tab:baseline_comparison}
   \\begin{tabularx}{\\textwidth}{lcccccc}
     \\toprule
-    Method / Architecture & Model Paradigm & Params (M) & Latency (ms) & Throughput (Hz) & $2.50\\,\\text{m}$ Ranging MAE (m) & Relative Error (\\%) \\\\
+    Method / Architecture & Model Paradigm & Params (M) & Latency (ms) & Throughput (Hz) & Ranging MAE (m) & Valid Rate (\\%) \\\\
     \\midrule
 """
     for res in results_list:
         name = res["name"].split(" (")[0]
         paradigm = "Floor Seg. + LUT" if "V-LiDAR" in name else ("ConvNet MDE" if "MiDaS" in name else "ViT MDE")
-        mae_str = f"{res.get('mae_m', 0.218):.3f}"
-        rel_err = f"{(res.get('mae_m', 0.218) / 2.50 * 100):.2f}\\%"
-        latex_code += f"    {name} & {paradigm} & {res['params_m']:.2f} & {res['mean_latency_ms']:.1f} $\\pm$ {res['std_latency_ms']:.1f} & {res['throughput_fps']:.1f} & {mae_str} & {rel_err} \\\\\n"
+        lat = res.get("steady_mean_latency_ms") if res.get("steady_mean_latency_ms") is not None else res.get("mean_latency_ms")
+        std = res.get("steady_std_latency_ms") if res.get("steady_std_latency_ms") is not None else res.get("std_latency_ms")
+        lat_str = f"{lat:.2f} $\\pm$ {std:.2f}" if (lat is not None and std is not None and np.isfinite(lat)) else "not\\_measured"
+        fps_val = res.get("steady_fps") if res.get("steady_fps") is not None else res.get("throughput_fps")
+        fps_str = _fmt_num(fps_val, ".1f")
+        mae_str = _fmt_num(res.get("mae_m"), ".3f")
+        det_str = _fmt_num(res.get("detection_rate_pct"), ".1f") if "detection_rate_pct" in res else ("100.0" if np.isfinite(res.get("mae_m") or float("nan")) else "N/A")
+        params_str = _fmt_num(res.get("params_m"), ".2f")
+        latex_code += f"    {name} & {paradigm} & {params_str} & {lat_str} & {fps_str} & {mae_str} & {det_str} \\\\\n"
 
     latex_code += """    \\bottomrule
   \\end{tabularx}
@@ -375,45 +428,67 @@ def export_latex_table(results_list, output_path):
 def export_markdown_report(results_list, output_path):
     md_content = f"""# 📊 Baseline Comparative Benchmark Report
 Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}  
-Hardware Target: On-board Embedded CPU (Intel Core Ultra / x86_64)
+Hardware Target: On-board Embedded CPU (Intel Core Ultra 7 155H / x86_64)
 
 ## 1. Quantitative Benchmark Results
 
-| Model / Method | Architecture Paradigm | Params (M) | Latency (ms) | Throughput (FPS) | $2.50\\text{{m}}$ Distance (m) | Ranging MAE (m) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| Model / Method | Status | Params (M) | All-Frame Latency (ms) | Steady Latency (ex-warmup, ms) | Steady P50 / P95 (ms) | Steady FPS | Est. Dist (m) | Ranging MAE (m) | Valid Rate (%) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 """
     for res in results_list:
-        md_content += f"| **{res['name']}** | {'Floor Seg + LUT' if 'V-LiDAR' in res['name'] else 'Dense MDE'} | {res['params_m']} M | {res['mean_latency_ms']} ± {res['std_latency_ms']} ms | {res['throughput_fps']} Hz | {res.get('est_dist_m', 2.718)} m | **{res.get('mae_m', 0.218)} m** |\n"
+        lat_str = (
+            f"{res['mean_latency_ms']} ± {res['std_latency_ms']}"
+            if res.get("mean_latency_ms") is not None
+            else "not_measured"
+        )
+        st_lat_str = (
+            f"{res['steady_mean_latency_ms']} ± {res['steady_std_latency_ms']}"
+            if res.get("steady_mean_latency_ms") is not None
+            else lat_str
+        )
+        st_pct_str = (
+            f"{_fmt_num(res.get('steady_p50_latency_ms'), '.1f')} / {_fmt_num(res.get('steady_p95_latency_ms'), '.1f')}"
+            if res.get("steady_p50_latency_ms") is not None
+            else "N/A"
+        )
+        fps_str = _fmt_num(res.get("steady_fps") if res.get("steady_fps") is not None else res.get("throughput_fps"), ".1f")
+        est_str = f"{_fmt_num(res.get('est_dist_m'), '.3f')} m" if res.get("est_dist_m") is not None else "N/A"
+        mae_str = f"**{_fmt_num(res.get('mae_m'), '.3f')} m**"
+        det_str = f"{_fmt_num(res.get('detection_rate_pct'), '.1f')}%" if res.get("detection_rate_pct") is not None else "N/A"
+        md_content += (
+            f"| **{res['name']}** | {res.get('status', 'measured')} | {_fmt_num(res.get('params_m'), '.2f')} M | "
+            f"{lat_str} | {st_lat_str} | {st_pct_str} | {fps_str} Hz | {est_str} | {mae_str} | {det_str} |\n"
+        )
 
-    md_content += """
----
-
-## 2. Key Academic Insights for IEEE Access Manuscript
-
-1. **Lightweight Edge Feasibility**:
-   - The proposed V-LiDAR requires only **2.8M parameters** (~1/9th of Depth Anything V2 Small), operating at **>70 Hz** on standard CPU.
-   - Foundation MDE models (Depth Anything V2) incur high ViT computational latency (>150ms on CPU), making them less suitable for high-speed reactive obstacle avoidance.
-
-2. **Metric Ranging Fidelity**:
-   - Ground-plane calibrated LUT projection maintains bounded ranging errors (MAE = 0.218m at 2.50m reference distance) without scale ambiguity.
-"""
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(md_content)
     print(f"📝 Markdown Report saved to: {output_path}")
 
 
 # ==============================================================================
-# 4. Rosbag Dynamic Trajectory Benchmark Engine
+# 4. Rosbag Dynamic Trajectory Benchmark Engine (Yaw & Extrinsic Corrected)
 # ==============================================================================
 
-def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper, 
-                                  obs_x=4.5, obs_y=0.0, max_frames=200, output_csv=None):
+
+def run_rosbag_dynamic_benchmark(
+    bag_path,
+    vl_wrapper,
+    midas_wrapper,
+    da_wrapper,
+    obs_x=4.5,
+    obs_y=0.0,
+    max_frames=200,
+    output_csv=None,
+    sensor_offset_x=0.0,
+    sensor_offset_y=0.0,
+    fov_half_deg=30.0,
+    half_window_deg=5.0,
+):
     """
-    Evaluates all three models frame-by-frame on a real-world driving Rosbag.
-    Calculates dynamic obstacle distance error (MAE) against Odometry Ground Truth.
+    Evaluates all loaded perception wrappers frame-by-frame on a driving Rosbag.
+    Accounts for robot yaw and sensor extrinsic offset `(sensor_offset_x, sensor_offset_y)`
+    when computing radial ground-truth distance and target bearing inside camera FOV.
     """
-    import glob
-    import sqlite3
     from rclpy.serialization import deserialize_message
     from rosidl_runtime_py.utilities import get_message
 
@@ -422,7 +497,6 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
         if not db_files:
             zstd_files = sorted(glob.glob(os.path.join(bag_path, "*.db3.zstd")))
             if zstd_files:
-                import subprocess
                 subprocess.run(["zstd", "-d", "-k", zstd_files[0]], check=True)
                 db_files = sorted(glob.glob(os.path.join(bag_path, "*.db3")))
             if not db_files:
@@ -433,7 +507,7 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
         db_path = bag_path
 
     print(f"\n📂 Loading Rosbag: {db_path}")
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     cur = conn.cursor()
     cur.execute("SELECT id, name, type FROM topics")
     topics = {row[1]: (row[0], row[2]) for row in cur.fetchall()}
@@ -442,15 +516,13 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
     odom_topic = next((t for t in topics if "odom" in t), None)
 
     if not img_topic:
-        print("❌ Error: No camera image topic (/camera/image_raw or /image_raw) in this Rosbag.")
-        print("💡 Hint: Record a new bag using: ./scripts/record_rosbag.sh vlidar <session_name>")
+        print("❌ Error: No camera image topic in this Rosbag.")
         conn.close()
         return None
 
     print(f"   • Image Topic : {img_topic}")
     print(f"   • Odom Topic  : {odom_topic}")
 
-    # 1) Load Odometry trajectory
     odom_times = []
     odom_poses = []
     if odom_topic:
@@ -458,25 +530,24 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
         cur.execute(f"SELECT timestamp, data FROM messages WHERE topic_id = {topics[odom_topic][0]} ORDER BY timestamp")
         for ts, data in cur.fetchall():
             msg = deserialize_message(data, odom_type)
-            odom_times.append(ts / 1e9)  # sec
-            odom_poses.append((msg.pose.pose.position.x, msg.pose.pose.position.y))
+            p = msg.pose.pose.position
+            yaw = extract_yaw_from_quat(msg.pose.pose.orientation)
+            odom_times.append(ts / 1e9)
+            odom_poses.append((p.x, p.y, yaw))
     odom_times = np.array(odom_times)
 
-    # 1-1) Load Onboard /scan measurements
     scan_topic = next((t for t in topics if t == "/scan"), None)
     scan_times = []
-    scan_ranges = []
+    scan_msgs = []
     if scan_topic:
         scan_type = get_message(topics[scan_topic][1])
         cur.execute(f"SELECT timestamp, data FROM messages WHERE topic_id = {topics[scan_topic][0]} ORDER BY timestamp")
         for ts, data in cur.fetchall():
             msg = deserialize_message(data, scan_type)
             scan_times.append(ts / 1e9)
-            valid_r = [r for r in msg.ranges[55:85] if 0.5 < r < 8.0]
-            scan_ranges.append(float(np.min(valid_r)) if valid_r else float('nan'))
+            scan_msgs.append(np.asarray(msg.ranges, dtype=float))
     scan_times = np.array(scan_times)
 
-    # 2) Process Image Frames
     img_type = get_message(topics[img_topic][1])
     cur.execute(f"SELECT timestamp, data FROM messages WHERE topic_id = {topics[img_topic][0]} ORDER BY timestamp")
     img_rows = cur.fetchall()
@@ -490,10 +561,10 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
         print(f"   • Sampled {len(img_rows)} frames for benchmarking.")
 
     from cv_bridge import CvBridge
-    bridge = CvBridge()
 
+    bridge = CvBridge()
     records = []
-    print("\n🚀 Running Synchronized Dynamic Evaluation across all 3 models...")
+    print("\n🚀 Running Synchronized Dynamic Evaluation (yaw + extrinsic bearing-tracked)...")
 
     for idx, (ts_ns, data) in enumerate(img_rows):
         ts_sec = ts_ns / 1e9
@@ -503,65 +574,90 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
         except Exception:
             continue
 
-        # Get robot pose at this timestamp
         if len(odom_times) > 0:
-            closest_idx = np.argmin(np.abs(odom_times - ts_sec))
-            rx, ry = odom_poses[closest_idx]
+            closest_idx = int(np.argmin(np.abs(odom_times - ts_sec)))
+            rx, ry, yaw = odom_poses[closest_idx]
         else:
-            rx, ry = 0.0, 0.0
+            rx, ry, yaw = 0.0, 0.0, 0.0
 
-        # Ground truth distance to obstacle
-        gt_dist = math.sqrt((obs_x - rx)**2 + (obs_y - ry)**2)
+        sx = rx + sensor_offset_x * math.cos(yaw) - sensor_offset_y * math.sin(yaw)
+        sy = ry + sensor_offset_x * math.sin(yaw) + sensor_offset_y * math.cos(yaw)
+        dx = obs_x - sx
+        dy = obs_y - sy
+        gt_dist = math.hypot(dx, dy)
+        rel_angle_deg = math.degrees(wrap_to_pi(math.atan2(dy, dx) - yaw))
+        in_fov = abs(rel_angle_deg) <= fov_half_deg
 
-        # Evaluate V-LiDAR
+        # Offline V-LiDAR re-inference along true obstacle bearing
         t0 = time.perf_counter()
         scan_vl, _ = vl_wrapper.infer(cv_img)
         t_vl = (time.perf_counter() - t0) * 1000.0
-        if len(scan_times) > 0:
-            closest_scan_idx = np.argmin(np.abs(scan_times - ts_sec))
-            if abs(scan_times[closest_scan_idx] - ts_sec) < 0.2 and np.isfinite(scan_ranges[closest_scan_idx]):
-                dist_vl = scan_ranges[closest_scan_idx]
-            else:
-                val_vl = scan_vl[60:81][np.isfinite(scan_vl[60:81])]
-                dist_vl = float(np.median(val_vl)) if len(val_vl) > 0 else float('nan')
-        else:
-            val_vl = scan_vl[60:81][np.isfinite(scan_vl[60:81])]
-            dist_vl = float(np.median(val_vl)) if len(val_vl) > 0 else float('nan')
+        dist_vl = (
+            extract_bearing_scan_distance(scan_vl, rel_angle_deg, half_window_deg, is_ros_laserscan_order=False)
+            if in_fov
+            else float("nan")
+        )
+
+        # Separate column for recorded onboard /scan (never mixed into vl_dist)
+        onboard_scan_dist = float("nan")
+        if in_fov and len(scan_times) > 0:
+            closest_scan_idx = int(np.argmin(np.abs(scan_times - ts_sec)))
+            if abs(scan_times[closest_scan_idx] - ts_sec) < 0.2:
+                onboard_scan_dist = extract_bearing_scan_distance(
+                    scan_msgs[closest_scan_idx], rel_angle_deg, half_window_deg, is_ros_laserscan_order=True
+                )
 
         # Evaluate MiDaS
-        t0 = time.perf_counter()
-        scan_m, _ = midas_wrapper.infer(cv_img)
-        t_m = (time.perf_counter() - t0) * 1000.0
-        val_m = scan_m[60:81][np.isfinite(scan_m[60:81])]
-        dist_m = float(np.median(val_m)) if len(val_m) > 0 else float('nan')
+        if getattr(midas_wrapper, "is_loaded", False):
+            t0 = time.perf_counter()
+            scan_m, _ = midas_wrapper.infer(cv_img)
+            t_m = (time.perf_counter() - t0) * 1000.0
+            dist_m = (
+                extract_bearing_scan_distance(scan_m, rel_angle_deg, half_window_deg, is_ros_laserscan_order=False)
+                if in_fov
+                else float("nan")
+            )
+        else:
+            t_m, dist_m = float("nan"), float("nan")
 
         # Evaluate Depth Anything V2
-        t0 = time.perf_counter()
-        scan_da, _ = da_wrapper.infer(cv_img)
-        t_da = (time.perf_counter() - t0) * 1000.0
-        val_da = scan_da[60:81][np.isfinite(scan_da[60:81])]
-        dist_da = float(np.median(val_da)) if len(val_da) > 0 else float('nan')
+        if getattr(da_wrapper, "is_loaded", False):
+            t0 = time.perf_counter()
+            scan_da, _ = da_wrapper.infer(cv_img)
+            t_da = (time.perf_counter() - t0) * 1000.0
+            dist_da = (
+                extract_bearing_scan_distance(scan_da, rel_angle_deg, half_window_deg, is_ros_laserscan_order=False)
+                if in_fov
+                else float("nan")
+            )
+        else:
+            t_da, dist_da = float("nan"), float("nan")
 
         records.append({
             "frame": idx,
             "timestamp": ts_sec,
             "robot_x": rx,
             "robot_y": ry,
+            "robot_yaw_deg": math.degrees(yaw),
+            "rel_angle_deg": rel_angle_deg,
+            "in_fov": int(in_fov),
             "gt_distance": gt_dist,
             "vl_dist": dist_vl,
             "vl_latency_ms": t_vl,
+            "onboard_scan_dist": onboard_scan_dist,
             "midas_dist": dist_m,
             "midas_latency_ms": t_m,
             "da_dist": dist_da,
-            "da_latency_ms": t_da
+            "da_latency_ms": t_da,
         })
 
         if (idx + 1) % 25 == 0 or (idx + 1) == len(img_rows):
-            print(f"   [{idx + 1}/{len(img_rows)}] GT: {gt_dist:.2f}m | V-LiDAR: {dist_vl:.2f}m ({t_vl:.1f}ms) | MiDaS: {dist_m:.2f}m | DA-V2: {dist_da:.2f}m")
+            print(
+                f"   [{idx + 1}/{len(img_rows)}] GT={gt_dist:.2f}m yaw={math.degrees(yaw):+.1f}° "
+                f"brg={rel_angle_deg:+.1f}°(fov={int(in_fov)}) | V-LiDAR={dist_vl:.2f}m ({t_vl:.1f}ms)"
+            )
 
-    # Save to CSV
     if output_csv and records:
-        import csv
         with open(output_csv, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=records[0].keys())
             writer.writeheader()
@@ -571,9 +667,48 @@ def run_rosbag_dynamic_benchmark(bag_path, vl_wrapper, midas_wrapper, da_wrapper
     return records
 
 
+def summarize_dynamic_records(records, model_name, dist_key, lat_key, params_m, min_range=2.18, max_range=5.0):
+    in_range = [r for r in records if r["in_fov"] == 1 and min_range <= r["gt_distance"] <= max_range]
+    valid = [r for r in in_range if np.isfinite(r[dist_key])]
+    lats = [r[lat_key] for r in records if np.isfinite(r[lat_key])]
+    # Steady-state latency excludes initial cold warmup frame (frame == 0 in each session)
+    steady_lats = [r[lat_key] for r in records if r.get("frame", 0) > 0 and np.isfinite(r[lat_key])]
+    if not steady_lats:
+        steady_lats = lats
+
+    mean_lat = float(np.mean(lats)) if lats else None
+    std_lat = float(np.std(lats)) if lats else None
+    fps = (1000.0 / mean_lat) if (mean_lat is not None and mean_lat > 0) else None
+
+    st_mean = float(np.mean(steady_lats)) if steady_lats else None
+    st_std = float(np.std(steady_lats)) if steady_lats else None
+    st_p50 = float(np.percentile(steady_lats, 50)) if steady_lats else None
+    st_p95 = float(np.percentile(steady_lats, 95)) if steady_lats else None
+    st_fps = (1000.0 / st_mean) if (st_mean is not None and st_mean > 0) else None
+
+    mae = float(np.mean([abs(r[dist_key] - r["gt_distance"]) for r in valid])) if valid else None
+    det_rate = (100.0 * len(valid) / len(in_range)) if in_range else None
+    return {
+        "name": model_name,
+        "status": f"measured (n={len(valid)}/{len(in_range)})" if in_range else "not_measured",
+        "params_m": round(params_m, 2),
+        "mean_latency_ms": round(mean_lat, 2) if mean_lat is not None else None,
+        "std_latency_ms": round(std_lat, 2) if std_lat is not None else None,
+        "throughput_fps": round(fps, 1) if fps is not None else None,
+        "steady_mean_latency_ms": round(st_mean, 2) if st_mean is not None else None,
+        "steady_std_latency_ms": round(st_std, 2) if st_std is not None else None,
+        "steady_p50_latency_ms": round(st_p50, 2) if st_p50 is not None else None,
+        "steady_p95_latency_ms": round(st_p95, 2) if st_p95 is not None else None,
+        "steady_fps": round(st_fps, 1) if st_fps is not None else None,
+        "mae_m": round(mae, 3) if mae is not None else None,
+        "detection_rate_pct": round(det_rate, 1) if det_rate is not None else None,
+    }
+
+
 # ==============================================================================
 # 5. Main Entry Point
 # ==============================================================================
+
 
 def main():
     parser = argparse.ArgumentParser(description="Baseline Benchmark: V-LiDAR vs MiDaS vs Depth Anything V2")
@@ -584,6 +719,8 @@ def main():
     parser.add_argument("--bag", type=str, default=None, help="Path to real-world driving Rosbag directory or .db3 (optional)")
     parser.add_argument("--obs-x", type=float, default=4.5, help="Obstacle ground-truth X position in meters (default: 4.5)")
     parser.add_argument("--obs-y", type=float, default=0.0, help="Obstacle ground-truth Y position in meters (default: 0.0)")
+    parser.add_argument("--sensor-offset-x", type=float, default=0.0, help="Sensor X offset in base_link frame (m)")
+    parser.add_argument("--sensor-offset-y", type=float, default=0.0, help="Sensor Y offset in base_link frame (m)")
     parser.add_argument("--max-frames", type=int, default=100, help="Maximum frames to sample from rosbag (default: 100)")
     parser.add_argument("--use-openvino", action="store_true", help="Enable OpenVINO acceleration for V-LiDAR")
     args = parser.parse_args()
@@ -598,50 +735,30 @@ def main():
     print(f"  • Iterations       : {args.test_iters}")
     print(f"  • Reference Dist   : {args.gt_dist:.2f} m")
 
-    # Model initializations
     print("\n📦 Initializing Perception Models...")
     vl_wrapper = VLiDARWrapper(scripts_dir, device=args.device, use_openvino=args.use_openvino)
     midas_wrapper = MiDaSWrapper(device=args.device)
     da_wrapper = DepthAnythingV2Wrapper(device=args.device)
 
-    # Mode 1: Rosbag Dynamic Trajectory Evaluation
     if args.bag:
         csv_path = os.path.join(logs_dir, "dynamic_trajectory_benchmark.csv")
         records = run_rosbag_dynamic_benchmark(
-            args.bag, vl_wrapper, midas_wrapper, da_wrapper,
-            obs_x=args.obs_x, obs_y=args.obs_y, max_frames=args.max_frames, output_csv=csv_path
+            args.bag,
+            vl_wrapper,
+            midas_wrapper,
+            da_wrapper,
+            obs_x=args.obs_x,
+            obs_y=args.obs_y,
+            max_frames=args.max_frames,
+            output_csv=csv_path,
+            sensor_offset_x=args.sensor_offset_x,
+            sensor_offset_y=args.sensor_offset_y,
         )
         if records:
-            # Calculate aggregate dynamic metrics
-            valid_rec = [r for r in records if 2.2 <= r["gt_distance"] <= 4.5]
-            if not valid_rec:
-                valid_rec = records
-
             results = [
-                {
-                    "name": "V-LiDAR (Proposed: YOLO11-seg + LUT)",
-                    "params_m": round(vl_wrapper.count_parameters(), 2),
-                    "mean_latency_ms": round(np.mean([r["vl_latency_ms"] for r in records]), 1),
-                    "std_latency_ms": round(np.std([r["vl_latency_ms"] for r in records]), 1),
-                    "throughput_fps": round(1000.0 / np.mean([r["vl_latency_ms"] for r in records]), 1),
-                    "mae_m": round(np.nanmean([abs(r["vl_dist"] - r["gt_distance"]) for r in valid_rec]), 3)
-                },
-                {
-                    "name": "MiDaS v2.1 Small (Baseline 1)",
-                    "params_m": round(midas_wrapper.count_parameters(), 2),
-                    "mean_latency_ms": round(np.mean([r["midas_latency_ms"] for r in records]), 1),
-                    "std_latency_ms": round(np.std([r["midas_latency_ms"] for r in records]), 1),
-                    "throughput_fps": round(1000.0 / np.mean([r["midas_latency_ms"] for r in records]), 1),
-                    "mae_m": round(np.nanmean([abs(r["midas_dist"] - r["gt_distance"]) for r in valid_rec]), 3)
-                },
-                {
-                    "name": "Depth Anything V2 Small (Baseline 2)",
-                    "params_m": round(da_wrapper.count_parameters(), 2),
-                    "mean_latency_ms": round(np.mean([r["da_latency_ms"] for r in records]), 1),
-                    "std_latency_ms": round(np.std([r["da_latency_ms"] for r in records]), 1),
-                    "throughput_fps": round(1000.0 / np.mean([r["da_latency_ms"] for r in records]), 1),
-                    "mae_m": round(np.nanmean([abs(r["da_dist"] - r["gt_distance"]) for r in valid_rec]), 3)
-                }
+                summarize_dynamic_records(records, vl_wrapper.name, "vl_dist", "vl_latency_ms", vl_wrapper.count_parameters()),
+                summarize_dynamic_records(records, midas_wrapper.name, "midas_dist", "midas_latency_ms", midas_wrapper.count_parameters()),
+                summarize_dynamic_records(records, da_wrapper.name, "da_dist", "da_latency_ms", da_wrapper.count_parameters()),
             ]
             latex_path = os.path.join(logs_dir, "baseline_latex_table.tex")
             md_path = os.path.join(logs_dir, "baseline_benchmark_report.md")
@@ -651,7 +768,7 @@ def main():
             return
 
     # Mode 2: Static Frame Benchmark
-    real_sample_path = os.path.join(base_dir, "docs", "papers", "IEEE_Access", "figures", "experiment1_setup.jpeg")
+    real_sample_path = os.path.join(base_dir, "paper", "workspace", "IEEE_Access", "figures", "experiment1_setup.jpeg")
     if args.image and os.path.exists(args.image):
         test_img = cv2.imread(args.image)
         print(f"  • Input Test Image : {args.image}")
@@ -659,89 +776,42 @@ def main():
         test_img = cv2.imread(real_sample_path)
         print(f"  • Input Test Image : {real_sample_path} (Real experimental setup)")
     else:
-        test_img = np.zeros((256, 320, 3), dtype=np.uint8)
-        cv2.rectangle(test_img, (0, 120), (320, 256), (180, 180, 180), -1)  # Floor
-        cv2.rectangle(test_img, (120, 150), (200, 210), (50, 50, 200), -1)   # Obstacle box at ~2.5m
-        print("  • Input Test Image : Synthetic corridor frame (320x256)")
+        raise FileNotFoundError("No valid --image provided and default experiment1_setup.jpeg missing.")
 
     results = []
+    for wrapper in (vl_wrapper, midas_wrapper, da_wrapper):
+        try:
+            res = run_speed_benchmark(wrapper, test_img, test_iters=args.test_iters)
+            est, err, mae = evaluate_ranging_accuracy(wrapper, test_img, ground_truth_dist=args.gt_dist)
+            res["est_dist_m"] = est if np.isfinite(est) else None
+            res["err_m"] = err if np.isfinite(err) else None
+            res["mae_m"] = mae if np.isfinite(mae) else None
+            res["status"] = "measured" if np.isfinite(est) else "miss"
+            res["detection_rate_pct"] = 100.0 if np.isfinite(est) else 0.0
+            results.append(res)
+        except Exception as e:
+            print(f"⚠️ {wrapper.name} benchmark failed: {e}")
+            results.append({
+                "name": wrapper.name,
+                "status": "error",
+                "params_m": round(wrapper.count_parameters(), 2),
+                "mean_latency_ms": None,
+                "std_latency_ms": None,
+                "p95_latency_ms": None,
+                "throughput_fps": None,
+                "est_dist_m": None,
+                "err_m": None,
+                "mae_m": None,
+                "detection_rate_pct": None,
+            })
 
-    # 1. Benchmark Proposed V-LiDAR
-    try:
-        res_vl = run_speed_benchmark(vl_wrapper, test_img, test_iters=args.test_iters)
-        est, err, mae = evaluate_ranging_accuracy(vl_wrapper, test_img, ground_truth_dist=args.gt_dist)
-        res_vl["est_dist_m"] = est
-        res_vl["err_m"] = err
-        res_vl["mae_m"] = mae
-        results.append(res_vl)
-    except Exception as e:
-        print(f"⚠️ V-LiDAR benchmark failed: {e}")
-        results.append({
-            "name": "V-LiDAR (Proposed: YOLO11-seg + LUT)",
-            "params_m": 2.84,
-            "mean_latency_ms": 12.8,
-            "std_latency_ms": 1.2,
-            "p95_latency_ms": 14.5,
-            "throughput_fps": 78.4,
-            "est_dist_m": 2.718,
-            "err_m": 0.218,
-            "mae_m": 0.218
-        })
-
-    # 2. Benchmark Baseline 1: MiDaS Small
-    try:
-        res_midas = run_speed_benchmark(midas_wrapper, test_img, test_iters=args.test_iters)
-        est, err, mae = evaluate_ranging_accuracy(midas_wrapper, test_img, ground_truth_dist=args.gt_dist)
-        res_midas["est_dist_m"] = est
-        res_midas["err_m"] = err
-        res_midas["mae_m"] = mae
-        results.append(res_midas)
-    except Exception as e:
-        print(f"⚠️ MiDaS benchmark failed or module pending: {e}")
-        print("💡 Tip: To run actual MiDaS inference, install: pip install timm")
-        results.append({
-            "name": "MiDaS v2.1 Small (Baseline 1)",
-            "params_m": 21.4,
-            "mean_latency_ms": 38.5,
-            "std_latency_ms": 3.8,
-            "p95_latency_ms": 44.0,
-            "throughput_fps": 26.0,
-            "est_dist_m": 2.850,
-            "err_m": 0.350,
-            "mae_m": 0.350
-        })
-
-    # 3. Benchmark Baseline 2: Depth Anything V2 Small
-    try:
-        res_da = run_speed_benchmark(da_wrapper, test_img, test_iters=args.test_iters)
-        est, err, mae = evaluate_ranging_accuracy(da_wrapper, test_img, ground_truth_dist=args.gt_dist)
-        res_da["est_dist_m"] = est
-        res_da["err_m"] = err
-        res_da["mae_m"] = mae
-        results.append(res_da)
-    except Exception as e:
-        print(f"⚠️ Depth Anything V2 benchmark failed or module pending: {e}")
-        print("💡 Tip: To run actual Depth Anything inference, install: pip install transformers")
-        results.append({
-            "name": "Depth Anything V2 Small (Baseline 2)",
-            "params_m": 24.8,
-            "mean_latency_ms": 174.2,
-            "std_latency_ms": 12.5,
-            "p95_latency_ms": 195.0,
-            "throughput_fps": 5.7,
-            "est_dist_m": 2.920,
-            "err_m": 0.420,
-            "mae_m": 0.420
-        })
-
-    # Export outputs
     latex_path = os.path.join(logs_dir, "baseline_latex_table.tex")
     md_path = os.path.join(logs_dir, "baseline_benchmark_report.md")
     export_latex_table(results, latex_path)
     export_markdown_report(results, md_path)
 
     print_header("Benchmark Completed Successfully!")
-    print(f"• Results JSON / LaTeX saved in: {logs_dir}")
+    print(f"• Results LaTeX / Markdown saved in: {logs_dir}")
 
 
 if __name__ == "__main__":
