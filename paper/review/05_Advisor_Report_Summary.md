@@ -8,17 +8,31 @@
 
 ---
 
-## 1. 차기 타겟 저널 확정안: **IJCAS 집중** (물리 2D LiDAR 미사용)
+## 1. 차기 타겟 저널 선정안 (**SCIE Q2 이상 · 비-MDPI · 300만 원 이내 · 물리 2D LiDAR 미사용**)
 
-현재 로봇 PC(`/home/cgv`)에 **물리 2D LiDAR 실물·드라이버(`/dev/ttyLiDAR`, `ydlidar_ros2_driver`)가 부재**하고, 교수님 지침(**게재료 300만 원 이내 · 빠른 정리**)을 반영한 비교 결과는 다음과 같습니다.
+현재 로봇 PC(`/home/cgv`)에 **물리 2D LiDAR 실물·드라이버(`/dev/ttyLiDAR`, `ydlidar_ros2_driver`)가 부재**하며, 교수님 지침(**게재료 300만 원 이내 · 빠른 정리**)과 **2025 JCR Q2 이상(비-MDPI)** 조건에 맞춰 교차 검증한 결과입니다.
 
-| 후보 저널 | 비용 (APC) | 심사 특징 / 속도 | 블라인드 | 적합성 판단 |
-| :--- | :---: | :--- | :---: | :--- |
-| **IJCAS (1순위 추천)** | **`$300` (약 42만 원)** *(2026~ 페이지차지 폐지)* | 1차 약 `1.5~3개월` / 전체 `4~6개월` | Single-blind | **가장 현실적**: AE 코멘트(`LiDAR or alternative baseline`)에 맞춰 **MDE 대조 + 다환경 실차**로 방어 가능하며, `exp/20261123-ijcas-p0` 원고·실험 계획이 이미 준비됨 |
-| **ETRI Journal (대안)** | **`$0` (무료)** | 1차 메타 `~8주` / 실제 승인 `3~6개월` | Double-anonymous | 비용은 유리하나 **이중 익명화(학교·로봇 로고 제거)** 공수 및 ICT 중심 스코프 적합성 점검 필요 |
-| **IEEE Sensors Journal (비추천)** | **OA `$2,800`** *(구독 8p 초과 시 `$175`/p)* | 1차 약 `6~12주` | Single-blind | Q1 센서 저널이라 물리 LiDAR 없이 리젝 위험이 높고, OA 기준 **300만 원 예산 초과** 및 8쪽 압축 부담 |
+### 1-1. 제출 가능 SCIE Q2+ 저널 비교표 (1군 우선 · 2군 대안)
 
-> **확인 필요 사항**: IJCAS 포털 판정 메일 원문에서 이번 재제출이 **재투고(Resubmit)** 트랙인지 **신규 투고(New Submission)**인지 메일함에서 최종 확인이 필요합니다.
+| 군 | 저널명 (출판사 · ISSN) | 등급 (WoS / Scopus) | 비용 / 분량 제한 | 1차 판정(추적) | 심사 방식 / 저장소 초안 현황 | 포지셔닝 및 적합성 |
+| :-: | :--- | :---: | :---: | :---: | :---: | :--- |
+| **1군** | **IJCAS**<br>*(Springer/ICROS·KIEE, 1598-6446)* | WoS **Q2** (`JIF ~2.8`) | **`$300`** *(2026~ 페이지차지 폐지)* | **중앙값 ~55일** (`~8주`) | **Single-blind**<br>✅ [IJCAS_Manuscript.pdf](../../IJCAS/ICCAS/IJCAS_Manuscript.pdf) (`9쪽`, `492행`) | **최우선 추천**: 기존 AE 코멘트(`LiDAR or alternative baseline`)와 가장 직접 연결되며 `exp/20261123-ijcas-p0` 브랜치 정비 완료 *(단, 구버전 `78%`/`0.261 m` 본문을 새 실측으로 전면 갱신 필요)* |
+| **1군** | **JRTIP**<br>*(Springer, 1861-8200)* | WoS **Q2** / Scopus Q1~Q2 (`IF ~4.9`) | **`$0`** (Hybrid 구독) · 일반 논문 별도 고정 쪽수 제한 없음 | **평균 ~5주** (`~35일`) | **Double-blind (익명화 필수)**<br>❌ 템플릿 미보유 | **무료+초고속 대안**: Nav2보다 **OpenVINO `70.5 FPS` 실시간성 + 역광 오탐 `32%` 차단** 등 영상처리 기여 중심으로 재구성 시 적합 |
+| **1군** | **ISR**<br>*(Springer/KROS, 1861-2776)* | WoS **Q2** / Scopus Q1 (`IF ~4.3–5.9`) | **`$0`** (Hybrid 구독) · 일반 논문 고정 쪽수 제한 없음 | **평균 2~4+개월** | **Double-blind (익명화 필수)**<br>❌ 템플릿 미보유 | **주제 적합도 최상**: OMO-R1 서비스 로봇·Nav2와 가장 잘 맞고 KROS 연계이나, **익명화 공수와 긴 1차 심사**가 단점 |
+| **2군** | **IOP MST**<br>*(IOP, 0957-0233)* | WoS **Q1/Q2 경계** / Scopus Q2 (`JIF ~3.7`) | **`$0`** (Hybrid 구독) · Note ~2,500단어/3p 외 정규 제한 없음 | 초기 triage 빠름 *(약 5~9주)* | **Single/Double 선택 가능**<br>✅ [IOP_MST/main.pdf](../../paper/workspace/IOP_MST/main.pdf) (`11쪽`, `299행`) | **무료 계측 대안**: 단안 LUT 오차(`0.152 m`) + D1/D2 광학 불확실성 강조 *(단, 기존 초안은 구버전 `78.4 FPS Arc GPU`/`0.261 m` 수치라 교체 필수)* |
+| **2군** | **Mechatronics**<br>*(Elsevier, 0957-4158)* | WoS **Q2** (`IF ~3.2–3.8`) | **`$0`** (Hybrid 구독) | 약 `6~10주` | 통상 Single-blind<br>❌ 템플릿 미보유 | ROS 2 + 사각지대 보호형 Nav2(`raytrace_min_range: 2.18`) 메카트로닉스 통합 포지셔닝 |
+| **2군** | **Elsevier C&EE**<br>*(Elsevier, 0045-7906)* | WoS **Q1** / Scopus Q1 (`IF ~4.9–5.5+`) | **`$0`** (Hybrid 구독) | 약 `4~8주` *(전체 `2~4+개월`)* | 통상 Single-blind<br>✅ [Elsevier_CEE/main.pdf](../../paper/workspace/Elsevier_CEE/main.pdf) (`24쪽` preprint, `475행`) | Q1 무료 대안이나 요구 수준 높음 *(기존 초안 역시 구버전 `0.261 m`/`18/20` 수치라 전면 갱신 필수)* |
+| **2군** | **AURO**<br>*(Springer, 0929-5593)* | WoS **Q2** (`IF ~4.3`) | **`$0`** (Hybrid 구독) | **약 4~5개월 (`~19주`)** | ❌ 템플릿 미보유 | 정통 로봇 저널이나 심사 기간이 길고 기준이 높아 빠른 마무리에는 비추천 |
+
+### 1-2. 제외 확정 저널 및 사유 (보고 참고용)
+* **PeerJ Computer Science (`2376-5992`)**: JCR Q2·1차 ~5주이나 Fully OA APC **`$2,370`**(+세금, 약 330만 원+)으로 300만 원 예산 초과.
+* **IEEE Sensors Journal (`1530-437X`)**: Hybrid OA **`$2,800`**(약 390만 원) 예산 초과, 구독 모델도 **8쪽 초과 시 쪽당 `$175` 필수 부과**, 1차 6~12주 및 물리 LiDAR 부재 리스크.
+* **IEEE Sensors Letters (`2475-1472`)**: **ESCI** (SCIE 미등재) 및 4쪽 제한.
+* **ETRI Journal (`1225-6463`) / Robotica (`0263-5747`)**: 무료 구독/OA(`$0`)이나 WoS JCR 기준 **Q3** (`IF ~2.0` / `~2.9`, 단 Scopus상으로는 Q2)로 WoS Q2 기준 미달.
+* **MDPI 계열 (`Sensors` 등) / IEEE Access**: MDPI 제외 방침(+ `2,600 CHF`) / IEEE Access 재제출 금지 Reject.
+* *(참고 교정)* **JIRS (`0921-0296`)**: 1차 중앙값 **12일**로 매우 빠르나 완전 유료 OA 전용이 아니라 **Springer Hybrid(`$0` 구독 / `~$3,190` OA)**로 확인됨. 단, Clarivate `2025 JCR` Q2 충족 여부는 도서관 원문 확인 필요.
+
+> **확인 필요 사항**: 1순위 **IJCAS** 확정 시 포털 판정 메일 원문에서 이번 제출이 **재투고(Resubmit)** 트랙인지 **신규 투고(New Submission)**인지 메일함에서 최종 확인이 필요합니다.
 
 ---
 
