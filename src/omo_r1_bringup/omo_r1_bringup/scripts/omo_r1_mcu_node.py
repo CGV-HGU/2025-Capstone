@@ -75,10 +75,13 @@ class ComplementaryFilter():
     return self.theta
 
 class OMOR1MiniNode(Node):
+  VELOCITY_FEEDBACK_TIMEOUT_SEC = 0.25  # MCU telemetry is requested every 50 ms.
+
   def __init__(self):
     super().__init__('omo_r1_motor_setting')
 
     self.tf_only_mode = False # TF 브로드캐스트 전용 모드 여부
+    self.velocity_feedback_fresh = False
 
     # Declare parameters from YAML
     self.declare_parameters(
@@ -191,6 +194,8 @@ class OMOR1MiniNode(Node):
     self.odom_pose.timestamp = self.get_clock().now()
     dt = (self.odom_pose.timestamp - self.odom_pose.pre_timestamp).nanoseconds * 1e-9
     self.odom_pose.pre_timestamp = self.odom_pose.timestamp
+    if dt < 0.0 or dt >= self.VELOCITY_FEEDBACK_TIMEOUT_SEC:
+      dt = 0.0
 
     if not self.tf_only_mode:  # tf 브로드캐스트 전용 모드가 아니면 정상 업데이트
       if self.use_gyro:
@@ -276,8 +281,20 @@ class OMOR1MiniNode(Node):
     self.pub_JointStates.publish(joint_states)
 
   def update_robot(self):
-    #raw_data = self.ph.parser()
-    self.ph.read_packet()
+    received_packet = self.ph.read_packet()
+    if not self.ph.has_fresh_base_velocity(self.VELOCITY_FEEDBACK_TIMEOUT_SEC):
+      if self.velocity_feedback_fresh:
+        self.get_logger().warn('MCU velocity feedback timed out. Stopping the drive and pausing odometry.')
+        self.ph.write_base_velocity(0.0, 0.0)
+      self.velocity_feedback_fresh = False
+      return
+
+    if not self.velocity_feedback_fresh:
+      # The newly received velocity cannot account for motion during the gap.
+      self.odom_pose.pre_timestamp = self.get_clock().now()
+      self.velocity_feedback_fresh = True
+    if not received_packet:
+      return
     odo_l = self.ph._wodom[0]
     odo_r = self.ph._wodom[1]
     trans_vel = self.ph._vel[0] * self.scale_factor
@@ -294,6 +311,10 @@ class OMOR1MiniNode(Node):
   def cbCmdVelMsg(self, cmd_vel_msg):
     lin_vel_x = cmd_vel_msg.linear.x
     ang_vel_z = cmd_vel_msg.angular.z
+
+    if not self.ph.has_fresh_base_velocity(self.VELOCITY_FEEDBACK_TIMEOUT_SEC):
+      self.ph.write_base_velocity(0.0, 0.0)
+      return
 
     lin_vel_x = max(-self.max_lin_vel_x, min(self.max_lin_vel_x, lin_vel_x))
     ang_vel_z = max(-self.max_ang_vel_z, min(self.max_ang_vel_z, ang_vel_z))
@@ -334,6 +355,10 @@ class OMOR1MiniNode(Node):
     self.odom_pose.x = request.x
     self.odom_pose.y = request.y
     self.odom_pose.theta = request.theta
+    self.odom_pose.pre_timestamp = self.get_clock().now()
+    self.calc_yaw.theta = request.theta
+    self.calc_yaw.pre_theta = request.theta
+    self.calc_yaw.wheel_ang = request.theta
     # print("SERVICE: RESET ODOM X:%s, Y:%s, Theta:%s"%
     #     (request.x, request.y, request.theta))
     return response

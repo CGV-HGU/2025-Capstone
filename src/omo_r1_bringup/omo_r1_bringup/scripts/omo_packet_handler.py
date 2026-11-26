@@ -2,13 +2,14 @@
 
 import serial
 import io
-from time import sleep
+from math import isfinite
+from time import monotonic, sleep
 
 class PacketHandler:
    def __init__(self, _port_name, _baud_rate):
       self.port_name = _port_name
       self.baud_rate = _baud_rate
-      self._ser = serial.Serial(self.port_name, self.baud_rate)
+      self._ser = serial.Serial(self.port_name, self.baud_rate, timeout=0)
       self._ser_io = io.TextIOWrapper(io.BufferedRWPair(self._ser, self._ser, 1), 
                                        newline = '\r', 
                                        line_buffering = True)
@@ -17,6 +18,8 @@ class PacketHandler:
       self._ser.reset_input_buffer()
       self._ser.reset_output_buffer()
       self.incomming_info = ['ODO', 'VW', 'POSE', 'ACCL', 'GYRO']
+      self._receive_buffer = bytearray()
+      self._last_velocity_update = None
       self._vel = [0.0, 0.0]
       self._enc = [0.0, 0.0]
       self._wodom = [0.0, 0.0]
@@ -45,29 +48,45 @@ class PacketHandler:
       self._ser.close()
 
    def read_packet(self):
-      if self.get_port_state() == True:
-         whole_packet = (self._ser.readline().split(b'\r')[0]).decode("utf-8").strip()
-         if whole_packet:
-            #print(whole_packet)
-            packet = whole_packet.split(',')
-            try:
-               header = packet[0].split('#')[1]
-               if header.startswith('VW'):
-                  self._vel = [float(packet[1]), float(packet[2])]
-               elif header.startswith('ENCOD'):
-                  self._enc = [int(packet[1]), int(packet[2])]
-               elif header.startswith('ODO'):
-                  self._wodom = [float(packet[1]), float(packet[2])]
-               elif header.startswith('RPM'):
-                  self._rpm = [int(packet[1]), int(packet[2])]
-               elif header.startswith('DIFFV'):
-                  self._wvel = [int(packet[1]), int(packet[2])]
-               elif header.startswith('GYRO'):
-                  self._gyro = [float(packet[1]), float(packet[2]), float(packet[3])]
-               elif header.startswith('POSE'):
-                  self._imu = [float(packet[1]), float(packet[2]), float(packet[3])]
-            except:
-               pass
+      if not self.get_port_state():
+         return False
+
+      self._receive_buffer.extend(self._ser.read(self._ser.in_waiting))
+      lines = self._receive_buffer.split(b'\n')
+      self._receive_buffer = lines.pop()
+      if len(self._receive_buffer) > 4096:
+         self._receive_buffer.clear()
+      for line in lines:
+         self._parse_packet(line)
+      return bool(lines)
+
+   def _parse_packet(self, line):
+      try:
+         packet = line.decode('utf-8').strip().split(',')
+         header = packet[0].split('#')[1]
+         if header.startswith('VW'):
+            velocity = [float(packet[1]), float(packet[2])]
+            if all(isfinite(value) for value in velocity):
+               self._vel = velocity
+               self._last_velocity_update = monotonic()
+         elif header.startswith('ENCOD'):
+            self._enc = [int(packet[1]), int(packet[2])]
+         elif header.startswith('ODO'):
+            self._wodom = [float(packet[1]), float(packet[2])]
+         elif header.startswith('RPM'):
+            self._rpm = [int(packet[1]), int(packet[2])]
+         elif header.startswith('DIFFV'):
+            self._wvel = [int(packet[1]), int(packet[2])]
+         elif header.startswith('GYRO'):
+            self._gyro = [float(packet[1]), float(packet[2]), float(packet[3])]
+         elif header.startswith('POSE'):
+            self._imu = [float(packet[1]), float(packet[2]), float(packet[3])]
+      except (IndexError, ValueError):
+         return
+
+   def has_fresh_base_velocity(self, timeout_sec):
+      return (self.get_port_state() and self._last_velocity_update is not None
+              and monotonic() - self._last_velocity_update < timeout_sec)
    
    def update_battery_state(self):
       self.write_port("$qBAT")
