@@ -1,0 +1,3 @@
+bag_path,elapsed_start_s,elapsed_stop_s,replay_frames,max_odom_translation_m,max_odom_abs_vx_mps,max_odom_abs_wz_radps,raw_validity_flips,filtered_validity_flips,all_channel_transitions,common_valid_transitions,raw_mean_abs_range_step_m,filtered_mean_abs_range_step_m,raw_valid_fraction,filtered_valid_fraction
+/home/cgv/data/jint_sources/bridge_static_20261126,0.0,12.0,110,0.0,0.0,0.0,8,0,15369,13835,0.012934265,0.007596634,0.9004513217279174,0.900709219858156
+/home/cgv/data/bags/vlidar_run01,0.0,12.0,110,0.0,0.0,0.0,50,25,15369,8945,0.061302204,0.035187848,0.583752417794971,0.5834945196647324

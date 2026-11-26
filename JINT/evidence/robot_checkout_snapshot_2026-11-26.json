@@ -1,0 +1,41 @@
+{
+  "configuration_id": "3b0fbff234749d72",
+  "created_at": "2026-11-26T21:25:42+09:00",
+  "relevant_git_status": [
+    " M scripts/record_rosbag.sh",
+    " M scripts/test_avoidance_goal.py",
+    " M src/omo_r1_navigation2/param/omo_r1.yaml",
+    " M start_all.sh",
+    "?? scripts/run_trial.sh"
+  ],
+  "code_commit": "fce9756d6f67d784aefaf33821d30aaadbf041a6",
+  "intended_backend": "openvino",
+  "intended_device": "CPU",
+  "camera_calibration_path": "/home/cgv/data/cam/usb_webcam.yaml",
+  "file_sha256": {
+    "start_all.sh": "e900a45e9a44d069ed3ac01cc764968605fae7c8fe3e50b3f9229f185e5af2ab",
+    "scripts/run_trial.sh": "07a5d240ac93099af47ec2c794d47505a24ca59f6f833579cf58b00cccb7e4b2",
+    "scripts/record_rosbag.sh": "438dfb4bffaf08f3d1cbb6547bb6a0937f2419d2ad5a9dc9b107b711194bed44",
+    "scripts/reset_trial.sh": "dbd2389b92a397576eca48c79a30ea5f3cb8f9720b97c5b25d7ed3fd33c1855e",
+    "scripts/test_avoidance_goal.py": "6b59348bafcf1618e01a9a1237f2e162c348f1f4477b0e9a33f8f066a4aacbdb",
+    "src/robot_launch_package/launch/multi_node_launch.py": "adf7864b4d5afe7dafd9740f5099ffb714be9ed84dcc90dc782b3fe859c7b0b7",
+    "src/omo_r1_bringup/launch/omo_r1_bringup.launch.py": "33f7e9f7f64f47a556b50860da4906f6fcc5758543c8dc161826f6ce98082d74",
+    "src/omo_r1_bringup/omo_r1_bringup/scripts/omo_r1_mcu_node.py": "2e9685e6ff95800ed71ac18f9aa913b61507d044d7ce1b6513a46b4df134c3d9",
+    "src/omo_r1_navigation2/param/omo_r1.yaml": "e5e8c013455c8951597d879b74e5d0fff72d483da4aa81e48a731dc2b90cd7ad",
+    "src/freespace_detection/launch/freespace_detection_launch.py": "92482460cb48af2ab55b17c848942ad83bbafe0e91b86630cabd12037eebcd05",
+    "src/freespace_detection/freespace_detection/floor_detector.py": "8eb0e3db1109dd50da8ab7a90d933db80aecd36934db85d0f0f7fc5af4dab847",
+    "src/fake_lidar_with_tf/fake_lidar_with_tf/fake_lidar_with_tf.py": "0da35baa3ca2b3f99e983615ef3e559e4370b124fc4f475d188c082e9abee242",
+    "src/freespace_detection/scripts/col_to_ch_lut.npy": "abfdd1cb52510456095c2d6128899852305d6bc64c7d5ec4292db33686e7e87e",
+    "src/freespace_detection/scripts/distance_lut_2d.npy": "6600b6a789d12d84bbd11dfb784aa32570c17563ecdd20a9a16cf7495af1a581",
+    "src/freespace_detection/scripts/distance_lut.npy": "12608ba1c99812b274a376463ca2935536c08954b462dc49751895c805cd06df",
+    "src/freespace_detection/scripts/best_openvino_model/best.bin": "72bcb218e2845a03503bb3507b9e952e3cb85b85fe92a678466898cc6b4050b7",
+    "src/freespace_detection/scripts/best_openvino_model/best.xml": "ab28d795d54c78fb6526cbd2e08398b47fd63839700cebab869e936ce7106958",
+    "camera_calibration": "1334e1b1e57aa4e12e72e7ba3a41751c829941a44d5099265cea4a7c4f167f41"
+  },
+  "model_sha256": "72bcb218e2845a03503bb3507b9e952e3cb85b85fe92a678466898cc6b4050b7",
+  "lut_sha256_manifest": {
+    "src/freespace_detection/scripts/col_to_ch_lut.npy": "abfdd1cb52510456095c2d6128899852305d6bc64c7d5ec4292db33686e7e87e",
+    "src/freespace_detection/scripts/distance_lut_2d.npy": "6600b6a789d12d84bbd11dfb784aa32570c17563ecdd20a9a16cf7495af1a581",
+    "src/freespace_detection/scripts/distance_lut.npy": "12608ba1c99812b274a376463ca2935536c08954b462dc49751895c805cd06df"
+  }
+}

@@ -1,0 +1,143 @@
+# JINT 투고 준비 및 자료 대조
+
+2026-11-26 KST · Journal of Intelligent & Robotic Systems · 내부 검토용
+
+- [투고 전략 및 제출 판단 기준](2026-11-27_JINT_submission_strategy.md) · [초안 체크리스트](JINT_draft_checklist.md) · [영문 LaTeX 원고](main.tex) · [검토용 PDF](JINT_draft.pdf) · [검토용 소스 ZIP](JINT_draft_source.zip) · [커버레터 초안](cover_letter_draft.md)
+- [Springer Nature 공식 양식 ZIP](template/springer-nature-latex-2024-12.zip) · [양식 안내](https://www.springernature.com/la/authors/campaigns/latex-author-support) · [JINT 투고 지침](https://link.springer.com/journal/10846/submission-guidelines)
+- [PC rosbag 목록](evidence/rosbag_inventory.csv) · [과거 비교 bag의 RGB 표본](evidence/benchmark_rgb_contact_sheet.jpg) · [기존 CPU 비교 원본](../experiments/logs/baseline_benchmark_report.md) · [4조건 주행 계획](../paper/review/planning/2026-11-26_plan.md)
+
+## 재사용할 자료
+
+| 자료 | 확인한 근거 | JINT에서 쓸 범위 |
+| --- | --- | --- |
+| IEEE Access 저장소 원고 | `paper/workspace/IEEE_Access/main.tex`와 PDF 내용은 `post`와 현재 브랜치에서 동일하다. 원고 제목은 심사 메일의 제출번호 Access-2026-51740과 대응한다. 10월 9일 소스 ZIP은 Git 이력 `fdc3de4:paper/IEEE_Access_Source.zip`에 있다. | 투영식·가상 스캔 처리와 비교 방법을 참고했다. 실제 포털에서 받은 제출 패키지와의 파일 동일성은 미확인이다. |
+| 분기별 구현 | 원격 `post`와 `backup/teammate-baseline`은 `31344e8`, 실험 브랜치는 `fce9756`이다. `98ca3bf`에서 깊이 비교가 수정됐고 `ebc011e`에서 바퀴 속도 피드백 중단 처리가 추가됐다. `main`·`rtabmap_ver`·11월 23일 PC 백업 bundle도 확인했다. | 현재 구현에 맞춰 방법을 작성했다. inflation 0.65 m와 실행 러너는 점검 당시 로컬 변경이다. 본 실험에서 실제 사용한 모델·LUT·설치본 및 파라미터를 기록한다. |
+| 보정·학습 체크포인트 | `~/data/cam/usb_webcam.yaml`은 Git에 추출한 YAML과 동일하다. `best.pt` SHA-256은 `adad7307fd2a6e9ee17a565ccfb0138800129536959bfdf01186c5b485461886`이다. 학습 인수, 100 epoch 지표, OpenVINO export 메타데이터가 있다. | 마스크 AP50 0.802, AP50–95 0.562는 체크포인트에 저장된 집계값이다. 학습 데이터 실제 버전·이미지 수·분할·라벨 정의는 미확인이다. 모델에 표시된 이름과 배포 클래스 매핑이 달라 원본 `data.yaml`을 우선 찾는다. |
+| 거리 LUT와 기록 좌표계 | 생성 코드로 LUT 3개를 다시 만들었고 저장 파일과 바이트 단위로 일치했다. 141개 명목 채널 중 카메라 열을 받는 채널은 127개이고, 중심선 근거리 지면 경계는 2.18 m이며 양쪽 가장자리의 방사 거리 경계는 약 2.56 m다. | 원고에 현재 설정과 모델상 한계를 기재했다. 파일럿 및 비교 bag 9개에서 기록된 `lidar_link`는 `base_link` 기준 x=-0.55 m였다. 이 값은 소프트웨어의 TF이며 물리 카메라 광학 원점과 구분한다. [LUT 감사 JSON](evidence/scan_lookup_geometry.json) · [기록된 TF CSV](evidence/scan_frame_transforms.csv) |
+| CPU 비교 두 bag | `vlidar_run01/02`에는 RGB·가상 scan·odom이 있고, 이름이 `~/data/rosbags_22_trials.tar.gz` 목록에도 있다. 종전 CSV와 같은 200개의 원본 프레임으로 네 가지 구성을 재실행했다. 초기 프레임 2개 제외 후 CPU 시간 표본은 모델당 198개다. | PyTorch CPU의 V-LiDAR·MiDaS·Depth Anything과 배포용 OpenVINO의 처리 시간을 본문 표에 사용한다. 거리 오차는 실측 좌표계 확인 전까지 내부 진단 CSV에 보존한다. [재실행 요약 CSV](evidence/pytorch_comparison_summary.csv) |
+| 9월 단일 장소 20회 | `minimal_A_scen1_run01…20`의 scan·odom과 스칼라 집계 CSV가 있다. 22회 백업 목록에도 해당 이름이 있다. RGB·전역 및 로컬 경로 메시지는 0개다. | 과거 궤적과 정지 징후를 분석할 수 있다. IEEE의 18/20과 IJCAS의 별도 구성(Stella VSLAM)에서 보고한 39/50은 새 주행 결과에 합산하지 않는다. |
+| 11월 26일 RGB 주행 | 낮 복도 2개와 구름다리 주행 5개가 있다. 구름다리 01·02 성공 JSON은 `trial_id`가 비어 있어 파일명으로 연결한다. 휴지통에는 동명의 정지 녹화도 있다. | 01·02의 odom을 원본에서 읽고 출발 방향 기준 최대 횡변위 0.509/0.558 m를 재산출했다. 차체와 장애물 사이 간격은 실측이 필요하다. 03–05는 계획·odom 실패 분석에 쓴다. |
+| 정지 두 구간의 시간 필터 비교 | 구름다리 정지 점검과 과거 광택 바닥 홀의 첫 12초에서 같은 RGB를 재생했다. 각 110프레임에서 필터 적용 시 유효·무효 변화 횟수는 8→0, 50→25였고, 공통 유효 채널의 프레임 간 평균 거리 변화는 약 41%·43% 감소했다. | 스캔 안정성의 보조 근거로 넣었다. 필터의 실제 주행 성공률 효과는 이 자료에서 평가하지 않는다. 구름다리 정지 점검 bag은 `~/data/jint_sources/bridge_static_20261126`에 하드링크로 보존했다. [결과 CSV](evidence/temporal_filter_replay.csv) |
+| 파일럿 스캔 갱신률과 시각 기록 | 11월 26일 파일럿 7개의 스캔 5,048개 중 4,832개에서 같은 원본 시각의 RGB 프레임을 찾았다. 스캔 갱신률은 6.72–8.50 Hz였고, 구름다리 03의 95백분위 갱신 간격은 300 ms였다. | 실제 관측 갱신률의 근거로 사용한다. RGB보다 스캔이 먼저 저장된 프레임이 있는 두 bag의 시간차는 기록 순서를 보여준다. 모델 추론 벤치마크, 스캔 갱신률, Nav2 반응 시간을 따로 해석한다. [시각 분석 CSV](evidence/scan_recorder_timing.csv) |
+| 과거 반사광·좁은 복도 영상 | 휴지통의 nav_debug_avoidance와 vlidar_run01.3/.4/.5를 SQLite로 직접 읽어 카메라 프레임 1,971·2,613·2,305·15,895개를 확인했다. 마지막 세 폴더는 metadata.yaml 없이 DB가 있다. | 의자, 역광·광택 바닥과 좁은 복도 사례를 재생할 수 있다. 설정·배치·외부 결과가 기록된 새 4조건 데이터와 구분한다. [기존 장면 분석 CSV](../experiments/logs/glare_backlight_failure_audit.csv) |
+| 다른 로봇 자료 | `~/bs_ws`에도 거리 실험이 있다. Waveshare UGV Beast PT·어안 카메라를 쓴 10–50 cm 실험이며 해당 bag은 LiDAR scan을 담고 있지 않다. LD19는 UGV의 장비 목록에 있다. | OMO-R1의 V-LiDAR와 비교할 동등 조건의 자료는 확인되지 않았다. |
+| 원고·PC 스냅샷 | 별도 `ICCAS-IJCAS-2026` 저장소 `078bffc`, 로봇 PC의 `Downloads/2025-Capstone-main`, `backups/ros2_backup`과 팀원 백업을 검색했다. | 기존 그림·방법을 확인하는 데 쓴다. ICCAS/IJCAS의 공개·심사 상태와 JINT 원고의 추가 범위는 포털 기록과 공저자에게 확인한다. |
+
+초안에는 11월 26일 CPU 비교 재실행 결과를 사용했다. 11월 24일 원본 CSV와 프레임 시각, 거리 참조, 방위각이 일치한다. 두 bag의 10월 2일 19:03·19:21 RGB에서 광택 있는 홀과 정지한 박스를 확인했다. 벤치마크의 장애물 좌표 `obs_x=4.4/4.7`은 코드에 있으나 실측 원점과 측정 원본은 확인하지 못했다. 같은 장애물 좌표를 odom 프레임에 고정한 채 기록된 x=-0.55 m를 적용하니 기존 59프레임의 참조 거리 자체가 0.51–0.55 m 늘고, 그중 47개가 원래의 거리·방위 필터에 남았다. 이 수치는 원점 가정에 대한 민감도다. 정지 2.50 m 실험은 원고·그림이 있고 원시 25프레임의 거리 값은 확인하지 못했다. [참조 원점 민감도 CSV](evidence/scan_origin_reference_sensitivity.csv)
+
+## 남은 현장 작업
+
+1. 수정된 odom으로 정지, 이전 목표 종료, 리셋, 다음 회차 시작을 실차에서 확인한다. 이 PC의 ROS 2 설치 환경에서 로드되는 MCU 모듈은 0.25초 피드백 타임아웃이 적용된 현재 소스를 가리킨다. 카메라 광학 중심의 높이·기울기와 실제 사용하는 스캔 원점을 첫 세팅 때 기록한다. 같은 설정으로 기존 장소 낮·밤, 새 인공조명 실내, 자연광 구름다리의 4조건을 취득한다.
+2. [기존 현장 CSV 양식](../paper/review/planning/templates/field_log.csv)에 각 시도의 실제 목표 구역 도달, 접촉, 수동 개입, bag ID, 실패 사유를 기록한다. 자료 이상으로 판정할 수 없는 시도도 행과 사유를 보존한다. 결과 집계에는 이 디렉터리의 summarize_trials.py에 작성한 현장 CSV를 넘긴다.
+3. 성공과 실패를 대표하는 bag의 RGB·scan·경로·odom을 맞춰 지연 감지, 경로 생성, 이동 실행을 검토한다. 11월 26일 파일럿에서는 구름다리 01·02의 Nav2 완료, 03·04의 전역 경로 생성 실패, 05의 이전 목표 교체와 반복 속도 피드백을 ROS 로그와 원본 bag에서 구분했다. 새 주행에서 근거리 미검출이 반복되거나 독립 거리 결과를 쓰기로 한다면 해당 구간의 정적 클립을 추가한다. [Nav2 사건 CSV](evidence/pilot_nav_events.csv) · [속도 피드백 집계](evidence/pilot_trace_summary.csv)
+
+11월 27일 로봇 PC의 로컬 통합 러너(`scripts/run_trial.sh`)에서 녹화 DB 생성 확인을 보완했다. 녹화 프로세스가 살아 있어도 10초 안에 DB 파일이 생기지 않으면 목표 전송 단계 전에 종료한다. DB 생성·미생성 분기는 모의 테스트로 확인했다. 첫 실차 파일럿에서는 저장된 bag의 RGB·scan·odom 메시지를 확인한다.
+
+초안은 구조화된 실내에서 정적 장애물을 피하는 범위로 썼다. 선행연구에서도 단안 분할 기반 가상 LiDAR를 다뤘으므로, 이번 원고는 Nav2가 쓰는 거리·방위 관측과 실제 회피 결과를 연결하는 데 초점을 둔다. [유사 선행연구](https://www.fujipress.jp/jrm/rb/robot003200061137/)
+
+## 빌드 및 투고 전 확인
+
+- 공식 양식 ZIP의 SHA-256은 `812e76dcaa9c28dc1bff1fb6065d51729b67d4ea140552a05088317414a3ecae`다. ZIP의 `sn-jnl.cls`와 번호 인용용 `sn-mathphys-num.bst`를 사용했다.
+- 첫 페이지에 분야 번호, 150–250단어 영문 초록, 키워드 6개를 넣었다. 원고의 `Pending`은 본 실험 수치·최종 설정·학습 출처 및 분할·저자 선언·자료 공개 범위를 확인할 위치다. 저자 순서와 교신저자는 IEEE 원고에서 가져왔다. 초안 작성에 사용한 언어 모델은 Methods에 명시했다. [JINT 투고 지침](https://link.springer.com/journal/10846/submission-guidelines)
+- ICCAS 공식 프로그램 FrBT3.1에 같은 제목의 확장초록과 39/50 결과가 공개되어 있다. 원고와 커버레터에 인용하고, 이번 연구에서 추가한 방법·비교·4조건 실차 평가를 명시했다. ICCAS의 IJCAS 연계 안내에서 proceedings와 IEEE Xplore 등재는 해당 원고의 처리 결과 및 저자 선택에 따라 달라진다. 이 초록의 별도 proceedings·DOI, IJCAS 심사 상태, 공저자 승인, 게재료와 영상 공유 범위는 투고 전 확인해야 한다. [ICCAS 프로그램](https://ras.papercept.net/conferences/conferences/ICCAS2026/program/ICCAS2026_ContentListWeb_4.html#frbt3_01) · [ICCAS–IJCAS 연계 안내](https://2026.iccas.org/authors-guideline-for-initial-submission/) · [JINT 가이드](https://link.springer.com/journal/10846/submission-guidelines)
+
+PDF와 소스 ZIP을 다시 만들려면 이 디렉터리에서 다음을 실행한다. 소스 ZIP은 별도 디렉터리에 풀어 다시 컴파일한 뒤 저장한다.
+
+```bash
+bash build_manuscript.sh
+```
+
+구름다리 파일럿 궤적은 ROS 2 환경에서 원본으로부터 다시 만들 수 있다.
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 plot_pilot_odometry.py --output figures/bridge_pilot_odom.pdf \
+  ~/data/bags/nav_bridge_01 ~/data/bags/nav_bridge_02
+```
+
+같은 ROS 2 환경에서 파일럿 진단 표와 그림을 재생성할 수 있다. CSV 시간은 bag 녹화 시작 기준이며 그림 하단의 scan 거리는 중앙 각도 창에서 가장 가까운 유효 반환이다.
+
+```bash
+python3 analyze_navigation_bags.py --output-dir evidence \
+  --plot figures/pilot_command_odometry.pdf --plot-bags nav_bridge_02 nav_bridge_05 \
+  ~/data/bags/nav_bridge_0{1,2,3,4,5} \
+  ~/data/bags/nav_test_11_26 ~/data/bags/nav_trail_1_26
+```
+
+스캔 갱신률과 기록 시각의 차이도 같은 bag에서 다시 구할 수 있다. 과거 CPU 비교용 bag 두 개는 원본 시각이 일치하는 비교 쌍이 있는지 확인하는 데만 더했다.
+
+```bash
+python3 scan_recorder_timing.py --output evidence/scan_recorder_timing.csv \
+  ~/data/bags/nav_bridge_0{1,2,3,4,5} \
+  ~/data/bags/nav_test_11_26 ~/data/bags/nav_trail_1_26 \
+  ~/data/bags/vlidar_run0{1,2}
+```
+
+같은 CPU의 모델 비교는 두 bag의 원본 RGB를 다시 읽는다. 설치되어 있던 MiDaS·Depth Anything 모델 캐시를 사용했고 PyTorch 스레드를 4개로 고정했다. 모델별 기본 입력 크기와 실행 환경은 별도로 저장했다. [실행 환경](evidence/pytorch_comparison_environment.json) · [입력·모델 해시](evidence/pytorch_comparison_inputs.sha256)
+
+```bash
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 OPENBLAS_NUM_THREADS=4 \
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python3 bench_jint_cpu.py \
+  --output-dir evidence --threads 4 \
+  ~/data/bags/vlidar_run01/vlidar_run01_0.db3 \
+  ~/data/bags/vlidar_run02/vlidar_run02_0.db3
+```
+
+현재 LUT 파일과 bag 시작 3초에 기록된 센서 프레임을 다시 확인하는 명령이다. 선택적으로 위 CPU 벤치마크 출력에서 참조 거리의 원점 민감도도 계산한다.
+
+```bash
+python3 audit_scan_geometry.py --output-dir evidence --comparison-dir evidence \
+  --calibration ~/data/cam/usb_webcam.yaml \
+  ~/data/bags/nav_bridge_0{1,2,3,4,5} \
+  ~/data/bags/nav_test_11_26 ~/data/bags/nav_trail_1_26 \
+  ~/data/bags/vlidar_run0{1,2}
+```
+
+같은 환경에서 카메라 원본으로 시간 필터 비교표를 재현할 수 있다. 스크립트는 ROS 노드를 시작하지 않고, 모델·마스크·LUT를 공유하는 경로에서 필터 전후 거리를 모은다. 원본과 코드의 해시 목록은 저장소 루트 기준이다. [입력 해시 목록](evidence/temporal_filter_inputs.sha256)
+
+```bash
+OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 replay_scan_filter.py \
+  --seconds 12 --output evidence/temporal_filter_replay.csv \
+  ~/data/jint_sources/bridge_static_20261126 ~/data/bags/vlidar_run01
+```
+
+## 현장 CSV의 자동 기록과 집계
+
+실험에 사용할 설정과 파일을 정했을 때 한 번 저장한다. 해시는 현재 PC의 파일에 대한 기록이다. 실차에서 로드된 런치 인수와 유효 파라미터는 별도로 현장 기록에서 확인한다. [현재 PC 파일 스냅샷](evidence/robot_checkout_snapshot_2026-11-26.json)
+
+```bash
+python3 trial_records.py snapshot \
+  --output ~/data/jint/field_config_01.json \
+  --camera-calibration ~/data/cam/usb_webcam.yaml
+```
+
+주행 직후 기존 러너의 세션 이름을 회차 ID로 사용해 다음처럼 등록한다. 이 명령은 bag과 JSON을 읽고 현장 CSV에만 기록한다. 예시의 환경 ID와 배치 ID를 해당 조건에 맞춰 바꾼다. [실제 파일럿에서 확인한 CSV](evidence/pilot_field_log.csv)
+
+```bash
+python3 trial_records.py add \
+  --field-log ~/data/jint/field_log.csv --trial-id original_day_s1_01 \
+  --phase main --environment original_day --layout S1 \
+  --configuration ~/data/jint/field_config_01.json \
+  --bag ~/data/bags/nav_original_day_s1_01 \
+  --result ~/data/trial_outcomes/original_day_s1_01.json
+```
+
+결과 CSV에서 외부 목표 도달·접촉·개입과 최종 결과를 확인해 채운다. 성공 조건을 충족한 행은 `outcome=success`, `contact_observed=false`, `manual_intervention=false`, `evaluation_included=true`를 지정하고 `external_goal_check`에 관찰 근거를 남긴다. JSON의 Nav2 상태는 별도로 저장되고, 실패로 산출되지 않은 파일 인수는 생략해도 시도를 기록할 수 있다.
+
+새 Nav2 결과 JSON에는 클라이언트가 목표 수락과 첫 종료 사건을 관측한 ROS 시각을 기록한다. 타임아웃에서는 취소 요청을 시작한 시각을 쓰며, 뒤늦게 도착한 취소 응답은 기존 타임아웃을 덮어쓰지 않는다. 두 시각이 유효한 경우 CSV에 경과 시간이 자동으로 들어간다. 과거 JSON에 없던 시각은 공란으로 남는다. [주행 결과 JSON 작성 코드](../scripts/test_avoidance_goal.py) · [현장 CSV 가져오기](trial_records.py)
+
+집계표는 설정·조건·배치별로 성공, 실패, 무효, 판정 보류를 표시한다. 다른 설정으로 바꿔 취득한 회차는 설정별 표에서 확인할 수 있다.
+
+```bash
+python3 summarize_trials.py ~/data/jint/field_log.csv
+```
+
+논문 결과 표에는 본 주행 CSV의 확인된 결과를 바로 넣을 수 있다. 기본 환경 ID 순서는 `original_day`, `original_night`, `indoor_artificial`, `bridge_daylight`다. 배치 ID는 박스가 `S1`, 박스와 의자가 `S2`다. 현장에서 다른 ID를 사용했다면 `--condition-ids`에 환경 ID 4개, `--layout-ids`에 배치 ID 2개를 이 순서로 넘긴다.
+
+```bash
+python3 summarize_trials.py ~/data/jint/field_log.csv \
+  --latex-output generated/formal_trial_rows.tex
+bash build_manuscript.sh
+```
+
+CSV에 본 주행 설정이 여러 개 있으면 `--configuration`으로 표에 사용할 설정 ID를 지정한다. 시도 수에는 무효와 판정 보류가 남고, 성공률과 Wilson 구간은 판정 가능한 시도 기준으로 계산한다. 해당 조건의 본 주행이 비어 있으면 표에 대시가 들어간다.

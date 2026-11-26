@@ -1,0 +1,29 @@
+bag_id,bag_elapsed_s,node,message
+nav_bridge_01,12.078,bt_navigator,"Begin navigating from current location (0.00, 0.00) to (10.00, 0.00)"
+nav_bridge_01,73.14,bt_navigator,Goal succeeded
+nav_bridge_02,7.296,bt_navigator,"Begin navigating from current location (9.77, 0.05) to (19.67, -1.37)"
+nav_bridge_02,52.236,bt_navigator,Goal succeeded
+nav_bridge_03,5.76,bt_navigator,"Begin navigating from current location (19.45, -1.35) to (29.42, -2.07)"
+nav_bridge_03,29.451,planner_server,GridBased: failed to create plan with tolerance 0.50.
+nav_bridge_03,29.451,planner_server,"Planning algorithm GridBased failed to generate a valid path to (29.42, -2.07)"
+nav_bridge_03,48.081,planner_server,GridBased: failed to create plan with tolerance 0.50.
+nav_bridge_03,48.081,planner_server,"Planning algorithm GridBased failed to generate a valid path to (29.42, -2.07)"
+nav_bridge_04,4.156,bt_navigator,"Begin navigating from current location (0.00, 0.00) to (10.00, 0.00)"
+nav_bridge_04,18.577,planner_server,GridBased: failed to create plan with tolerance 0.50.
+nav_bridge_04,18.577,planner_server,"Planning algorithm GridBased failed to generate a valid path to (10.00, 0.00)"
+nav_bridge_04,93.798,planner_server,GridBased: failed to create plan with tolerance 0.50.
+nav_bridge_04,93.798,planner_server,"Planning algorithm GridBased failed to generate a valid path to (10.00, 0.00)"
+nav_bridge_05,9.281,bt_navigator,Received goal preemption request
+nav_bridge_05,9.281,bt_navigator,"Begin navigating from current location (14.69, 2.67) to (24.22, 5.72)"
+nav_bridge_05,26.102,planner_server,GridBased: failed to create plan with tolerance 0.50.
+nav_bridge_05,26.102,planner_server,"Planning algorithm GridBased failed to generate a valid path to (24.22, 5.72)"
+nav_test_11_26,45.31,bt_navigator,"Begin navigating from current location (0.00, 0.00) to (10.00, 0.00)"
+nav_test_11_26,105.312,avoidance_goal_sender,Canceling active goal...
+nav_test_11_26,105.331,controller_server,Goal was canceled. Stopping the robot.
+nav_test_11_26,105.331,controller_server,[follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+nav_test_11_26,105.331,bt_navigator,[navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+nav_test_11_26,105.331,bt_navigator,Goal canceled
+nav_trail_1_26,25.97,bt_navigator,"Begin navigating from current location (0.00, 0.00) to (10.00, 0.00)"
+nav_trail_1_26,49.664,planner_server,GridBased: failed to create plan with tolerance 0.50.
+nav_trail_1_26,49.664,planner_server,"Planning algorithm GridBased failed to generate a valid path to (10.00, 0.00)"
+nav_trail_1_26,62.93,bt_navigator,Goal succeeded

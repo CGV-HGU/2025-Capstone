@@ -1,0 +1,59 @@
+{
+  "generator_stdout": [
+    "Saved col_to_ch_lut.npy (shape (320,))",
+    "Saved distance_lut.npy (shape (256,))",
+    "Saved distance_lut_2d.npy (shape (256, 320)) - Euclidean range corrected!"
+  ],
+  "regenerated_assets": {
+    "col_to_ch_lut.npy": {
+      "byte_identical": true,
+      "sha256": "abfdd1cb52510456095c2d6128899852305d6bc64c7d5ec4292db33686e7e87e"
+    },
+    "distance_lut.npy": {
+      "byte_identical": true,
+      "sha256": "12608ba1c99812b274a376463ca2935536c08954b462dc49751895c805cd06df"
+    },
+    "distance_lut_2d.npy": {
+      "byte_identical": true,
+      "sha256": "6600b6a789d12d84bbd11dfb784aa32570c17563ecdd20a9a16cf7495af1a581"
+    }
+  },
+  "calibration_file": "/home/cgv/data/cam/usb_webcam.yaml",
+  "calibration_image_width_height": [
+    640,
+    480
+  ],
+  "lookup_width_height": [
+    320,
+    256
+  ],
+  "scaled_intrinsics": {
+    "fx": 258.5994,
+    "fy": 273.6966,
+    "cx": 159.4597,
+    "cy": 134.6184
+  },
+  "unpopulated_nominal_bins": 14,
+  "populated_bins": 127,
+  "populated_laser_bin_span_degrees": [
+    -31.5,
+    31.5
+  ],
+  "centerline_near_forward_m": 2.177689351595542,
+  "edge_near_radial_m": [
+    2.558419314319388,
+    2.5587756264370065
+  ],
+  "analytic_check": {
+    "assumed_height_m": 1.05,
+    "assumed_pitch_degrees": 2.0,
+    "lookup_range_interval_m": [
+      2.18,
+      5.0
+    ],
+    "samples": 22330,
+    "max_abs_radial_difference_m": 0.011507373195500659,
+    "median_abs_radial_difference_m": 0.0029818560964121055,
+    "max_abs_unquantized_bearing_difference_deg": 0.41337739272503937
+  }
+}

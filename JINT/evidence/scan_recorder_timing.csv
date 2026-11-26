@@ -1,0 +1,10 @@
+bag_id,rgb_messages,scan_messages,unique_nonzero_scan_stamps,duplicate_nonzero_scan_messages,unique_camera_scan_matches,match_fraction_of_unique_scan_stamps,negative_recorder_deltas,source_update_mean_hz,source_update_gap_median_ms,source_update_gap_p95_ms,camera_to_scan_recorder_delta_median_ms,camera_to_scan_recorder_delta_p95_ms,image_header_to_recorder_median_ms,image_header_to_recorder_p95_ms,scan_header_to_recorder_median_ms,scan_header_to_recorder_p95_ms
+nav_bridge_01,2593,717,717,0,717,1.0,0,8.454,131.754,136.092,19.803,24.048,10.938,11.463,29.571,34.83
+nav_bridge_02,1564,459,459,0,432,0.941176,30,8.021,131.859,136.256,19.372,23.886,11.0,233.81,29.084,34.36
+nav_bridge_03,1273,472,472,0,314,0.665254,289,6.716,131.999,300.042,-244.941,18.7,265.456,301.61,20.744,26.465
+nav_bridge_04,2861,810,810,0,804,0.992593,0,8.442,131.779,136.083,19.681,23.683,10.991,11.512,29.381,34.239
+nav_bridge_05,2560,737,737,0,724,0.982361,0,8.496,131.614,136.081,19.947,23.821,11.077,11.556,30.126,34.752
+nav_test_11_26,3774,1066,1066,0,1066,1.0,0,8.473,131.552,136.094,19.251,22.838,11.108,11.54,29.312,33.596
+nav_trail_1_26,2751,787,787,0,775,0.984752,0,8.447,131.78,136.091,19.512,24.059,11.037,11.598,29.503,34.893
+vlidar_run01,2034,652,652,0,0,0.0,0,10.0,99.999,100.186,,,,,,
+vlidar_run02,1552,515,515,0,0,0.0,0,10.0,99.999,100.149,,,,,,

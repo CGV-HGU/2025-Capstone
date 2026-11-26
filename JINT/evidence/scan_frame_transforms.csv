@@ -1,0 +1,10 @@
+bag_id,sample_window_from_bag_start_s,rgb_frame_id,rgb_width_px,rgb_height_px,scan_frame_id,scan_bins,camera_link_tf_variants,camera_link_tf_xyz_qxyzw,lidar_link_tf_variants,lidar_link_tf_xyz_qxyzw
+nav_bridge_01,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+nav_bridge_02,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+nav_bridge_03,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+nav_bridge_04,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+nav_bridge_05,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+nav_test_11_26,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+nav_trail_1_26,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+vlidar_run01,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"
+vlidar_run02,3,camera_frame,640,480,lidar_link,141,1,"[[-0.5,0.0,0.2,0.0,0.0,0.0,1.0]]",1,"[[-0.55,0.0,0.0,0.0,0.0,0.0,1.0]]"

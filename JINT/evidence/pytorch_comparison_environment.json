@@ -1,0 +1,37 @@
+{
+  "pytorch_version": "2.11.0+cpu",
+  "ultralytics_version": "8.4.47",
+  "openvino_version": "2026.3.1",
+  "transformers_version": "5.18.0",
+  "pytorch_cpu_threads": 4,
+  "pytorch_interop_threads": 1,
+  "opencv_cpu_threads": 1,
+  "v_lidar_input_resize_hw": [
+    256,
+    320
+  ],
+  "midas_model_input_hw_for_480x640": [
+    192,
+    256
+  ],
+  "depth_anything_model_input_hw_for_480x640": [
+    518,
+    686
+  ],
+  "recordings": [
+    "/home/cgv/data/bags/vlidar_run01/vlidar_run01_0.db3",
+    "/home/cgv/data/bags/vlidar_run02/vlidar_run02_0.db3"
+  ],
+  "range_reference_positions_x_m": [
+    4.4,
+    4.7
+  ],
+  "v_lidar_pytorch_model_input_hw": [
+    256,
+    320
+  ],
+  "v_lidar_openvino_model_input_hw": [
+    256,
+    320
+  ]
+}
