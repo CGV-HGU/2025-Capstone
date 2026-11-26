@@ -128,7 +128,14 @@ Let $(u,v)$ be an image pixel with intrinsics $(f_x,f_y,c_x,c_y)$ after resizing
 \end{align}
 The implementation neglects off-axis pitch coupling in this separable projection. It represents the nearest candidate in each angular bin and publishes 141 bins at $0.5^\circ$ increments over a nominal $[-35^\circ,35^\circ]$ span. Regenerating the lookup tables reproduced the stored files byte for byte. The resized intrinsics are $(f_x,f_y,c_x,c_y)=(258.5994,273.6966,159.4597,134.6184)$ pixels. Image columns map to 127 bins, from $-31.5^\circ$ to $+31.5^\circ$.
 
-For the stored lookup table, the configured height and pitch are $h=1.05\m$ and $\gamma=2.0^\circ$. Substituting the last image row into $x(v)$ yields approximately $2.18\m$ at the optical centerline. The radial lower bound at the left and right edge columns is approximately $2.56\m$. These are geometric limits for the stored calibration. Effective detection also depends on object size, bearing, contrast against the floor, and camera pitch changes during motion.
+For the stored lookup table, the configured height and pitch are $h=1.05\m$ and $\gamma=2.0^\circ$. Substituting the last image row into $x(v)$ yields approximately $2.18\m$ at the optical centerline. The radial lower bound at the left and right edge columns is approximately $2.56\m$. Figure~\ref{fig:scan-visibility} shows these geometric limits. Effective detection also depends on object size, bearing, contrast against the floor, and camera pitch changes during motion.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{scan_visibility.pdf}
+  \caption{Nominal ground visibility from the stored calibration. (a) The camera's bottom-row ray intersects the ground $2.18\m$ forward at the centerline. (b) The shaded region shows populated angular bins outside the near-field gap. Dotted sides mark the nominal $\pm35^\circ$ scan span. The right boundary is the edge of the drawing}
+  \label{fig:scan-visibility}
+\end{figure}
 
 For a model-only check, we compared the lookup table against joint ray rotation and intersection with the ground plane at the same configured intrinsics and pose. Within the tabulated $2.18$--$5.00\m$ interval, the maximum differences were below $0.012\m$ in radial range and $0.414^\circ$ in unquantized bearing. The comparison characterizes the separable approximation under the stated model assumptions. The physical mounting and optical origin require independent measurement.
 
@@ -224,12 +231,12 @@ The condition-level outcomes for the selected configuration are reported in Tabl
 
 \subsection{Exploratory bridge trials}
 
-A pair of archived bridge bags shows the robot passing a stationary bin on the camera-right side. The recorded Nav2 logs show success messages 61.1 and 44.9~s after navigation began, respectively. The trials were recorded before the present reset and wheel feedback changes. No independent physical contact or goal label is recorded for those pilot runs. Figure~\ref{fig:pilot} shows the odometric paths after alignment to each recording's initial pose. The maximum magnitudes of lateral displacement were 0.51 and 0.56~m, which describe the paths relative to their starting heading.
+A pair of archived bridge bags shows the robot passing a stationary bin. The recorded Nav2 logs show success messages 61.1 and 44.9~s after navigation began, respectively. The trials were recorded before the present reset and wheel feedback changes. No independent physical contact or goal label is recorded for those pilot runs. Figure~\ref{fig:pilot} links three recorded images from the second bag to the nearest recorded odometry poses and shows both paths after alignment to their initial poses. The maximum magnitudes of lateral displacement were 0.51 and 0.56~m relative to each starting heading. The 20 earlier single-hall runs provide additional archived odometry diagnostics in Online Resource~1, Fig.~S3.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{bridge_pilot_odom.pdf}
-  \caption{Two exploratory bridge paths derived from wheel odometry in the initial heading frame. Dots indicate the last recorded poses. The dotted line denotes the nominal goal displacement. Obstacle dimensions and physical clearance were outside the scope of these recordings}
+  \caption{Exploratory bridge avoidance. Camera frames (a), (b), and (c) come from approximately 10, 25, and 35~s after the start of the second recording. Open markers on the second path mark the nearest poses in recorder time. Filled markers are terminal odometry poses. The dotted line marks the nominal goal displacement. The axes use different scales}
   \label{fig:pilot}
 \end{figure}
 
@@ -269,7 +276,7 @@ Bridge 05 & 8.50 & 136 & 724 / 737 & 0 \\
 
 \subsection{Offline CPU timing}
 
-Table~\ref{tab:timing} presents the repeated comparison on archived RGB. The offline timings use 198 frames after discarding the two initial frames. The PyTorch measurements share a CPU and thread settings. Each system uses its native model input resolution and wrapper, so the timings characterize these implementations. The separate OpenVINO measurement uses the same V-LiDAR input size as the PyTorch pass. Table~\ref{tab:recorder-timing} separately describes virtual scan updates observed during robot operation.
+Table~\ref{tab:timing} presents the repeated comparison on archived RGB. The offline timings use 198 frames after discarding the two initial frames. The empirical distributions are shown in Online Resource~1, Fig.~S2. The PyTorch measurements share a CPU and thread settings. Each system uses its native model input resolution and wrapper, so the timings characterize these implementations. The separate OpenVINO measurement uses the same V-LiDAR input size as the PyTorch pass. Table~\ref{tab:recorder-timing} separately describes virtual scan updates observed during robot operation.
 
 \begin{table}[htbp]
 \caption{CPU latency on two archived RGB recordings. Input sizes are height by width. Frames within a recording are temporally correlated.}\label{tab:timing}
@@ -310,7 +317,7 @@ Reflective hall & 50 & 25 & 6.13 & 3.52 \\
 
 The virtual scan interface enables the navigation stack to consume observations from monocular floor segmentation. Its operating envelope depends on a forward-facing camera, visible ground contact, and a stable camera-to-base relationship. Floor reflections, strong shadows, low floor-to-object contrast, and pitch variation can degrade the boundary projection. Limited field of view and the ground-contact blind region also constrain the configurations that can be covered. A wheel odometry fault can produce a separate failure even when the camera continues to provide plausible observations.
 
-In the archived example in Fig.~\ref{fig:floor-reflection}, the projected floor-mask boundary is ambiguous beneath the box. A temporal filter can suppress a transient return, while a persistent segmentation error can affect consecutive frames. Causally attributing a collision or a failure to avoid therefore requires agreement between the camera, scan, and navigation records.
+In the archived example in Fig.~\ref{fig:floor-reflection}, the projected floor-mask boundary is ambiguous beneath the box. Online Resource~1, Fig.~S1 shows additional archived views of a chair, a cart, glare, and a narrow passage. A temporal filter can suppress a transient return, while a persistent segmentation error can affect consecutive frames. Causally attributing a collision or a failure to avoid therefore requires agreement between the camera, scan, and navigation records.
 
 \begin{figure}[htbp]
   \centering
@@ -328,6 +335,9 @@ The offline comparisons characterize computational cost and scan stability in fi
 \section{Conclusion}\label{sec:conclusion}
 
 \vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
+
+\bmhead{Supplementary information}
+Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, and terminal odometry diagnostics from earlier recordings.
 
 \bibliography{references}
 

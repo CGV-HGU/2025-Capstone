@@ -41,7 +41,7 @@ def bag_frame(bag, seconds):
     image = Image.frombytes("RGB", (message.width, message.height), bytes(message.data),
                             "raw", modes[message.encoding], message.step, 1)
     print(f"{bag.name}: RGB frame at {(timestamp - start) / 1e9:.3f} s ({timestamp} ns)")
-    return image
+    return image, timestamp
 
 
 def save_panels(images, destination):
@@ -88,7 +88,7 @@ def main():
     if args.output.name == "formal_sites.pdf" and len(args.frame) != 4:
         parser.error("formal_sites.pdf requires four panels in the manuscript caption order")
     try:
-        frames = [bag_frame(Path(bag), float(seconds)) for bag, seconds in args.frame]
+        frames = [bag_frame(Path(bag), float(seconds))[0] for bag, seconds in args.frame]
     except (OSError, ValueError, KeyError) as error:
         parser.error(str(error))
     save_panels(frames, args.output)

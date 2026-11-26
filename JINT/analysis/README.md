@@ -47,12 +47,11 @@
 bash ../manuscript/build_manuscript.sh
 ```
 
-구름다리 파일럿 궤적은 ROS 2 환경에서 원본으로부터 다시 만들 수 있다.
+보정 모델의 관측 범위 그림, RGB를 연결한 구름다리 파일럿 궤적, 보충 자료 PDF는 ROS 2 환경에서 원본으로부터 다시 만들 수 있다. 휴지통 기록을 다른 위치에 보관할 경우 `--archive`로 지정한다.
 
 ```bash
 source /opt/ros/humble/setup.bash
-python3 plot_pilot_odometry.py --output ../manuscript/figures/bridge_pilot_odom.pdf \
-  ~/data/bags/nav_bridge_01 ~/data/bags/nav_bridge_02
+python3 render_evidence_figures.py
 ```
 
 같은 ROS 2 환경에서 파일럿 진단 표와 그림을 재생성할 수 있다. CSV 시간은 bag 녹화 시작 기준이며 그림 하단의 scan 거리는 중앙 각도 창에서 가장 가까운 유효 반환이다.
@@ -106,6 +105,18 @@ OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 replay_scan_filter.py \
 현재 환경 사진은 `vlidar_run01`의 15초 이후 첫 RGB 프레임(반사 바닥과 박스), `nav_bridge_02`의 5초 이후 첫 RGB 프레임(구름다리와 통)이다. 모두 bag 시작 시각 기준이며 스크립트가 사용한 실제 프레임 시각을 출력한다. 이 두 장은 이전 기록의 환경과 장애물을 보여준다. [실험 환경 그림](../manuscript/figures/reference_sites.pdf)
 
 카메라·costmap 그림은 기존 회피 시퀀스의 가운데 화면에서 두 창을 잘라 냈다. 원고의 반사 사례는 box 주변을 잘라 floor mask와 기존 원 표시를 남겼다. 두 원본은 IEEE Access와 IJCAS 소스에 같은 파일로 들어 있다. 출판 상태와 재사용 조건을 교신저자가 제출 전에 확인한다. [기존 회피 화면](../../paper/workspace/IEEE_Access/figures/nav2_obstacle_avoidance_sequence.png) · [기존 반사 예시](../../paper/workspace/IEEE_Access/figures/segmentation_artifact.png)
+
+### 추가 그림의 출처
+
+| 그림 | 출처와 해석 범위 |
+| --- | --- |
+| 본문 관측 범위 | IEEE 원고의 근거리 구조 설명을 바탕으로 [보정 및 LUT 검증값](evidence/scan_lookup_geometry.json)을 가지고 다시 그렸다. 중앙선의 2.18 m와 ±31.5°의 127개 채널은 저장된 보정 모델의 기하 한계다. |
+| 본문 구름다리 우회 | `nav_bridge_01/02`의 `/odom`을 출발 자세에 맞췄다. `nav_bridge_02`에서 녹화 시작 후 10.010·25.017·35.006 s의 RGB와 가장 가까운 odom을 연결했다. 기록 시각 차이는 각각 6.2·5.1·15.8 ms이며 센서 획득 지연 측정값과 구분한다. |
+| 보충 그림 S1 | rosbag `/camera/image_raw`의 기록 시각 기준. `(a) nav_debug_avoidance` 1789917441448965025 ns, `(b) vlidar_run01.3` 1790854533842965842 ns, `(c) vlidar_run01.4` 1790932912384048917 ns, `(d) vlidar_run01.5` 1790933826258576115 ns. 의자·카트·역광·좁은 복도의 대표 장면이다. |
+| 보충 그림 S2 | [비교 run01](evidence/pytorch_comparison_run01.csv)과 [run02](evidence/pytorch_comparison_run02.csv)의 CPU 처리 시간에서 첫 프레임을 한 장씩 제외했다. 구현당 198개 값의 경험적 누적 분포다. |
+| 보충 그림 S3 | [9월 20회 원본 점검 JSON](../../paper/review/verification/robot_20261118/twenty_runs.json)의 최종 odom x와 녹화 말미 정지 시간이다. 외부 도달·접촉 판정은 확인되지 않았다. |
+
+원고에는 그림 S1–S3을 Online Resource 1로 인용했다. 투고 시 [보충 자료 `ESM_1.pdf`](evidence/ESM_1.pdf)를 LaTeX 소스 ZIP과 별도 파일로 올린다. 기존 원고에 있는 정지 2.50 m 거리 그래프는 독립 실측 원점과 원본 프레임별 값이 확인되면 거리 정확도의 근거로 재검토할 수 있다. [기존 거리 그림](../../paper/workspace/IEEE_Access/figures/experiment1_results.png) · [좌표 원점 민감도](evidence/scan_origin_reference_sensitivity.csv)
 
 `JINT/analysis/`에서 아래 명령으로 세 그림을 재생성할 수 있다.
 

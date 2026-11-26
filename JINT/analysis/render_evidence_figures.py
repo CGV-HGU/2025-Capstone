@@ -1,0 +1,210 @@
+#!/usr/bin/env python3
+"""Make the calibration, bridge sequence, and supplementary evidence figures."""
+
+import argparse
+from contextlib import closing
+import csv
+import json
+import math
+from pathlib import Path
+import sqlite3
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.ticker import MultipleLocator
+import numpy as np
+from PIL import Image
+from rclpy.serialization import deserialize_message
+from sensor_msgs.msg import Image as RosImage
+
+from plot_pilot_odometry import align_to_start, read_poses
+from render_archive_figures import bag_frame
+
+
+JINT = Path(__file__).resolve().parents[1]
+EVIDENCE = JINT / "analysis/evidence"
+FIGURES = JINT / "manuscript/figures"
+PDF_METADATA = {"CreationDate": None, "ModDate": None}
+BLUE, ORANGE = "#175676", "#a14c12"
+
+ARCHIVE_FRAMES = (
+    ("nav_debug_avoidance", 1789917441448965025, "(a) Office chair in the hall"),
+    ("vlidar_run01.3", 1790854533842965842, "(b) Metal cart with thin legs"),
+    ("vlidar_run01.4", 1790932912384048917, "(c) Box with window glare and reflections"),
+    ("vlidar_run01.5", 1790933826258576115, "(d) Fixed dispenser in a narrow corridor"),
+)
+
+
+def visibility_figure():
+    geometry = json.loads((EVIDENCE / "scan_lookup_geometry.json").read_text())
+    height = geometry["analytic_check"]["assumed_height_m"]
+    pitch = geometry["analytic_check"]["assumed_pitch_degrees"]
+    center = geometry["centerline_near_forward_m"]
+    angles = geometry["populated_laser_bin_span_degrees"]
+    figure, (side, plan) = plt.subplots(1, 2, figsize=(5.25, 2.48), layout="constrained")
+
+    side.axhline(0, color="0.25", lw=1)
+    side.axvspan(0, center, ymin=0, ymax=0.126, facecolor="#f0dfce", edgecolor=ORANGE, hatch="///", lw=0.4)
+    side.plot([0, center], [height, 0], color=BLUE, lw=1.4)
+    side.plot([0, 4.6], [height, height - 4.6 * math.tan(math.radians(pitch))], "--", color="0.45", lw=1)
+    side.scatter([0, center], [height, 0], color=BLUE, s=15, zorder=3)
+    side.annotate(f"Optical axis ({pitch:g}°)", (2.65, 1.02), fontsize=8)
+    side.annotate("Bottom-row ray", (.83, .65), xytext=(1.22, .69), fontsize=8, color=BLUE,
+                  arrowprops={"arrowstyle": "-", "color": BLUE, "linewidth": .6})
+    side.annotate(f"{center:.2f} m", (center, 0), xytext=(center + .1, .18), fontsize=8)
+    side.text(.10, -.12, "Near-field gap", fontsize=7, color=ORANGE, va="center",
+              bbox={"facecolor": "white", "edgecolor": "none", "alpha": .9, "pad": 1})
+    side.set(xlim=(-.15, 4.6), ylim=(-.19, 1.35), xlabel="Forward ground distance (m)",
+             ylabel="Height (m)", title="(a) Centerline cross-section")
+
+    lower, upper = map(math.radians, angles)
+    nominal_edge_y = 4.6 * math.tan(math.radians(35))
+    active_edge_y = 4.6 * math.tan(upper)
+    plan.plot([4.6, 0, 4.6], [-nominal_edge_y, 0, nominal_edge_y], ":", color="0.45", lw=1)
+    plan.fill([center, 4.6, 4.6, center],
+              [center * math.tan(lower), -active_edge_y, active_edge_y, center * math.tan(upper)],
+              color="#deedf4", edgecolor=BLUE, lw=1)
+    plan.plot([0, center], [0, center * math.tan(lower)], "--", color=BLUE, lw=.65)
+    plan.plot([0, center], [0, center * math.tan(upper)], "--", color=BLUE, lw=.65)
+    plan.scatter([0], [0], color=BLUE, s=12)
+    plan.text(3.5, 0, f"{geometry['populated_bins']} bins\n±{angles[1]:g}°", ha="center", va="center", fontsize=8)
+    plan.text(4.68, nominal_edge_y - .09, "35°", fontsize=7, ha="right", va="top")
+    plan.set(xlim=(-.15, 4.75), ylim=(-3.4, 3.4), xlabel="Forward ground distance (m)",
+             ylabel="Lateral distance (m)", title="(b) Nominal angular support")
+    for axis in (side, plan):
+        axis.title.set_fontsize(9)
+        axis.xaxis.label.set_fontsize(8)
+        axis.yaxis.label.set_fontsize(8)
+        axis.tick_params(labelsize=7)
+        axis.spines[["top", "right"]].set_visible(False)
+    figure.savefig(FIGURES / "scan_visibility.pdf", metadata=PDF_METADATA)
+    plt.close(figure)
+
+
+def bridge_sequence(bags):
+    first, second = bags / "nav_bridge_01", bags / "nav_bridge_02"
+    figure = plt.figure(figsize=(5.7, 3.65), layout="constrained")
+    grid = figure.add_gridspec(2, 3, height_ratios=(1, 1.0))
+    path_axis = figure.add_subplot(grid[1, :])
+    path_axis.axvline(10, color="0.45", linestyle=":", linewidth=1, label="Nominal goal x")
+    for bag, color in ((first, "#72838e"), (second, BLUE)):
+        poses = read_poses(bag)
+        aligned = align_to_start(poses)
+        forward, lateral = zip(*aligned)
+        path_axis.plot(forward, lateral, color=color, lw=1.35, label=bag.name)
+        path_axis.scatter(forward[-1], lateral[-1], s=10, color=color, zorder=3)
+
+    for index, (seconds, phase) in enumerate(((10, "Approach"), (25, "Passing"), (35, "Past the bin"))):
+        image, timestamp = bag_frame(second, seconds)
+        axis = figure.add_subplot(grid[0, index])
+        axis.imshow(image)
+        axis.set_axis_off()
+        label = chr(ord("a") + index)
+        axis.set_title(f"({label}) {phase}", fontsize=9)
+        nearest = min(range(len(poses)), key=lambda i: abs(poses[i][0] - timestamp))
+        skew = abs(poses[nearest][0] - timestamp) / 1e6
+        if skew > 100.0:
+            raise ValueError(f"{second.name}: RGB/odom recorder separation {skew:.1f} ms at {seconds} s")
+        print(f"Panel ({label}): nearest odometry recorder time is {skew:.1f} ms away")
+        x, y = aligned[nearest]
+        path_axis.scatter(x, y, s=21, facecolor="white", edgecolor=BLUE, zorder=4)
+        path_axis.annotate(f"({label})", (x, y), xytext=(0, -14), textcoords="offset points",
+                           ha="center", fontsize=8, color=BLUE)
+
+    path_axis.set(xlabel="Forward displacement (m)", ylabel="Lateral displacement (m)",
+                  ylim=(-.96, .56), xlim=(-.32, 10.55))
+    path_axis.yaxis.set_major_locator(MultipleLocator(.5))
+    path_axis.grid(color="0.90", linewidth=.55)
+    path_axis.legend(loc="upper left", ncol=3, fontsize=8, frameon=False)
+    figure.savefig(FIGURES / "bridge_pilot_odom.pdf", dpi=320, metadata=PDF_METADATA)
+    plt.close(figure)
+
+
+def read_archive_frame(db, timestamp):
+    with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True)) as database:
+        row = database.execute("""SELECT messages.data FROM messages JOIN topics
+                                  ON messages.topic_id = topics.id
+                                  WHERE topics.name = '/camera/image_raw' AND messages.timestamp = ?""",
+                               (timestamp,)).fetchone()
+    if row is None:
+        raise ValueError(f"{db}: no archived RGB frame at {timestamp}")
+    message = deserialize_message(row[0], RosImage)
+    raw_mode = {"rgb8": "RGB", "bgr8": "BGR"}[message.encoding]
+    return Image.frombytes("RGB", (message.width, message.height), bytes(message.data),
+                           "raw", raw_mode, message.step, 1)
+
+
+def supplementary_pages(archive):
+    with PdfPages(EVIDENCE / "ESM_1.pdf", metadata={**PDF_METADATA, "Title": "Archived V-LiDAR evidence"}) as pdf:
+        figure, axes = plt.subplots(2, 2, figsize=(7.1, 6.0))
+        figure.subplots_adjust(top=.80, bottom=.05, left=.04, right=.96, wspace=.08, hspace=.36)
+        figure.suptitle("S1. Recorded obstacles and environmental conditions", y=.97, fontsize=14)
+        figure.text(.5, .882, "Selected archived RGB frames illustrate visual conditions.\n"
+                    "They were acquired under different protocols from the formal evaluation.",
+                    ha="center", fontsize=10)
+        for axis, (name, timestamp, label) in zip(axes.flat, ARCHIVE_FRAMES):
+            db, = sorted((archive / name).glob("*.db3"))
+            axis.imshow(read_archive_frame(db, timestamp))
+            axis.set_title(label, fontsize=10)
+            axis.set_axis_off()
+        pdf.savefig(figure, dpi=300)
+        plt.close(figure)
+
+        figure, axis = plt.subplots(figsize=(7.1, 4.9))
+        figure.subplots_adjust(top=.78, bottom=.15, left=.15, right=.94)
+        figure.suptitle("S2. CPU processing time across archived input frames", y=.97, fontsize=14)
+        figure.text(.5, .865, "Two recordings, 198 frames per implementation after warm-up.\n"
+                    "The horizontal scale is logarithmic. Frame measurements within a recording are correlated.",
+                    ha="center", fontsize=10)
+        runs = []
+        for path in sorted(EVIDENCE.glob("pytorch_comparison_run*.csv")):
+            with path.open(newline="") as stream:
+                runs.extend(list(csv.DictReader(stream))[1:])
+        for column, label, style in (
+            ("vl_openvino_latency_ms", "V-LiDAR (OpenVINO FP16)", "-"),
+            ("vl_latency_ms", "V-LiDAR (PyTorch)", "--"),
+            ("midas_latency_ms", "MiDaS v2.1 Small", "-."),
+            ("da_latency_ms", "Depth Anything V2 Small", ":"),
+        ):
+            values = np.sort([float(row[column]) for row in runs])
+            assert len(values) == 198 and np.all(np.isfinite(values) & (values > 0))
+            axis.step(values, np.arange(1, len(values) + 1) / len(values), where="post", label=label, ls=style)
+        axis.set(xscale="log", ylim=(0, 1.05), xlabel="Processing time per RGB frame (ms)",
+                 ylabel="Fraction of frames at or below time")
+        axis.grid(color=".90")
+        axis.legend(loc="lower right", fontsize=9)
+        pdf.savefig(figure)
+        plt.close(figure)
+
+        runs = json.loads((JINT.parent / "paper/review/verification/robot_20261118/twenty_runs.json").read_text())["runs"]
+        figure, (position, dwell) = plt.subplots(2, 1, sharex=True, figsize=(7.1, 5.4))
+        figure.subplots_adjust(top=.78, bottom=.14, left=.14, right=.96, hspace=.20)
+        figure.suptitle("S3. Odometry diagnostics from 20 archived runs", y=.97, fontsize=14)
+        figure.text(.5, .865, "The September recordings have wheel odometry and scans.\n"
+                    "Independent goal-arrival and contact labels are unavailable.", ha="center", fontsize=10)
+        indices = [int(run["bag"].rsplit("run", 1)[1]) for run in runs]
+        position.bar(indices, [run["end_x_m"] for run in runs], color=BLUE)
+        position.set_ylabel("Terminal odom x (m)")
+        dwell.bar(indices, [run["stationary_tail_s"] for run in runs], color=ORANGE)
+        dwell.set(xlabel="Archived run number", ylabel="Stationary tail (s)", xticks=indices)
+        for axis in (position, dwell):
+            axis.grid(axis="y", color=".9")
+            axis.set_axisbelow(True)
+        pdf.savefig(figure)
+        plt.close(figure)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--bags", type=Path, default=Path.home() / "data/bags")
+    parser.add_argument("--archive", type=Path, default=Path.home() / ".local/share/Trash/files")
+    args = parser.parse_args()
+    visibility_figure()
+    bridge_sequence(args.bags)
+    supplementary_pages(args.archive)
+
+
+if __name__ == "__main__":
+    main()
