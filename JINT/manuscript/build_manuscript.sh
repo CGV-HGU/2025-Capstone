@@ -1,19 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ ${1-} == --help ]]; then
+  echo "Usage: $0 [FIELD_LOG [--configuration ID]]"
+  exit 0
+fi
+field_log=""
+if (( $# > 0 )); then
+  field_log=$(realpath -e -- "$1")
+  shift
+fi
+
 cd "$(dirname "${BASH_SOURCE[0]}")"
+if [[ -n $field_log ]]; then
+  python3 ../analysis/summarize_trials.py "$field_log" --latex-output formal_trial_rows.tex "$@"
+fi
+
 shopt -s nullglob
 sources=(main.tex references.bib sn-jnl.cls sn-mathphys-num.bst figures/*.pdf)
-if [[ -f generated/formal_trial_rows.tex ]]; then
-  sources+=(generated/formal_trial_rows.tex)
+if [[ -f formal_trial_rows.tex ]]; then
+  sources+=(formal_trial_rows.tex)
 fi
 
 # Rebuild when the optional formal-results file appears or disappears.
-latexmk -g -pdf -interaction=nonstopmode -halt-on-error -outdir=.build main.tex
+latex_options=(-g -pdf -interaction=nonstopmode -halt-on-error -outdir=.build)
+latexmk "${latex_options[@]}" main.tex
+latexmk "${latex_options[@]}" -jobname=author_review -usepretex='\def\JINTAuthorReview{}' main.tex
 
 staging=$(mktemp -d)
 trap 'rm -rf -- "$staging"' EXIT
-zip -q "$staging/JINT_draft_source.zip" "${sources[@]}"
+zip -qj "$staging/JINT_draft_source.zip" "${sources[@]}"
 unzip -tq "$staging/JINT_draft_source.zip"
 unzip -q "$staging/JINT_draft_source.zip" -d "$staging/check"
 (
@@ -25,4 +41,5 @@ unzip -q "$staging/JINT_draft_source.zip" -d "$staging/check"
 )
 
 cp .build/main.pdf ../JINT_first_draft.pdf
+cp .build/author_review.pdf ../planning/JINT_author_review.pdf
 mv "$staging/JINT_draft_source.zip" JINT_draft_source.zip

@@ -41,7 +41,7 @@
 - 첫 페이지에 분야 번호, 150–250단어 영문 초록, 키워드 6개를 넣었다. 원고의 `Pending`은 본 실험 수치·최종 설정·학습 출처 및 분할·저자 선언·자료 공개 범위를 확인할 위치다. 저자 순서와 교신저자는 IEEE 원고에서 가져왔다. 초안 작성에 사용한 언어 모델은 Methods에 명시했다. [JINT 투고 지침](https://link.springer.com/journal/10846/submission-guidelines)
 - ICCAS 공식 프로그램 FrBT3.1에 같은 제목의 확장초록과 39/50 결과가 공개되어 있다. 원고와 커버레터에 인용하고, 이번 연구에서 추가한 방법·비교·4조건 실차 평가를 명시했다. ICCAS의 IJCAS 연계 안내에서 proceedings와 IEEE Xplore 등재는 해당 원고의 처리 결과 및 저자 선택에 따라 달라진다. 이 초록의 별도 proceedings·DOI, IJCAS 심사 상태, 공저자 승인, 게재료와 영상 공유 범위는 투고 전 확인해야 한다. [ICCAS 프로그램](https://ras.papercept.net/conferences/conferences/ICCAS2026/program/ICCAS2026_ContentListWeb_4.html#frbt3_01) · [ICCAS–IJCAS 연계 안내](https://2026.iccas.org/authors-guideline-for-initial-submission/) · [JINT 가이드](https://link.springer.com/journal/10846/submission-guidelines)
 
-아래 명령은 `JINT/analysis/`에서 실행한다. PDF는 `JINT/`에, 소스 ZIP은 `JINT/manuscript/`에 생성된다. 소스 ZIP은 별도 디렉터리에서 컴파일을 확인한 뒤 저장한다.
+아래 명령은 `JINT/analysis/`에서 실행한다. 투고 형식 초안은 `JINT/`, 주석이 있는 내부 검토본은 `JINT/planning/`, 소스 ZIP은 `JINT/manuscript/`에 생성된다. 소스 ZIP은 별도 디렉터리에서 컴파일을 확인한 뒤 저장한다.
 
 ```bash
 bash ../manuscript/build_manuscript.sh
@@ -136,7 +136,7 @@ python3 summarize_trials.py ~/data/jint/field_log.csv
 
 ```bash
 python3 summarize_trials.py ~/data/jint/field_log.csv \
-  --latex-output ../manuscript/generated/formal_trial_rows.tex
+  --latex-output ../manuscript/formal_trial_rows.tex
 bash ../manuscript/build_manuscript.sh
 ```
 

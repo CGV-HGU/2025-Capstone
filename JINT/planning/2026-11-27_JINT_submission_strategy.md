@@ -2,7 +2,7 @@
 
 2026-11-27 KST · 공저자 검토용
 
-[JINT 폴더 안내](../README.md) · [검토용 PDF](../JINT_first_draft.pdf) · [초안 체크리스트](JINT_draft_checklist.md)
+[JINT 폴더 안내](../README.md) · [투고 형식 초안 PDF](../JINT_first_draft.pdf) · [내부 검토본 PDF](JINT_author_review.pdf) · [초안 체크리스트](JINT_draft_checklist.md)
 
 ## 제출 판단
 

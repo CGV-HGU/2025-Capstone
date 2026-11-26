@@ -1,8 +1,8 @@
 # JINT
 
-- [첫 초안 PDF](JINT_first_draft.pdf) · [Springer Nature LaTeX 양식](template/springer-nature-latex-2024-12.zip)
+- [JINT 투고 형식 초안 PDF](JINT_first_draft.pdf) · [Springer Nature LaTeX 양식](template/springer-nature-latex-2024-12.zip)
 - [원고 소스와 그림](manuscript/) · [소스 ZIP](manuscript/JINT_draft_source.zip)
-- [투고 전략](planning/2026-11-27_JINT_submission_strategy.md) · [초안 체크리스트](planning/JINT_draft_checklist.md) · [커버레터](planning/cover_letter_draft.md)
+- [주석이 있는 내부 검토본 PDF](planning/JINT_author_review.pdf) · [투고 전략](planning/2026-11-27_JINT_submission_strategy.md) · [초안 체크리스트](planning/JINT_draft_checklist.md) · [커버레터](planning/cover_letter_draft.md)
 - [실험 분석과 재현 방법](analysis/README.md)
 
-`JINT/`에서 `bash manuscript/build_manuscript.sh`를 실행하면 PDF와 소스 ZIP을 갱신한다.
+`JINT/`에서 `bash manuscript/build_manuscript.sh`를 실행하면 두 PDF와 소스 ZIP을 갱신한다. 새 본 주행 결과를 반영할 때는 `bash manuscript/build_manuscript.sh ~/data/jint/field_log.csv`를 실행한다. 결과가 확인되면 초록·결론·해석을 갱신하고 저자 선언을 마무리한다.

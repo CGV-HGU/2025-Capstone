@@ -4,9 +4,10 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\graphicspath{{figures/}}
 
 \newif\ifdraftreview
-\draftreviewtrue
+\ifdefined\JINTAuthorReview\draftreviewtrue\fi
 \definecolor{reviewink}{HTML}{784100}
 \definecolor{reviewfill}{HTML}{FFF1D6}
 \definecolor{overviewink}{HTML}{173852}
@@ -17,8 +18,6 @@
   \ifdraftreview
     \hyperlink{author-checklist}{\reviewbadge{#1}}\nobreak\space
     \textcolor{reviewink}{\textbf{[Pending: #2]}}%
-  \else
-    \textbf{[#1 pending: #2]}%
   \fi}
 \newcommand{\vlidar}{V-LiDAR}
 \newcommand{\m}{\,\mathrm{m}}
@@ -26,7 +25,7 @@
 \begin{document}
 
 \title[\vlidar{} for indoor obstacle avoidance]{V-LiDAR: Monocular Virtual Scans for Reactive Obstacle Avoidance in Structured Indoor Environments}
-\subtitle{Categories (3), (6), (7) \textnormal{--- Working draft}}
+\subtitle{Categories (3), (6), (7)}
 
 \author[1]{\fnm{Hyunwoo} \sur{Gu}}
 \author[1]{\fnm{Gunmin} \sur{Yoo}}
@@ -37,9 +36,10 @@
 \affil[1]{\orgdiv{School of Artificial Intelligence, Computer and Electrical Engineering},
 \orgname{Handong Global University}, \orgaddress{\city{Pohang}, \postcode{37554}, \country{Republic of Korea}}}
 
-\abstract{Floor segmentation identifies traversable image regions for mobile robot obstacle avoidance. Using these regions in a navigation costmap requires an estimate of metric geometry and stable observations over time. This paper presents V-LiDAR, a monocular pipeline that projects visible ground-contact boundaries into a planar virtual scan for the Robot Operating System 2 Navigation2 stack. A calibrated lookup table estimates range and bearing from image coordinates, and temporal filtering stabilizes individual scan channels. The evaluation pairs an onboard central processing unit benchmark with a physical obstacle-avoidance protocol on a wheeled mobile robot. The formal protocol specifies marked ten-meter routes in three indoor locations under four environmental conditions. An independent observer records physical goal arrival, contact, and manual intervention. In two exploratory bridge runs, the robot passed a stationary obstacle and the navigation stack reported arrival. Subsequent runs exposed planning difficulties and stale wheel feedback, motivating a reset and data-validation procedure. \pending{R4}{Insert verified condition-level trial results in the final abstract.} The study focuses on structured, approximately planar environments and examines the operating limits imposed by reflections, incomplete floor masks, and near-field visibility.}
+\abstract{Floor segmentation identifies traversable image regions for mobile robot obstacle avoidance. Using these regions in a navigation costmap requires an estimate of metric geometry and stable observations over time. This paper presents V-LiDAR, a monocular pipeline that projects visible ground-contact boundaries into a planar virtual scan for the Robot Operating System 2 Navigation2 stack. A calibrated lookup table estimates range and bearing from image coordinates, and temporal filtering stabilizes individual scan channels. We benchmark onboard processing and define a repeatable avoidance protocol for a wheeled robot. It uses marked 10 m routes at three sites under four conditions and records physical goal arrival, contact, and manual intervention. In two exploratory bridge runs, the robot passed a stationary obstacle and the navigation stack reported arrival. Subsequent runs exposed planning difficulties and stale wheel feedback, motivating a reset and data-validation procedure. \ifdraftreview\hyperlink{author-checklist}{\reviewbadge{R4}}\space\fi The study focuses on structured, approximately planar environments and examines the operating limits imposed by reflections, incomplete floor masks, and near-field visibility.}
 
 \keywords{Monocular vision, Virtual scan, Floor segmentation, Mobile robot, Obstacle avoidance, ROS 2}
+\pacs[MSC Classification]{68T40, 68T45}
 
 \maketitle
 \raggedbottom
@@ -84,7 +84,7 @@ Indoor mobile robots commonly pass stationary objects while following short rout
 
 This paper describes the conversion of a floor mask into a calibrated scan, evaluates the corresponding CPU and visibility trade-offs, and defines a trial protocol that measures whether the robot reached a physically marked goal without collision or intervention. Synchronized sensor and controller traces support failure analysis across perception, planning, and execution.
 
-An extended abstract in the ICCAS 2026 technical program described an earlier floor-to-scan pipeline and evaluation in one indoor corridor \cite{lee2026iccas}. This journal draft adds the scan stabilization and feedback handling details, an offline monocular depth comparison, and a wheel-odometry trial protocol with independent outcome assessment across multiple indoor conditions. The earlier corridor results and the present experiments use separate protocols and are reported separately.
+An extended abstract in the ICCAS 2026 technical program described an earlier floor-to-scan pipeline and evaluation in one indoor corridor \cite{lee2026iccas}. The present study documents the scan stabilization and feedback handling details, an offline monocular depth comparison, and a wheel-odometry trial protocol with independent outcome assessment across multiple indoor conditions. The earlier corridor results and the present experiments use separate protocols and are reported separately.
 
 \pending{R7}{Verify the published citation details for the earlier abstract and align the disclosure with the cover letter.}
 
@@ -100,12 +100,8 @@ The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A ligh
 
 \begin{figure}[htbp]
   \centering
-  \IfFileExists{figures/pipeline.pdf}{\includegraphics[width=\linewidth]{figures/pipeline.pdf}}{
-    \fbox{\begin{minipage}{0.9\linewidth}\centering
-      RGB camera $\to$ Floor mask $\to$ Ground projection and angular binning\\[0.65em]
-      $\to$ Temporal filtering $\to$ ROS~2 virtual scan $\to$ Nav2 costmaps
-    \end{minipage}}}
-  \caption{Processing path from an RGB image to the planner's virtual scan observations. Wheel odometry defines the route frame.}
+  \includegraphics[width=\linewidth]{pipeline.pdf}
+  \caption{Processing path from the color image to the Nav2 costmap. Wheel odometry supplies the relative route frame}
   \label{fig:pipeline}
 \end{figure}
 
@@ -163,11 +159,11 @@ A historical replay uses two archived robot recordings from a hall with reflecti
 
 To isolate scan stabilization, we replayed the first 12~s from a stationary bridge precheck and from the first reflective-hall recording used in the historical comparison. In both windows, wheel odometry reported a fixed pose and zero linear and angular velocity. We sampled at most one RGB frame per 100~ms bin and discarded the first second for filter initialization. The same segmentation outputs and range lookup table supplied a bypass and the deployed temporal filter. For every angular channel we counted transitions between a valid range and an invalid return. We also computed the mean absolute range change on adjacent frames for the common set of channels with valid returns in both configurations at both times. The experiment measures temporal behavior for fixed scenes.
 
-\section{Available results}\label{sec:results}
+\section{Results}\label{sec:results}
 
 \subsection{Formal navigation outcomes}\label{sec:formal-outcomes}
 
-\IfFileExists{generated/formal_trial_rows.tex}{
+\IfFileExists{formal_trial_rows.tex}{
 The condition-level outcomes for the selected configuration are reported in Table~\ref{tab:formal-navigation}.
 \begin{table}[htbp]
   \caption{Physical navigation outcomes by condition and obstacle layout. Success is reported as successes over evaluated attempts with a descriptive 95\% Wilson interval. The total number of attempts $N$ includes invalid and unresolved attempts. A dash indicates unavailable data.}
@@ -179,10 +175,11 @@ The condition-level outcomes for the selected configuration are reported in Tabl
   \toprule
   Environment & Layout & $N$ & Success & 95\% CI & Invalid & Pending \\
   \midrule
-  \input{generated/formal_trial_rows.tex}
+  \input{formal_trial_rows.tex}
   \end{tabular}
 \end{table}
 }{
+  Formal trial outcomes are pending.
   \pending{R1}{Insert verified formal trials from the field log.}
 }
 
@@ -194,8 +191,8 @@ A pair of archived bridge bags shows the robot passing a stationary bin on the c
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{figures/bridge_pilot_odom.pdf}
-  \caption{Two exploratory bridge paths derived from wheel odometry in the initial heading frame. Dots indicate the last recorded poses. The dotted line denotes the nominal goal displacement. Obstacle dimensions and physical clearance were outside the scope of these recordings.}
+  \includegraphics[width=\linewidth]{bridge_pilot_odom.pdf}
+  \caption{Two exploratory bridge paths derived from wheel odometry in the initial heading frame. Dots indicate the last recorded poses. The dotted line denotes the nominal goal displacement. Obstacle dimensions and physical clearance were outside the scope of these recordings}
   \label{fig:pilot}
 \end{figure}
 
@@ -203,8 +200,8 @@ The third and fourth bridge recordings each contain two global planning failures
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{figures/pilot_command_odometry.pdf}
-  \caption{Recorded command and odometry signals for two bridge pilots. The lower traces show the nearest finite virtual-scan range within $10^\circ$ of the center ray. The shaded region marks identical nonzero turning feedback in the fifth recording. The range trace can include surfaces other than the test obstacle.}
+  \includegraphics[width=\linewidth]{pilot_command_odometry.pdf}
+  \caption{Recorded command and odometry signals for two bridge pilots. The lower traces show the nearest finite virtual-scan range within $10^\circ$ of the center ray. The shaded region marks identical nonzero turning feedback in the fifth recording. The range trace can include surfaces other than the test obstacle}
   \label{fig:pilot-diagnostic}
 \end{figure}
 
@@ -286,17 +283,17 @@ The offline comparisons characterize computational cost and scan stability in fi
 
 \vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
 
-\section*{Declarations}
+\bibliography{references}
+
+\section*{Statements and Declarations}
 \label{sec:declarations}
 
-\textbf{Funding.} The prior IEEE manuscript listed the ANCHOR program Glocal University 30 through the Gyeongbuk ANCHOR CENTER (2026-ANCHOR-15-119), the National Research Foundation of Korea grant funded by the Korean government (RS-2025-24683458), and the Handong Global University Academic Research Grant (202500590001). \pending{R5}{Confirm which awards apply to the JINT work.}
+\textbf{Funding.} The funding statement is pending confirmation. \pending{R5}{Check which awards from the IEEE draft (2026-ANCHOR-15-119, RS-2025-24683458, and 202500590001) supported this work.}
 
-\noindent\textbf{Competing interests.} \pending{R5}{Coauthor confirmation.}
+\noindent\textbf{Competing interests.} The disclosure is pending confirmation. \pending{R5}{Confirm the competing interests statement with the coauthors.}
 
-\noindent\textbf{Data and code availability.} The supporting materials include the per-trial outcome and setup data, evaluation scripts, and selected sensor records. \pending{R6}{Insert the verified archive link and access terms for sensor footage.}
+\noindent\textbf{Data availability.} The planned archive will include trial outcomes, setup records, analysis code, and selected sensor records. Access details are pending confirmation. \pending{R6}{Insert the verified archive link and access terms for sensor footage.}
 
 \noindent\textbf{Author contributions.} All authors contributed equally to this work.
-
-\bibliography{references}
 
 \end{document}
