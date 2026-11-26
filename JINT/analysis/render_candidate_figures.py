@@ -17,9 +17,13 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+import cv2
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon, Rectangle, Wedge
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.lines import Line2D
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Patch, Polygon, Rectangle, Wedge
 import numpy as np
+from ultralytics import YOLO
 
 from summarize_trials import (
     CONDITION_LABELS,
@@ -88,6 +92,217 @@ def _style_axis(ax: plt.Axes, title_size: float = 8.6, label_size: float = 8.0, 
     ax.tick_params(labelsize=tick_size, colors=NAVY)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
+
+
+# ---------------------------------------------------------------------------
+# Candidate 0: Upgraded Figure 1 Architecture (v2 layout & Left=Left fixed)
+# ---------------------------------------------------------------------------
+def _fig_box(fig: plt.Figure, x: float, y: float, w: float, h: float, facecolor: str,
+             label: str = "", *, edgecolor: str = "none", text_color: str = NAVY,
+             size: float = 8.4, weight: str = "bold", lw: float = 0.75, zorder: int = 0) -> None:
+    fig.add_artist(
+        FancyBboxPatch(
+            (x, y), w, h, transform=fig.transFigure,
+            boxstyle="round,pad=0,rounding_size=0.012",
+            facecolor=facecolor, edgecolor=edgecolor, linewidth=lw, zorder=zorder,
+        )
+    )
+    if label:
+        fig.text(x + w / 2, y + h / 2, label, ha="center", va="center",
+                 color=text_color, fontsize=size, fontweight=weight, zorder=zorder + 1)
+
+
+def _fig_arrow(fig: plt.Figure, pts: tuple[tuple[float, float], ...], *, dashed: bool = False, lw: float = 1.0) -> None:
+    for p0, p1 in zip(pts[:-2], pts[1:-1]):
+        fig.add_artist(
+            Line2D((p0[0], p1[0]), (p0[1], p1[1]), transform=fig.transFigure,
+                   color=SLATE, lw=lw, linestyle="--" if dashed else "-")
+        )
+    fig.add_artist(
+        FancyArrowPatch(
+            pts[-2], pts[-1], transform=fig.transFigure, arrowstyle="-|>",
+            color=SLATE, linewidth=lw, mutation_scale=8.5,
+            linestyle="--" if dashed else "-", shrinkA=0, shrinkB=0,
+        )
+    )
+
+
+def render_cand_00_fig1_architecture() -> None:
+    # Load clean archived reflective-hall frame (vlidar_run01 +3.4s, cell [0,0])
+    sheet = cv2.imread(str(EVIDENCE / "benchmark_rgb_contact_sheet.jpg"))
+    if sheet is None:
+        raise FileNotFoundError("benchmark_rgb_contact_sheet.jpg not found")
+    ch, cw = sheet.shape[0] // 2, sheet.shape[1] // 5
+    bgr = sheet[0:ch, 0:cw]
+    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+
+    # Real YOLO11n-seg cls=0 inference + 7x7 closing x2 + real LUT projection
+    target_w, target_h, y_min_scan = 320, 256, 120
+    small_bgr = cv2.resize(bgr, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
+    model = YOLO(str(SCRIPTS_DIR / "best.pt"), task="segment")
+    results = model(small_bgr, stream=False, conf=0.15, device="cpu", verbose=False)
+    floor_masks = []
+    for res in results:
+        if res.masks is not None and res.boxes is not None:
+            for idx, box in enumerate(res.boxes):
+                if int(box.cls.item()) == 0:
+                    m = res.masks.data[idx].cpu().numpy().astype(np.uint8)
+                    if m.shape != (target_h, target_w):
+                        m = cv2.resize(m, (target_w, target_h), interpolation=cv2.INTER_NEAREST)
+                    floor_masks.append(m)
+            break
+    floor = np.bitwise_or.reduce(floor_masks) if floor_masks else np.zeros((target_h, target_w), dtype=np.uint8)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
+    floor = cv2.morphologyEx(floor, cv2.MORPH_CLOSE, kernel, iterations=2)
+
+    col_to_ch = np.load(SCRIPTS_DIR / "col_to_ch_lut.npy")
+    dist_2d = np.load(SCRIPTS_DIR / "distance_lut_2d.npy")
+    row_indices = np.arange(y_min_scan, target_h)[:, None]
+    obs_rows = np.where(floor[y_min_scan:, :] == 0, row_indices, -1)
+    max_y = obs_rows.max(axis=0)
+    raw_ch = np.full(141, np.inf, dtype=np.float32)
+    valid_cols = np.flatnonzero(max_y >= 0)
+    if valid_cols.size > 0:
+        dists = dist_2d[max_y[valid_cols], valid_cols]
+        np.minimum.at(raw_ch, col_to_ch[valid_cols], dists)
+
+    # ROS LaserScan ordering reverses channel index; +angle is LEFT (+y_robot)
+    ros_ranges = raw_ch[::-1]
+    ros_angles = np.deg2rad(np.linspace(-35.0, 35.0, 141))
+    valid_r = np.isfinite(ros_ranges) & (ros_ranges >= 0.1) & (ros_ranges <= 10.0)
+    x_fwd = ros_ranges[valid_r] * np.cos(ros_angles[valid_r])
+    y_lat = ros_ranges[valid_r] * np.sin(ros_angles[valid_r])
+
+    fig = plt.figure(figsize=(6.4, 3.85))
+    for x0, bg, hdr, title in (
+        (0.016, "#edf6f5", "#cfe8e5", "(a) Camera perception"),
+        (0.349, "#edf3f9", "#d4e5f4", "(b) Virtual scan (/scan)"),
+        (0.682, "#f4eff7", "#e6d9ef", "(c) Costmap schematic"),
+    ):
+        _fig_box(fig, x0, 0.268, 0.302, 0.700, bg)
+        _fig_box(fig, x0, 0.900, 0.302, 0.068, hdr, title, size=8.6)
+
+    # Panel (a): Real RGB (ceiling cropped below overlay text y >= 0.18*H) + mask + boundary dots
+    ax_a = fig.add_axes((0.032, 0.452, 0.272, 0.375))
+    ih, iw = rgb.shape[:2]
+    ax_a.imshow(rgb)
+    ax_a.set(xlim=(0, iw - 1), ylim=(ih - 1, 0.19 * ih))
+    ax_a.set_axis_off()
+    tint = np.empty((ih, iw, 4), dtype=np.float32)
+    tint[:, :, :3] = matplotlib.colors.to_rgb(TEAL)
+    tint[:, :, 3] = 0.38 * cv2.resize(floor, (iw, ih), interpolation=cv2.INTER_NEAREST)
+    ax_a.imshow(tint)
+    scan_line_y = (y_min_scan / target_h) * ih
+    ax_a.axhline(scan_line_y, color="white", ls="--", lw=0.75, alpha=0.9)
+    ax_a.text(iw * 0.03, scan_line_y - 4, "Scan band (v=120)", color="white", fontsize=6.2,
+              fontweight="bold", va="bottom",
+              bbox={"facecolor": NAVY, "edgecolor": "none", "alpha": 0.55, "pad": 1.0})
+    cols_sub = valid_cols[::3]
+    ax_a.scatter((cols_sub + 0.5) * iw / target_w - 0.5, (max_y[cols_sub] + 0.5) * ih / target_h - 0.5,
+                 c="#f4a01a", edgecolors=NAVY, linewidths=0.25, s=5.5, zorder=4)
+    ax_a.legend(
+        handles=(
+            Patch(facecolor=TEAL, edgecolor=NAVY, lw=0.4, label="Floor mask"),
+            Line2D([], [], linestyle="none", marker="o", markersize=3.8,
+                   markerfacecolor="#f4a01a", markeredgecolor=NAVY, markeredgewidth=0.25, label="Boundary (u, v*)"),
+        ),
+        loc="upper center", bbox_to_anchor=(0.50, -0.032), ncol=2, frameon=False,
+        fontsize=6.9, labelcolor=NAVY, handlelength=0.9, handletextpad=0.35, columnspacing=0.75, borderaxespad=0,
+    )
+    _fig_box(fig, 0.032, 0.282, 0.272, 0.082, "#d8ecea",
+             "YOLO11n-seg (320×256, cls=0)\n7×7 closing ×2  |  OpenVINO FP16",
+             edgecolor="#9ac8c3", size=6.8, weight="normal")
+
+    # Panel (b): Calibrated scan with Left-on-Left orientation & blind gap
+    ax_b = fig.add_axes((0.398, 0.448, 0.236, 0.382))
+    ax_b.set_facecolor("white")
+    fov_rad = math.radians(31.5)
+    near_m, max_fwd = 2.18, 8.3
+    ang = np.linspace(-fov_rad, fov_rad, 50)
+    poly_pts = np.vstack(
+        [
+            np.column_stack([near_m * np.sin(ang), near_m * np.cos(ang)]),
+            np.column_stack([max_fwd * np.tan(ang[::-1]), max_fwd * np.ones_like(ang[::-1])]),
+        ]
+    )
+    ax_b.add_patch(Polygon(poly_pts, closed=True, facecolor="#edf5fb", edgecolor="#adc8df", lw=0.7, zorder=1))
+    ax_b.add_patch(Wedge((0.0, 0.0), near_m, 90.0 - 31.5, 90.0 + 31.5, facecolor=LIGHT_ORANGE,
+                         edgecolor=ORANGE, hatch="///", lw=0.55, alpha=0.8, zorder=1))
+    ax_b.text(0.0, 1.10, "<2.18 m\nblind", ha="center", va="center", fontsize=6.0, color=ORANGE, fontweight="bold",
+              bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.85, "pad": 0.7}, zorder=4)
+    ax_b.scatter(y_lat, x_fwd, s=9.0, color=BLUE, edgecolors="white", linewidths=0.22, zorder=3)
+    ax_b.scatter([0], [0], marker="^", color=NAVY, s=22, zorder=5)
+    ax_b.set(xlim=(3.0, -3.0), ylim=(-0.3, 8.3), aspect="equal", xticks=(2.0, 0.0, -2.0), yticks=(0.0, 2.5, 5.0, 7.5))
+    ax_b.set_xticklabels(["+2 (L)", "0", "-2 (R)"])
+    ax_b.grid(color="#e1ebf2", linewidth=0.5, zorder=0)
+    ax_b.set_xlabel("Lateral y (m)", color=NAVY, fontsize=7.3, labelpad=1.5)
+    ax_b.set_ylabel("Forward x (m)", color=NAVY, fontsize=7.3, labelpad=1.5)
+    ax_b.tick_params(labelsize=6.5, colors=NAVY, pad=1.3, length=2)
+    ax_b.spines[["top", "right"]].set_visible(False)
+    ax_b.spines[["bottom", "left"]].set_color(SLATE)
+    _fig_box(fig, 0.365, 0.282, 0.272, 0.082, "#dbe9f6",
+             "2D LUT θ(u), r(u,v)  |  0.5° bins\nPersistence (N=2) + EMA (α=0.6) → /scan",
+             edgecolor="#a6c4e0", size=6.8, weight="normal")
+
+    # Panel (c): Illustrative local costmap + DWB path built around detected foreground cluster
+    ax_c = fig.add_axes((0.728, 0.448, 0.236, 0.382))
+    fg = (x_fwd < 6.0) & (np.abs(y_lat) < 0.8)
+    obs_fx = float(np.median(x_fwd[fg])) if np.any(fg) else 4.4
+    obs_fy = float(np.median(y_lat[fg])) if np.any(fg) else 0.0
+    gx = np.linspace(-2.2, 2.2, 88)
+    gy = np.linspace(-0.4, 5.8, 124)
+    gxx, gyy = np.meshgrid(gx, gy)  # gxx = lateral y_robot, gyy = forward x_robot
+    dist_obs = np.hypot(gxx - obs_fy, gyy - obs_fx)
+    cost_field = np.clip(100.0 * np.exp(-np.maximum(0.0, dist_obs - 0.22) / 0.38), 0, 100)
+    # Add corridor walls cleanly at y = +/- 1.85 m
+    wall_d = np.minimum(np.abs(gxx - 1.85), np.abs(gxx + 1.85))
+    cost_field = np.maximum(cost_field, np.clip(100.0 * np.exp(-np.maximum(0.0, wall_d - 0.1) / 0.32), 0, 100))
+
+    cmap = LinearSegmentedColormap.from_list("cost", ("#fbfbfc", "#e8e0f2", "#c1a6df", "#654397", "#35204f"))
+    ax_c.pcolormesh(gxx, gyy, cost_field, cmap=cmap, vmin=0, vmax=100, shading="auto", rasterized=True)
+    pt_s = np.linspace(0.0, 1.0, 50)
+    path_fwd = 5.4 * pt_s
+    path_lat = -0.82 * np.sin(math.pi * pt_s) ** 1.4  # steers right (-y) around box
+    ax_c.plot(path_lat, path_fwd, color=TEAL, lw=1.7)
+    ax_c.scatter([0], [0], marker="^", color=NAVY, edgecolor="white", linewidths=0.45, s=26, zorder=5)
+    ax_c.set(xlim=(2.0, -2.0), ylim=(-0.35, 5.65), aspect="equal", xticks=(1.5, 0.0, -1.5), yticks=(0.0, 2.5, 5.0))
+    ax_c.set_xticklabels(["+1.5", "0", "-1.5"])
+    ax_c.set_facecolor("#f3f1f7")
+    ax_c.tick_params(labelsize=6.5, colors=NAVY, pad=1.3, length=2)
+    ax_c.set_xlabel("Lateral y (m)", color=NAVY, fontsize=7.3, labelpad=1.5)
+    ax_c.set_ylabel("Forward x (m)", color=NAVY, fontsize=7.3, labelpad=1.5)
+    ax_c.spines[["top", "right"]].set_visible(False)
+    ax_c.spines[["bottom", "left"]].set_color("#9f8bb3")
+    ax_c.legend(
+        handles=(
+            Patch(facecolor="#9471ba", label="Cost"),
+            Line2D([], [], color=TEAL, lw=1.4, label="Local path"),
+            Line2D([], [], color=NAVY, marker="^", linestyle="none", markersize=4, label="Robot"),
+        ),
+        loc="upper center", bbox_to_anchor=(0.5, 1.125), ncol=3, frameon=False,
+        fontsize=6.5, labelcolor=NAVY, handlelength=0.9, handletextpad=0.25, columnspacing=0.60, borderaxespad=0,
+    )
+    _fig_box(fig, 0.698, 0.282, 0.272, 0.082, "#e9dff2",
+             "Illustrative local inflation (0.65 m)\nraytrace_min = 2.18 m  |  0.5 s expiry",
+             edgecolor="#c0add4", size=6.8, weight="normal")
+
+    # Arrows & Closed-Loop Control Bus
+    _fig_arrow(fig, ((0.320, 0.610), (0.347, 0.610)))
+    _fig_arrow(fig, ((0.653, 0.610), (0.680, 0.610)))
+    _fig_arrow(fig, ((0.834, 0.268), (0.834, 0.236), (0.437, 0.236), (0.437, 0.208)))
+
+    _fig_box(fig, 0.020, 0.120, 0.118, 0.086, "#dce7ee", "Goal\n(10 m, 0)", edgecolor="#aec3d1", size=8.2)
+    _fig_box(fig, 0.212, 0.120, 0.446, 0.086, "#dce7ee",
+             "Nav2 planner and DWB controller", edgecolor="#aec3d1", size=8.6)
+    _fig_box(fig, 0.800, 0.120, 0.180, 0.086, "#dce7ee", "OMO-R1 base", edgecolor="#aec3d1", size=8.4)
+    _fig_arrow(fig, ((0.140, 0.163), (0.210, 0.163)))
+    _fig_arrow(fig, ((0.660, 0.163), (0.798, 0.163)))
+    fig.text(0.729, 0.184, "/cmd_vel", ha="center", fontsize=7.8, fontweight="bold", color=NAVY)
+    _fig_arrow(fig, ((0.905, 0.118), (0.905, 0.042), (0.335, 0.042), (0.335, 0.118)), dashed=True)
+    fig.text(0.620, 0.066, "Wheel feedback  /odom + TF  (0.25 s timeout watchdog)",
+             ha="center", fontsize=7.2, color=NAVY)
+
+    _save_candidate(fig, "cand_00_fig1_architecture", "Upgraded Figure 1 architecture (v2 layout & coordinate alignment)")
 
 
 # ---------------------------------------------------------------------------
@@ -536,6 +751,7 @@ def main() -> None:
     parser.add_argument("--configuration", default=None, help="Configuration ID for --field-log")
     args = parser.parse_args()
 
+    render_cand_00_fig1_architecture()
     render_cand_01_protocol_layouts()
     render_cand_02_mount_sensitivity_and_lut()
     render_cand_03_yolo_training_curves()
