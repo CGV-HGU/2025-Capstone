@@ -101,6 +101,34 @@ OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 replay_scan_filter.py \
   ~/data/jint_sources/bridge_static_20261126 ~/data/bags/vlidar_run01
 ```
 
+## 실험 환경 사진과 기존 원고 그림
+
+현재 환경 사진은 `vlidar_run01`의 15초 이후 첫 RGB 프레임(반사 바닥과 박스), `nav_bridge_02`의 5초 이후 첫 RGB 프레임(구름다리와 통)이다. 모두 bag 시작 시각 기준이며 스크립트가 사용한 실제 프레임 시각을 출력한다. 이 두 장은 이전 기록의 환경과 장애물을 보여준다. [실험 환경 그림](../manuscript/figures/reference_sites.pdf)
+
+카메라·costmap 그림은 기존 회피 시퀀스의 가운데 화면에서 두 창을 잘라 냈다. 원고의 반사 사례는 box 주변을 잘라 floor mask와 기존 원 표시를 남겼다. 두 원본은 IEEE Access와 IJCAS 소스에 같은 파일로 들어 있다. 출판 상태와 재사용 조건을 교신저자가 제출 전에 확인한다. [기존 회피 화면](../../paper/workspace/IEEE_Access/figures/nav2_obstacle_avoidance_sequence.png) · [기존 반사 예시](../../paper/workspace/IEEE_Access/figures/segmentation_artifact.png)
+
+`JINT/analysis/`에서 아래 명령으로 세 그림을 재생성할 수 있다.
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 render_archive_figures.py \
+  --frame ~/data/bags/vlidar_run01 15 \
+  --frame ~/data/bags/nav_bridge_02 5 \
+  --output ../manuscript/figures/reference_sites.pdf --archive-views
+```
+
+본 실험을 마치면 같은 스크립트에 장애물이 보이는 RGB 프레임을 지정한다. 아래 경로와 초는 현장 bag에 맞게 바꾸고, **기존 장소 낮 → 기존 장소 밤 → 인공조명 실내 → 자연광 구름다리** 순서를 유지한다. `formal_sites.pdf`가 있으면 빌드 시 본문에 해당 4패널이 표시된다. 대표 프레임의 bag ID와 시각을 현장 로그에 남긴다.
+
+```bash
+python3 render_archive_figures.py \
+  --frame "$bag_original_day" "$time_original_day" \
+  --frame "$bag_original_night" "$time_original_night" \
+  --frame "$bag_indoor_artificial" "$time_indoor_artificial" \
+  --frame "$bag_bridge_daylight" "$time_bridge_daylight" \
+  --output ../manuscript/figures/formal_sites.pdf
+bash ../manuscript/build_manuscript.sh ~/data/jint/field_log.csv
+```
+
 ## 현장 CSV의 자동 기록과 집계
 
 실험에 사용할 설정과 파일을 정했을 때 한 번 저장한다. 해시는 현재 PC의 파일에 대한 기록이다. 실차에서 로드된 런치 인수와 유효 파라미터는 별도로 현장 기록에서 확인한다. [현재 PC 파일 스냅샷](evidence/robot_checkout_snapshot_2026-11-26.json)

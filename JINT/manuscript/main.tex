@@ -5,6 +5,9 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \graphicspath{{figures/}}
+\newif\ifformalsites
+\IfFileExists{figures/formal_sites.pdf}{\formalsitestrue}{%
+  \IfFileExists{formal_sites.pdf}{\formalsitestrue}{}}
 
 \newif\ifdraftreview
 \ifdefined\JINTAuthorReview\draftreviewtrue\fi
@@ -36,7 +39,7 @@
 \affil[1]{\orgdiv{School of Artificial Intelligence, Computer and Electrical Engineering},
 \orgname{Handong Global University}, \orgaddress{\city{Pohang}, \postcode{37554}, \country{Republic of Korea}}}
 
-\abstract{Floor segmentation identifies traversable image regions for mobile robot obstacle avoidance. Using these regions in a navigation costmap requires an estimate of metric geometry and stable observations over time. This paper presents V-LiDAR, a monocular pipeline that projects visible ground-contact boundaries into a planar virtual scan for the Robot Operating System 2 Navigation2 stack. A calibrated lookup table estimates range and bearing from image coordinates, and temporal filtering stabilizes individual scan channels. We benchmark onboard processing and define a repeatable avoidance protocol for a wheeled robot. It uses marked 10 m routes at three sites under four conditions and records physical goal arrival, contact, and manual intervention. In two exploratory bridge runs, the robot passed a stationary obstacle and the navigation stack reported arrival. Subsequent runs exposed planning difficulties and stale wheel feedback, motivating a reset and data-validation procedure. \ifdraftreview\hyperlink{author-checklist}{\reviewbadge{R4}}\space\fi The study focuses on structured, approximately planar environments and examines the operating limits imposed by reflections, incomplete floor masks, and near-field visibility.}
+\abstract{Floor segmentation identifies traversable image regions for mobile robot obstacle avoidance. Using these regions in a navigation costmap requires an estimate of metric geometry and stable observations over time. This paper presents V-LiDAR, a monocular pipeline that projects visible ground-contact boundaries into a planar virtual scan for the Robot Operating System 2 Navigation2 stack. A calibrated lookup table estimates range and bearing from image coordinates, and temporal filtering stabilizes individual scan channels. The OpenVINO perception wrapper averaged 13.49 ms per frame in an offline onboard CPU benchmark. We define a repeatable avoidance protocol for a wheeled robot. It uses marked 10 m routes at three sites under four conditions and records physical goal arrival, contact, and manual intervention. In two exploratory bridge runs, the robot passed a stationary obstacle and the navigation stack reported arrival. Subsequent runs exposed planning difficulties and stale wheel feedback, motivating a reset and data-validation procedure. \ifdraftreview\hyperlink{author-checklist}{\reviewbadge{R4}}\space\fi The study focuses on structured, approximately planar environments and examines the operating limits imposed by reflections, incomplete floor masks, and near-field visibility.}
 
 \keywords{Monocular vision, Virtual scan, Floor segmentation, Mobile robot, Obstacle avoidance, ROS 2}
 \pacs[MSC Classification]{68T40, 68T45}
@@ -90,13 +93,20 @@ An extended abstract in the ICCAS 2026 technical program described an earlier fl
 
 \section{Related work}\label{sec:related}
 
-Semantic segmentation has been used for lightweight indoor traversability and for monocular mobile robot planning \cite{dang2023irdc,dang2024hybrid}. Miyamoto et al.\ used a virtual lidar derived from segmentation to estimate robot orientation relative to a traversable path \cite{miyamoto2020virtual}. The present work uses the estimated ground contact to supply metric obstacle observations to a standard navigation costmap and studies their role in closed-loop indoor avoidance. General-purpose monocular depth networks such as MiDaS and Depth Anything V2 estimate richer image-wide scene structure \cite{ranftl_2020_towards,yang2024depthv2}. Relative-depth variants require calibration to report distances in meters. Evaluating the two approaches on shared images with the same reference and target bearing helps reveal the trade-off between metric accuracy and processing cost. Low-level motion and costmap behavior also require physical trials, because an offline replay retains the recorded camera viewpoints.
+\paragraph{Traversable regions and virtual scans.}
+Miyamoto et al.\ used monocular semantic segmentation for path following and obstacle avoidance, with a virtual scan that estimates the robot's orientation relative to a traversable path \cite{miyamoto2020virtual}. Dang and Tan used segmentation in a hybrid global and local planning system \cite{dang2023irdc,dang2024hybrid}. Aulia et al.\ combined road segmentation with vanishing-point and obstacle detection to identify where a robot could drive \cite{aulia2025navigation}. Dhushanthan et al.\ used planar boundaries of segmented floor regions to recover LiDAR-like range and bearing in a predefined environment \cite{dhushanthan2026monocular}. The common use of floor boundaries places the contribution of the present work at the system level. We study how calibrated, temporally filtered returns from those boundaries enter a standard Nav2 costmap and support repeated physical avoidance with wheel odometry.
+
+\paragraph{Monocular depth for avoidance.}
+MiDaS and Depth Anything V2 are representative dense depth approaches \cite{ranftl_2020_towards,yang2024depthv2}. Relative-depth models require scale calibration for metric use. Metric3D v2 recovers metric depth and surface normals through a canonical camera model \cite{hu2024metric3dv2}. Jalalnezhad et al.\ paired a lightweight monocular depth estimator with behavior-driven control and evaluated it on a physical robot \cite{jalalnezhad2025avoidance}. Here the floor-plane prior constrains scale and limits the output to visible ground contacts. Our shared-image comparison measures computation for the evaluated implementations. Comparing closed-loop performance against depth-based control would require a separate, matched route experiment.
+
+\paragraph{Costmap integration.}
+Choi et al.\ fused monocular detections and physical planar LiDAR to encode people as obstacle points in the standard Nav2 obstacle layer \cite{choi2026costmap}. That work estimates clearance to stationary people and illustrates how standard costmap layers can consume task-specific observations. Our experiments address static object avoidance using a camera-derived scan and wheel odometry. Synchronized observations and physical outcome labels help distinguish a missed return, a planning failure, and an execution failure.
 
 \section{System and method}\label{sec:method}
 
 \subsection{Floor segmentation and scan generation}\label{sec:floor-segmentation}
 
-The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A lightweight YOLO11 instance segmentation model processes $320\times256$ images. Floor masks that intersect the lower image scan band are merged and closed using a $7\times7$ rectangular kernel. The deployed implementation uses a numeric floor-class mapping checked against representative RGB frames. Rows below the configured scan-band boundary are searched for the lowest non-floor pixel in each column. An invalid projection produces no finite return. The minimum valid distance among columns in a shared angular bin is retained. Figure~\ref{fig:pipeline} summarizes the data flow.
+The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A lightweight YOLO11 instance segmentation model processes $320\times256$ images. The reference implementation uses a confidence threshold of 0.15 and merges masks with at least 50 pixels in the lower scan band. It applies two iterations of morphological closing with a $7\times7$ rectangular kernel. The implementation selects the floor mask by class ID. Model exports currently use ID 0 for the mask selected in the reference implementation, while the saved class-name metadata labels ID 0 as a person. Rows below the configured scan-band boundary are searched for the lowest non-floor pixel in each column. An invalid projection produces no finite return. The minimum valid distance among columns in a shared angular bin is retained. Figure~\ref{fig:pipeline} summarizes the data flow.
 
 \begin{figure}[htbp]
   \centering
@@ -128,6 +138,15 @@ Finite detections are confirmed across two processed frames. A tracked range is 
 
 Recorded transforms in the pilot and archived benchmark bags placed the virtual scan frame \texttt{lidar\_link} at $(-0.55,0,0)\m$ relative to \texttt{base\_link}. The RGB header used \texttt{camera\_frame}. The recorded values specify software frames and should be distinguished from the physical optical-center calibration.
 
+Figure~\ref{fig:archive-nav2} illustrates the camera view and the local costmap during a previously recorded box avoidance maneuver. The costmap overlay shows how a scan-derived obstacle can change the planned path. The recorded overlay is a qualitative illustration of the interface.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{archive_nav2_view.pdf}
+  \caption{Archived visualization from the earlier single-box study. (a) Camera view with the archive viewer's feature overlay. (b) Cropped Navigation2 display showing the obstacle marking and path around the box. Both panels come from the visualization archived with the IEEE Access and IJCAS manuscripts}
+  \label{fig:archive-nav2}
+\end{figure}
+
 The wheel driver checks freshness of microcontroller velocity feedback. If feedback is stale for 0.25~s, it requests zero velocity and suspends odometry integration. Each formal trial begins after verifying standstill, prior-goal termination, and a fresh reset. \pending{R2}{Record the actual deployed firmware, software revision, camera and scan origins, model and lookup table hashes, and costmap settings used by the formal trials.}
 
 \subsection{Draft preparation}
@@ -139,6 +158,24 @@ A large language model assisted in preparing this working manuscript and cross-c
 \subsection{Robot trials and outcomes}
 
 The proposed evaluation uses three locations and four conditions. The original corridor is revisited under daytime and nighttime conditions. The other settings provide a corridor with predominantly artificial light and an enclosed bridge with daylight. Floor properties, corridor widths, camera frames, time of day, and obstacle positions document the conditions. Several environmental factors can co-vary between sites. These trials assess performance under those observed combinations.
+
+\ifformalsites
+Figure~\ref{fig:site-views} shows forward-facing camera frames with the target obstacles visible in the four formal conditions.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{formal_sites.pdf}
+  \caption{Forward camera frames from the formal trial recordings. (a) Original corridor by day. (b) Original corridor at night. (c) Artificial-light interior. (d) Daylit bridge}
+  \label{fig:site-views}
+\end{figure}
+\else
+Figure~\ref{fig:site-views} shows the reflective hall used for the archived CPU comparison and the daylit bridge from a pilot run.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{reference_sites.pdf}
+  \caption{Forward camera frames from archived recordings. (a) Cardboard box on the reflective floor of the benchmark hall. (b) Stationary bin in the daylit bridge pilot. The images document the appearances encountered during the earlier recordings}
+  \label{fig:site-views}
+\end{figure}
+\fi
 
 At each location, the straight-line displacement between marked start and goal locations is 10~m. The obstacle layouts use a box alone and the same box with a chair. Obstacles, starting pose, limits, and navigation settings are fixed and logged. Primary success is physical entry into the marked goal region within the trial time limit, without obstacle contact or manual intervention. A field observer or external video supplies these labels. Nav2 status, time from goal acceptance, trajectory, and message logs provide secondary diagnostics. Report success as a count over all eligible attempts for each condition, with uncertainty and reasons for unusable recordings. Preserve failed attempts and separately identify invalid measurements using documented reasons.
 
@@ -272,6 +309,15 @@ Reflective hall & 50 & 25 & 6.13 & 3.52 \\
 \section{Discussion}\label{sec:discussion}
 
 The virtual scan interface enables the navigation stack to consume observations from monocular floor segmentation. Its operating envelope depends on a forward-facing camera, visible ground contact, and a stable camera-to-base relationship. Floor reflections, strong shadows, low floor-to-object contrast, and pitch variation can degrade the boundary projection. Limited field of view and the ground-contact blind region also constrain the configurations that can be covered. A wheel odometry fault can produce a separate failure even when the camera continues to provide plausible observations.
+
+In the archived example in Fig.~\ref{fig:floor-reflection}, the projected floor-mask boundary is ambiguous beneath the box. A temporal filter can suppress a transient return, while a persistent segmentation error can affect consecutive frames. Causally attributing a collision or a failure to avoid therefore requires agreement between the camera, scan, and navigation records.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.54\linewidth]{archive_floor_reflection.pdf}
+  \caption{Archived segmentation overlay in a reflective-floor scene. The circled region beneath the box illustrates an ambiguous floor boundary. The overlay is cropped from the earlier IEEE Access and IJCAS manuscripts}
+  \label{fig:floor-reflection}
+\end{figure}
 
 The archived nominal obstacle coordinates lack a documented measurement origin. If those coordinates are held fixed in the odometry frame, using the logged virtual scan offset instead of a zero sensor offset changes the nominal reference distances by $0.51$--$0.55\m$ on 59 previously selected frames. This sensitivity shows why absolute range evaluation requires an independently surveyed obstacle reference in the appropriate frame.
 
