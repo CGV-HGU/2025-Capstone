@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 import torch
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "experiments"))
 from benchmark_depth_baselines import (
     DepthAnythingV2Wrapper,

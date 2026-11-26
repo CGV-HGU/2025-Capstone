@@ -19,7 +19,7 @@ from ultralytics import YOLO
 from bag_sqlite import bag_messages, bag_metadata
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src/freespace_detection"))
 from freespace_detection.floor_detector import RoiChecker
 

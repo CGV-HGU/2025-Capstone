@@ -20,7 +20,7 @@ import yaml
 from bag_sqlite import bag_messages, bag_metadata
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 LUT_DIR = ROOT / "src/freespace_detection/scripts"
 LUT_FILES = ("col_to_ch_lut.npy", "distance_lut.npy", "distance_lut_2d.npy")
 

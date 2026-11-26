@@ -8,7 +8,8 @@ if [[ -f generated/formal_trial_rows.tex ]]; then
   sources+=(generated/formal_trial_rows.tex)
 fi
 
-latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=.build main.tex
+# Rebuild when the optional formal-results file appears or disappears.
+latexmk -g -pdf -interaction=nonstopmode -halt-on-error -outdir=.build main.tex
 
 staging=$(mktemp -d)
 trap 'rm -rf -- "$staging"' EXIT
@@ -23,5 +24,5 @@ unzip -q "$staging/JINT_draft_source.zip" -d "$staging/check"
   }
 )
 
-cp .build/main.pdf JINT_draft.pdf
+cp .build/main.pdf ../JINT_first_draft.pdf
 mv "$staging/JINT_draft_source.zip" JINT_draft_source.zip

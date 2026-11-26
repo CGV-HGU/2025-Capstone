@@ -14,7 +14,7 @@ import subprocess
 from bag_sqlite import bag_metadata
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 FIELD_TEMPLATE = ROOT / "paper/review/planning/templates/field_log.csv"
 FSD_SCRIPTS = "src/freespace_detection/scripts"
 LUT_FILES = [
