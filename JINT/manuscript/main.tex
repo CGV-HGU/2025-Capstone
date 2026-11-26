@@ -111,7 +111,7 @@ The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A ligh
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{pipeline.pdf}
-  \caption{Processing path from the color image to the Nav2 costmap. Wheel odometry supplies the relative route frame}
+  \caption{V-LiDAR processing illustrated with an archived bridge frame. (a) The original RGB image. (b) The floor mask and sampled non-floor pixels selected by the column search. (c) Planar returns from offline replay of the same frame before temporal filtering. The triangle marks the projection origin. The lower strip shows the deployed path from temporal filtering to the Nav2 obstacle layer}
   \label{fig:pipeline}
 \end{figure}
 

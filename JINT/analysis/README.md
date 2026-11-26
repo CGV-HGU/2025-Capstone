@@ -108,6 +108,13 @@ OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 replay_scan_filter.py \
 
 ### 추가 그림의 출처
 
+Figure 1의 RGB는 `nav_bridge_01`의 녹화 시작 후 7.005 s에 기록한 프레임이다(기록 시각 `1795676399861122198` ns). 같은 프레임을 OpenVINO로 재생해 바닥 마스크와 투영점을 그렸다. 투영 패널은 시간 필터 전의 값이다. `JINT/analysis/`에서 아래 명령으로 다시 만들 수 있다.
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 render_pipeline_figure.py ~/data/bags/nav_bridge_01 7
+```
+
 | 그림 | 출처와 해석 범위 |
 | --- | --- |
 | 본문 관측 범위 | IEEE 원고의 근거리 구조 설명을 바탕으로 [보정 및 LUT 검증값](evidence/scan_lookup_geometry.json)을 가지고 다시 그렸다. 중앙선의 2.18 m와 ±31.5°의 127개 채널은 저장된 보정 모델의 기하 한계다. |
