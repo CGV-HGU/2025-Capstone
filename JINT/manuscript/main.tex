@@ -111,7 +111,7 @@ The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A ligh
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{pipeline.pdf}
-  \caption{V-LiDAR processing illustrated with an archived bridge frame. (a) The original RGB image. (b) The floor mask and sampled non-floor pixels selected by the column search. (c) Planar returns from offline replay of the same frame before temporal filtering. The triangle marks the projection origin. The lower strip shows the deployed path from temporal filtering to the Nav2 obstacle layer}
+  \caption{V-LiDAR system architecture. (a) The camera view and the floor boundary estimated by offline replay of that image. (b) Ground projection and angular binning feed a temporal filter that combines persistence and exponential moving average (EMA) smoothing. The example LaserScan shares the image acquisition timestamp. (c) The recorded local costmap and adjacent local path are shown in the robot frame. The lower loop shows goal-directed control, velocity commands, and wheel odometry and transform (TF) feedback}
   \label{fig:pipeline}
 \end{figure}
 

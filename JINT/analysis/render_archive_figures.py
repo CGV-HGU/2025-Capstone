@@ -26,6 +26,12 @@ def archived_image(name):
         return ImageOps.exif_transpose(image).convert("RGB")
 
 
+def rgb_image(message):
+    modes = {"rgb8": "RGB", "bgr8": "BGR"}
+    return Image.frombytes("RGB", (message.width, message.height), bytes(message.data),
+                           "raw", modes[message.encoding], message.step, 1)
+
+
 def bag_frame(bag, seconds):
     info = bag_metadata(bag)
     start = info["starting_time"]["nanoseconds_since_epoch"]
@@ -36,10 +42,7 @@ def bag_frame(bag, seconds):
     if row is None:
         raise ValueError(f"{bag}: no RGB frame within one second of {seconds:g} s")
     timestamp, _, payload = row
-    message = deserialize_message(payload, RosImage)
-    modes = {"rgb8": "RGB", "bgr8": "BGR"}
-    image = Image.frombytes("RGB", (message.width, message.height), bytes(message.data),
-                            "raw", modes[message.encoding], message.step, 1)
+    image = rgb_image(deserialize_message(payload, RosImage))
     print(f"{bag.name}: RGB frame at {(timestamp - start) / 1e9:.3f} s ({timestamp} ns)")
     return image, timestamp
 

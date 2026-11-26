@@ -108,11 +108,11 @@ OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 replay_scan_filter.py \
 
 ### 추가 그림의 출처
 
-Figure 1의 RGB는 `nav_bridge_01`의 녹화 시작 후 7.005 s에 기록한 프레임이다(기록 시각 `1795676399861122198` ns). 같은 프레임을 OpenVINO로 재생해 바닥 마스크와 투영점을 그렸다. 투영 패널은 시간 필터 전의 값이다. `JINT/analysis/`에서 아래 명령으로 다시 만들 수 있다.
+Figure 1은 ICCAS 확장초록의 전체 구성도를 참고해 인식·가상 스캔·Nav2·차체 제어와 odom 피드백을 그렸다. 예시 RGB는 `nav_bridge_02`의 19.052 s 프레임(기록 시각 `1795676540151140856` ns)이다. OpenVINO 재생으로 바닥 마스크를 만들었고, `/scan`은 RGB와 획득 시각이 같은 기록을 사용했다. 코스트맵·로컬 경로·odom은 RGB 기록 시각 기준으로 각각 +44.3, −30.3, −3.2 ms의 메시지를 골랐다. 로봇 위치 변환에는 bag의 TF를 적용했다. [ICCAS 확장초록](../../IJCAS/ICCAS/ICCAS_Extended_Abstract.pdf)
 
 ```bash
 source /opt/ros/humble/setup.bash
-python3 render_pipeline_figure.py ~/data/bags/nav_bridge_01 7
+python3 render_pipeline_figure.py ~/data/bags/nav_bridge_02 19
 ```
 
 | 그림 | 출처와 해석 범위 |
