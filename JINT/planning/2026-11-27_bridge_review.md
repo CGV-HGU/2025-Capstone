@@ -40,6 +40,19 @@ RGB와 scan의 획득 시각이 같은 9.923초와 12.865초를 골랐다. 카�
 
 타임아웃 중 04·09는 Nav2 `Failed to make progress`가 있었고, 09는 약 80.33초에 전역 경로 생성 실패도 기록됐다. 01은 43.023–53.012초에서 배경 특징 이동 중앙값이 0.14 px인 동안 odom은 2.49 m를 보고했다. 논문에는 대응이 가장 명확한 01·03의 신호 차이를 반영했다. [RGB·odom 대조 수치](../analysis/evidence/bridge_session_2026-11-27_rgb_odom_pairs.csv)
 
+### odom 이상 구간의 카메라·명령 연속성
+
+네 불일치 구간의 RGB 메시지를 전부 열어 헤더 시각과 원본 픽셀 데이터의 해시를 대조했다. 모든 구간에서 각 RGB 메시지의 획득 시각과 픽셀 데이터가 서로 달랐다. `/cmd_vel`은 선속도·각속도를 소수점 7자리로 맞춰 종류 수를 셌고, odom은 두 성분의 기록값이 정확히 같은지 확인했다. [연속성 CSV](../analysis/evidence/bridge_session_2026-11-27_image_continuity.csv)
+
+| 회차 | bag 기준 구간 | 서로 다른 RGB 프레임 | 동일한 odom 속도 메시지 | 서로 다른 `/cmd_vel` 조합 |
+| --- | --- | ---: | ---: | ---: |
+| 01 | 43.023–53.012초 | 301 | 385/385 | 14 |
+| 03 | 37.977–43.077초 | 119 | 197/197 | 45 |
+| 06 | 50.612–52.348초 | 26 | 67/67 | 18 |
+| 07 | 69.735–70.857초 | 35 | 43/43 | 7 |
+
+01·07번의 최대 RGB 획득 시각 간격은 각각 0.037초였다. 03·06번에는 각각 최대 0.336초, 0.400초 간격이 있었다. 위 구간의 거의 고정된 배경은 동일한 RGB 데이터를 반복 기록하는 현상으로 설명되지 않는다. 로봇 위치의 독립 실측과 원시 MCU 속도·엔코더 기록은 여전히 필요하다. [연속성 점검 코드](../analysis/audit_bridge_image_continuity.py)
+
 ### 중단 직전 5초의 동작
 
 목표 수락 후 기록을 기준으로 종료 사건 직전 5초를 비교했다. 중단 여부를 확인한 `05·11·13·15·16·19` 각 회차에 `/cmd_vel` 표본은 100개였다. 속도 표본 건수는 해당 절댓값이 `0.02 m/s` 또는 `0.02 rad/s`를 넘은 횟수다. odom 이동은 이 구간의 첫 위치에서 가장 멀어진 거리다.
@@ -72,6 +85,7 @@ source /opt/ros/humble/setup.bash
 python3 JINT/analysis/render_bridge_session_examples.py
 python3 JINT/analysis/audit_bridge_end_states.py \
   --output JINT/analysis/evidence/bridge_session_2026-11-27_end_states.csv
+python3 JINT/analysis/audit_bridge_image_continuity.py
 bash JINT/manuscript/build_manuscript.sh
 ```
 

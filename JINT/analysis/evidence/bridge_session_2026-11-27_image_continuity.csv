@@ -1,0 +1,5 @@
+bag_id,rgb_first_recorder_ns,rgb_last_recorder_ns,start_s,stop_s,rgb_messages,distinct_acquisition_stamps,distinct_rgb_pixel_payloads,max_rgb_acquisition_gap_s,odom_twist_messages,exact_equal_twist_messages,modal_odom_vx_mps,modal_odom_wz_radps,command_messages,distinct_rounded_command_components
+nav_c_bridge_01,1795753719989508496,1795753729978593651,43.02261,53.011695,301,301,301,0.037407,385,385,0.2491818,0.0,199,14
+nav_c_bridge_03,1795754184506550770,1795754189606593541,37.97745,43.077493,119,119,119,0.336125,197,197,0.2985976,-0.067,102,45
+nav_c_bridge_06,1795754687302048242,1795754689037472914,50.612453,52.347878,26,26,26,0.400318,67,67,0.2985976,-0.133,34,18
+nav_c_bridge_07,1795755278821437106,1795755279943435377,69.734702,70.8567,35,35,35,0.037399,43,43,0.0,-0.173,23,7
