@@ -206,6 +206,26 @@ bash ../manuscript/build_manuscript.sh ~/data/jint/field_log.csv
 
 다른 대표 사례는 `formal_trial_sequence_2.pdf`로 추가하면 본문에 함께 들어간다. 집계표와 같은 설정의 회차를 고른다. CSV에 목표 수락·종료 시각이 있으면 그 구간을 그린다. 시각이 없는 기록에는 `--window START STOP`으로 범위를 지정할 수 있다. 스크립트 출력에 RGB와 대응 `/odom`의 정확한 기록 시각과 차이가 남는다. [대표 주행 그림 코드](render_trial_sequence.py)
 
+## 본 주행 저장 공간
+
+2026-11-27 로봇 PC의 `~/data/bags` 가용 공간은 **127.1 GB**였다. 11월 26일 구름다리 5개와 복도 2개의 실제 압축 파일과 압축을 풀었을 때의 DB 크기를 쟀다. 회당 압축본은 **0.85–2.08 GB**, 원본 DB는 **1.18–3.50 GB**였다. 현재 러너의 파일 단위 Zstandard 방식에서는 압축본을 쓴 뒤 원본 DB를 지우므로 종료 처리 중 잠시 두 파일이 공존한다. 아래 피크는 한 번에 한 회차를 녹화하고 압축 완료를 기다리는 경우다. 외부 영상, 별도 분석 중인 DB, 다른 프로세스 사용량은 별도로 잡는다. [파일별 측정 CSV](evidence/pilot_bag_storage.csv) · [rosbag2 파일 압축 소스](https://github.com/ros2/rosbag2/blob/humble/rosbag2_compression/src/rosbag2_compression/sequential_compression_writer.cpp#L263-L295)
+
+| 80회 녹화 가정 | 압축본 합계 | 압축 종료 시 예상 피크 |
+| --- | ---: | ---: |
+| 기존 7회의 평균 크기 | 123.4 GB | 126.9 GB |
+| 기존 7회 중 가장 큰 bag 크기 | 166.1 GB | 169.6 GB |
+| bag 전체 길이 120초, 7회 합산 저장률 | 167.2 GB | 170.5 GB |
+| bag 전체 길이 120초, 최대 관측 저장률 | 189.9 GB | 193.3 GB |
+
+현재 공간은 120초 bag을 조건별 20회 녹화하는 데 필요한 **약 45–51 GB**를 감당한다. 전체를 로봇 PC 한 곳에 모으면 80회 시점에 여유가 거의 없거나 공간이 부족할 수 있다. 조건별로 압축본과 판정 CSV·JSON을 묶어 보관할 수 있도록 별도 저장 위치를 확보하는 편이 좋다. 120초는 bag 전체 길이이며, 러너의 목표 제한 시간에는 녹화 시작 후 대기와 종료 처리 시간이 추가된다.
+
+대표 bag 두 개의 SQLite `messages.data` 길이를 토픽별 합산했다. `/camera/image_raw`가 `nav_bridge_02`와 `nav_test_11_26`의 직렬화 메시지 용량에서 각각 **99.2%, 99.6%**를 차지했다. 두 기록의 action 메시지 용량은 0이었다. 이 비율은 압축 전 토픽 데이터 기준이다.
+
+```bash
+python3 audit_bag_storage.py --target ~/data/bags --trials 80 --recording-seconds 120 \
+  ~/data/bags/nav_bridge_0{1,2,3,4,5} ~/data/bags/{nav_test_11_26,nav_trail_1_26}
+```
+
 ## 현장 CSV의 자동 기록과 집계
 
 첫 파일럿이나 장비·녹화 설정을 바꾼 직후, 녹화가 끝난 bag에서 RGB·`/scan`·`/odom` 표본이 실제로 열리는지 확인한다. 아래 명령은 각 토픽의 첫 메시지를 SQLite에서 읽어 디코딩하고, 명령·TF·경로·코스트맵의 기록 건수를 같이 표시한다. `--result`와 `--trial-id`를 함께 주면 결과 JSON에 같은 회차 ID가 저장됐는지도 확인한다. 진단 결과와 현장 성공 판정은 별도로 기록한다.
