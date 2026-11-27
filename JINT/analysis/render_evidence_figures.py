@@ -20,6 +20,7 @@ from PIL import Image
 from rclpy.serialization import deserialize_message
 from sensor_msgs.msg import Image as RosImage
 
+from audit_planner_costmaps import planner_snapshot_page
 from bag_sqlite import bag_metadata
 from plot_pilot_odometry import align_to_start, read_poses
 from render_archive_figures import bag_frame
@@ -281,6 +282,10 @@ def supplementary_pages(archive, bags):
         plt.close(figure)
 
         figure = bridge_feedback_figure(bags / "nav_bridge_05")
+        pdf.savefig(figure, dpi=300)
+        plt.close(figure)
+
+        figure = planner_snapshot_page(bags, EVIDENCE)
         pdf.savefig(figure, dpi=300)
         plt.close(figure)
 

@@ -268,6 +268,8 @@ A pair of archived bridge bags shows the robot passing a stationary bin. The rec
 
 The third and fourth bridge recordings each contain two global planning failures. In the fifth recording, a new goal preempted the previous goal at 9.28~s from the start of the recording. This event fell within a 15.95~s interval in which the reported odometric forward velocity and yaw rate remained exactly $0.31542$~m/s and $-0.333$~rad/s. Figure~\ref{fig:pilot-diagnostic} compares the recorded scan, commands, and odometry of this run with the second bridge run. At 2.96 and 14.02~s, corresponding features in the two RGB frames moved by a median of less than one pixel while the nearest recorded odometry poses differed by $211^\circ$ in unwrapped yaw (Online Resource~1, Fig.~S4). This discrepancy supports flagging the odometry interval as unreliable. The record leaves open whether the trial would have reached the goal with fresh feedback.
 
+Each of the five planning failures was followed by a global-costmap clear request and a new path to the same logged goal within 91~ms in recorder time. For the second failure in the fourth recording, the last published global costmap preceded the failure by 274~ms. Of the 100 cells centered within $\pm 0.5$~m of the goal along both map axes, 96 had inscribed or lethal costs. A clear request appeared 19~ms after the failure. In the next published grid, 26~ms after the failure, all 100 cells had zero cost. The next global path was recorded 29~ms after the failure (Online Resource~1, Fig.~S5). For the other four failures, the preceding snapshots were 1.74--15.63~s old. The sampled maps leave the planner's exact input state and the physical source of the high costs undetermined.
+
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{pilot_command_odometry.pdf}
@@ -367,7 +369,7 @@ The offline comparisons characterize computational cost and scan stability in fi
 \vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
 
 \bmhead{Supplementary information}
-Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, terminal odometry diagnostics from earlier recordings, and an image--odometry comparison for the fifth bridge pilot.
+Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, terminal odometry diagnostics, an image--odometry comparison, and a before--after global-costmap comparison around a planning failure.
 
 Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and scripts to recalculate the numerical summaries.
 
