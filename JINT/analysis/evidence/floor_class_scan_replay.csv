@@ -1,0 +1,5 @@
+bag_id,floor_class_id,matched_frames,all_channels,matching_channels_at_0_1mm,fully_matching_frames_at_0_1mm,recorded_valid_channels,replay_valid_channels,common_valid_channels,common_valid_error_median_m
+nav_test_11_26,0,1057,149037,149034,1055,122992,122992,122992,0.0
+nav_test_11_26,1,1057,149037,17482,0,122992,134239,122992,2.174179792404175
+nav_bridge_02,0,423,59643,55982,390,50111,50111,50111,0.0
+nav_bridge_02,1,423,59643,10928,0,50111,53721,50111,1.6606333255767822

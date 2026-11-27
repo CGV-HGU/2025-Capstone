@@ -92,6 +92,18 @@ python3 audit_scan_geometry.py --output-dir evidence --comparison-dir evidence \
   ~/data/bags/vlidar_run0{1,2}
 ```
 
+### 배포 클래스 검증
+
+현재 `best.pt`의 SHA-256은 `603784e`(2025-02-06)에 올라온 가중치와 같다. 체크포인트의 학습 인수는 `data.yaml`, `train3`을 가리키며, 체크포인트와 OpenVINO 내보내기 메타데이터에는 `0: person`, `1: floor`로 표시된다. 이전 IJCAS 원고의 Roboflow 링크는 현재 `Floor` 한 클래스를 표시한다. 공개 버전의 이미지 수나 분할과 현재 체크포인트 사이의 연결은 확인되지 않았다. [체크포인트 메타데이터](../../experiments/logs/pc_extracted/yolo11n_seg_checkpoint_meta.json) · [OpenVINO 내보내기 정보](../../src/freespace_detection/scripts/best_openvino_model/metadata.yaml) · [IJCAS 원고 대조](../../paper/review/10_IJCAS_Manuscript_Repository_Check_20261118.md) · [Roboflow 프로젝트](https://universe.roboflow.com/projects-aw2cm/floor-segmentation-wesrg)
+
+실제 배포에서 사용한 ID는 RGB와 `/scan`의 획득 타임스탬프가 같은 쌍을 OpenVINO로 재생해 확인했다. 마스크를 고르는 ID만 바꾸고 투영·필터·출력 순서를 같게 했다. 첫 1초를 제외한 뒤 141개 채널 전체가 기록값과 일치한 스캔을 셌다. 허용 차이는 0.1 mm이며 한 쌍의 양의 무한대는 일치로 셌다. ID 0은 낮 복도 1,055/1,057개, 구름다리 390/423개가 일치했다. ID 1은 두 기록 모두 전체 일치가 0개였다. 이 대조는 기록 스캔을 재현하는 클래스 설정을 확인한다. 학습 라벨과 실제 바닥 분할의 픽셀 단위 정확도는 별도 근거가 필요하다. [클래스 검증 CSV](evidence/floor_class_scan_replay.csv) · [입력 해시](evidence/floor_class_scan_inputs.sha256)
+
+```bash
+OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 audit_floor_class.py \
+  --output evidence/floor_class_scan_replay.csv \
+  ~/data/bags/nav_test_11_26 ~/data/bags/nav_bridge_02
+```
+
 ### 시간 필터 재생 실험
 
 같은 환경에서 카메라 원본으로 시간 필터 비교표를 재현할 수 있다. 스크립트는 ROS 노드를 시작하지 않고, 모델·마스크·LUT를 공유하는 경로에서 필터 전후 거리를 모은다. 원본과 코드의 해시 목록은 저장소 루트 기준이다. [입력 해시 목록](evidence/temporal_filter_inputs.sha256)

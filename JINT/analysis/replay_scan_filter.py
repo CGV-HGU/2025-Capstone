@@ -33,9 +33,10 @@ RANGE_MIN, RANGE_MAX = 0.1, 10.0
 class ReplayScan:
     """Run the deployed mask and scan functions with publication disconnected."""
 
-    def __init__(self):
+    def __init__(self, floor_class_id=0):
         self.target_w, self.target_h = 320, 256
-        self.floor_class_id, self.y_min_scan, self.min_floor_scan_pixels = 0, 120, 50
+        self.floor_class_id = floor_class_id
+        self.y_min_scan, self.min_floor_scan_pixels = 120, 50
         self.row_indices = np.arange(self.y_min_scan, self.target_h)[:, None]
         self.num_channels = 141
         self.range_max = float("inf")
@@ -55,17 +56,24 @@ class ReplayScan:
         self.filtered = RoiChecker.apply_temporal_filter(self, raw)
         return self.filtered
 
-    def segment_floor(self, model, image):
+    def infer(self, model, image):
         small = cv2.resize(image, (self.target_w, self.target_h), interpolation=cv2.INTER_LINEAR)
-        result = model(small, stream=False, conf=0.15, device="cpu", verbose=False)
+        return model(small, stream=False, conf=0.15, device="cpu", verbose=False)
+
+    def floor_mask(self, result):
         floor = RoiChecker._extract_floor_mask(self, result)
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
         return cv2.morphologyEx(floor, cv2.MORPH_CLOSE, kernel, iterations=2)
 
-    def run(self, model, image, stamp):
-        floor = self.segment_floor(model, image)
-        RoiChecker.publish_channel_distances(self, floor, stamp)
+    def segment_floor(self, model, image):
+        return self.floor_mask(self.infer(model, image))
+
+    def project(self, result, stamp):
+        RoiChecker.publish_channel_distances(self, self.floor_mask(result), stamp)
         return self.raw, self.filtered
+
+    def run(self, model, image, stamp):
+        return self.project(self.infer(model, image), stamp)
 
 
 def valid_ranges(values):

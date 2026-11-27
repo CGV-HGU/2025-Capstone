@@ -107,7 +107,7 @@ Choi et al.\ fused monocular detections and physical planar LiDAR to encode peop
 
 \subsection{Floor segmentation and scan generation}\label{sec:floor-segmentation}
 
-The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A lightweight YOLO11 instance segmentation model processes $320\times256$ images. The reference implementation uses a confidence threshold of 0.15 and merges masks with at least 50 pixels in the lower scan band. It applies two iterations of morphological closing with a $7\times7$ rectangular kernel. The implementation selects the floor mask by class ID. Model exports currently use ID 0 for the mask selected in the reference implementation, while the saved class-name metadata labels ID 0 as a person. Rows below the configured scan-band boundary are searched for the lowest non-floor pixel in each column. An invalid projection produces no finite return. The minimum valid distance among columns in a shared angular bin is retained. Figure~\ref{fig:pipeline} summarizes the data flow.
+The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A lightweight YOLO11 instance segmentation model processes $320\times256$ images. The reference implementation uses a confidence threshold of 0.15 and merges masks with at least 50 pixels in the lower scan band. It applies two iterations of morphological closing with a $7\times7$ rectangular kernel. Rows below the configured scan-band boundary are searched for the lowest non-floor pixel in each column. An invalid projection produces no finite return. The minimum valid distance among columns in a shared angular bin is retained. Figure~\ref{fig:pipeline} summarizes the data flow.
 
 \begin{figure}[htbp]
   \centering
@@ -116,7 +116,9 @@ The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A ligh
   \label{fig:pipeline}
 \end{figure}
 
-The saved model metadata records transfer learning with Ultralytics 8.3.4, 100 epochs, batch size 16, and training image size 320. The stored validation summary includes mask average precision (AP) of 0.802 at an intersection-over-union threshold of 0.50 and 0.562 over thresholds from 0.50 to 0.95. These are aggregate checkpoint metrics. \pending{R3}{Recover dataset source and version, class mapping, annotation procedure, and split counts.}
+The implementation uses class ID~0 for the floor mask. The OpenVINO export metadata lists \texttt{person} for ID~0 and \texttt{floor} for ID~1. We checked the mapping by replaying RGB frames paired to recorded scans by acquisition timestamp, discarding the first second for filter initialization. With ID~0, all channels matched the recorded scan within $0.1$~mm in 1,055 of 1,057 corridor frames and 390 of 423 bridge frames. Infinite returns were counted as matches when both outputs were infinite. With ID~1, no scan matched in all channels. This check concerns reproduction of the recorded pipeline output. Pixel-level floor annotations were unavailable for these frames.
+
+The saved model metadata records transfer learning with Ultralytics 8.3.4, 100 epochs, batch size 16, and training image size 320. The stored validation summary includes aggregate mask average precision (AP) of 0.802 at an intersection-over-union threshold of 0.50 and 0.562 over thresholds from 0.50 to 0.95. We could not verify the training dataset export or its validation split for this checkpoint. \pending{R3}{Recover the original dataset version, annotation procedure, label map, and split counts.}
 
 \subsection{Calibrated planar projection and visibility}
 
