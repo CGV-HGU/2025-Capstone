@@ -1,0 +1,23 @@
+[
+  {
+    "photo": "../../../IJCAS/ICCAS/IJCAS/paper/experiment2_setup.jpeg",
+    "label": "Earlier setup photo",
+    "crop": [224, 128, 4000, 2960],
+    "callout": {"text": "Box", "target": [1920, 2090], "position": [2440, 2300]}
+  },
+  {"label": "Reference hall at night"},
+  {
+    "bag": "~/data/bags/nav_trail_1_26",
+    "seconds": 45.7,
+    "label": "Corridor pilot RGB",
+    "crop": [16, 60, 576, 480],
+    "callout": {"text": "Box", "target": [113, 431], "position": [194, 391]}
+  },
+  {
+    "bag": "~/data/bags/nav_bridge_01",
+    "seconds": 21.0,
+    "label": "Bridge pilot RGB",
+    "crop": [24, 30, 624, 480],
+    "callout": {"text": "Bin", "target": [458, 384], "position": [371, 410]}
+  }
+]

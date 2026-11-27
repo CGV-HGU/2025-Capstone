@@ -195,10 +195,13 @@ python3 render_archive_figures.py \
 OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 render_navigation_examples.py
 ```
 
-초안의 실험 환경 그림은 같은 크기의 4:3 TBD 박스 네 개를 2×2로 배치했다. 본 실험을 마치면 같은 스크립트에 RGB 프레임을 **기준 장소 낮 → 기준 장소 밤 → 인공조명 실내 → 자연광 구름다리** 순서로 지정한다. 네 조건을 비교하기 좋게 같은 박스 배치(`S1`)의 주행에서 우회 직전 박스와 바닥이 함께 보이는 전방 프레임을 우선 고른다. 대표 프레임의 bag ID와 시각을 현장 로그에 남긴다. `formal_sites.pdf`가 있으면 빌드에서 사진이 같은 위치의 박스를 대체한다. [TBD 배치 PDF](../manuscript/figures/formal_sites_tbd.pdf)
+초안의 Figure 4에는 이전 뉴턴홀 낮 세팅 사진, 오석관 복도 `nav_trail_1_26` 45.715 s RGB(상자, 기록 시각 `1795672542699066130` ns), 구름다리 `nav_bridge_01` 21.026 s RGB(파란 통, 기록 시각 `1795676413882222431` ns)를 넣었다. 각 장면은 조명·바닥을 볼 수 있는 4:3 영역을 사용하며 화살표로 실제 장애물을 표시했다. 뉴턴홀 밤 칸은 동일 장소의 RGB를 확인할 때까지 TBD다. 패널 아래에는 세팅 사진과 파일럿 RGB의 출처를 표시했다. [Figure 4 초안](../manuscript/figures/site_views_draft.pdf) · [크롭·표식 설정](evidence/site_views_draft.json)
+
+본 실험을 마치면 같은 스크립트에 RGB 프레임을 **기준 장소 낮 → 기준 장소 밤 → 인공조명 실내 → 자연광 구름다리** 순서로 지정한다. 네 조건을 비교하기 좋게 같은 박스 배치(`S1`)의 주행에서 우회 직전 박스와 바닥이 함께 보이는 전방 프레임을 우선 고른다. 대표 프레임의 bag ID와 시각을 현장 로그에 남긴다. `formal_sites.pdf`가 있으면 빌드에서 같은 크기의 네 칸에 본 실험 사진이 들어간다.
 
 ```bash
-python3 render_archive_figures.py --placeholder --output ../manuscript/figures/formal_sites_tbd.pdf
+python3 render_archive_figures.py --layout evidence/site_views_draft.json \
+  --output ../manuscript/figures/site_views_draft.pdf
 python3 render_archive_figures.py \
   --frame "$bag_original_day" "$time_original_day" \
   --frame "$bag_original_night" "$time_original_night" \

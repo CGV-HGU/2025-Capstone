@@ -3,6 +3,7 @@
 
 import argparse
 from contextlib import closing
+import json
 from pathlib import Path
 import sqlite3
 
@@ -10,7 +11,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from PIL import Image
+from PIL import Image, ImageOps
 
 from bag_sqlite import bag_messages, bag_metadata
 
@@ -58,7 +59,47 @@ def bag_frame(bag, seconds):
     return image, timestamp
 
 
-def save_panels(images, destination):
+def load_layout(layout):
+    panels = json.loads(layout.read_text(encoding="utf-8"))
+    if not isinstance(panels, list) or len(panels) != 4:
+        raise ValueError("the draft site layout requires four panels in manuscript order")
+    images = []
+    for panel in panels:
+        if panel is None:
+            images.append(None)
+            continue
+        if "photo" in panel:
+            with Image.open(layout.parent / Path(panel["photo"]).expanduser()) as photo:
+                images.append(ImageOps.exif_transpose(photo).convert("RGB"))
+        elif "bag" in panel:
+            bag = layout.parent / Path(panel["bag"]).expanduser()
+            images.append(bag_frame(bag, panel["seconds"])[0])
+        else:
+            images.append(None)
+    return images, panels
+
+
+def show_photo(axis, image, panel):
+    left, top, right, bottom = panel.get("crop", (0, 0, *image.size))
+    if not (0 <= left < right <= image.width and 0 <= top < bottom <= image.height):
+        raise ValueError("panel crop must fit inside the RGB frame")
+    if (right - left) * 3 != (bottom - top) * 4:
+        raise ValueError("panel crop must have a 4:3 aspect ratio")
+    axis.imshow(image.crop((left, top, right, bottom)))
+    if callout := panel.get("callout"):
+        target_x, target_y = callout["target"]
+        text_x, text_y = callout["position"]
+        if not (left < target_x < right and top < target_y < bottom and
+                left < text_x < right and top < text_y < bottom):
+            raise ValueError("obstacle callout must fit inside the panel crop")
+        axis.annotate(callout["text"], (target_x - left, target_y - top),
+                      xytext=(text_x - left, text_y - top), ha="center", va="center",
+                      fontsize=7.2, color="white",
+                      bbox={"facecolor": "#293746", "edgecolor": "none", "boxstyle": "round,pad=.23"},
+                      arrowprops={"arrowstyle": "-|>", "color": "white", "lw": .78, "shrinkB": 1.5})
+
+
+def save_panels(images, destination, panels=None):
     rows = (len(images) + 1) // 2
     figure, axes = plt.subplots(rows, 2, figsize=(4.18, 1.79 * rows), squeeze=False)
     figure.subplots_adjust(left=0.006, right=0.994, top=0.992, bottom=0.132 / rows,
@@ -67,14 +108,20 @@ def save_panels(images, destination):
         axis.set_axis_off()
         axis.set_box_aspect(3 / 4)
     for index, (axis, image) in enumerate(zip(axes.flat, images)):
+        panel = panels[index] if panels else None
         if image is None:
             axis.add_patch(Rectangle((0, 0), 1, 1, transform=axis.transAxes, clip_on=False,
                                      facecolor="#f7f8fa", edgecolor="#a3adb8", linewidth=0.55))
             axis.text(0.5, 0.5, "TBD", transform=axis.transAxes,
                       ha="center", va="center", fontsize=10, color="#596776")
-        else:
+        elif panel is None:
             axis.imshow(image)
-        axis.text(0.5, -0.045, f"({chr(97 + index)})", transform=axis.transAxes,
+        else:
+            show_photo(axis, image, panel)
+        label = f"({chr(97 + index)})"
+        if panel and panel.get("label"):
+            label += f" {panel['label']}"
+        axis.text(0.5, -0.045, label, transform=axis.transAxes,
                   ha="center", va="top", fontsize=9)
     destination.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(destination, dpi=330, metadata=METADATA)
@@ -87,6 +134,7 @@ def main():
     inputs.add_argument("--frame", action="append", nargs=2, metavar=("BAG", "SECONDS"),
                         help="use the first recorded RGB frame at or after this time from bag start")
     inputs.add_argument("--placeholder", action="store_true", help="render four empty RGB panels marked TBD")
+    inputs.add_argument("--layout", type=Path, help="render a four-panel draft from a JSON layout")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.placeholder:
@@ -94,15 +142,21 @@ def main():
             parser.error("formal_sites.pdf is reserved for recorded RGB frames")
         save_panels([None] * 4, args.output)
         return
-    if not 2 <= len(args.frame) <= 4:
-        parser.error("provide two to four --frame entries in panel order")
-    if args.output.name == "formal_sites.pdf" and len(args.frame) != 4:
-        parser.error("formal_sites.pdf requires four panels in the manuscript caption order")
     try:
-        frames = [bag_frame(Path(bag), float(seconds))[0] for bag, seconds in args.frame]
+        if args.layout:
+            if args.output.name == "formal_sites.pdf":
+                parser.error("formal_sites.pdf requires four recorded --frame entries")
+            frames, panels = load_layout(args.layout)
+        else:
+            if not 2 <= len(args.frame) <= 4:
+                parser.error("provide two to four --frame entries in panel order")
+            if args.output.name == "formal_sites.pdf" and len(args.frame) != 4:
+                parser.error("formal_sites.pdf requires four panels in the manuscript caption order")
+            frames = [bag_frame(Path(bag), float(seconds))[0] for bag, seconds in args.frame]
+            panels = None
+        save_panels(frames, args.output, panels)
     except (ImportError, OSError, ValueError, KeyError) as error:
         parser.error(str(error))
-    save_panels(frames, args.output)
 
 
 if __name__ == "__main__":

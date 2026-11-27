@@ -26,7 +26,7 @@ shopt -s nullglob
 sources=(main.tex references.bib sn-jnl.cls sn-mathphys-num.bst figures/orcid_mark.png)
 for figure in figures/*.pdf; do
   if [[ $figure == figures/reference_sites.pdf ||
-        ( $figure == figures/formal_sites_tbd.pdf && -f figures/formal_sites.pdf ) ]]; then
+        ( $figure == figures/site_views_draft.pdf && -f figures/formal_sites.pdf ) ]]; then
     continue
   fi
   sources+=("$figure")
