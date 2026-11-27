@@ -56,4 +56,4 @@ bash manuscript/build_manuscript.sh
 
 `bash manuscript/build_manuscript.sh ~/data/jint/field_log.csv`로 조건별 결과표와 성공률·95% Wilson 구간 그래프를 함께 만든다. `~/data/jint/field_log.csv`에 설정이 여러 개면 `--configuration ID`를 덧붙인다. 판정 가능한 시도가 없는 조합은 그래프에서 추정치 없이 표시된다.
 
-실험을 추가할 때는 `manuscript/main.tex`의 Formal navigation outcomes에 성공과 실패 패턴을 서술하고, Discussion에 원인과 근거를 연결한다. 대표 궤적이나 RGB·scan·경로·odom 시간축을 그림으로 만들면 `manuscript/figures/`에 넣고 결과에서 인용한다. 마지막에 Abstract, Conclusion, 커버레터의 수치와 분모를 대조한다. 완료한 `\pending`은 그 지점의 실제 내용으로 교체한다. 주황색 표시와 검토표는 내부 검토본에 표시된다.
+실험을 추가할 때는 `manuscript/main.tex`의 Formal navigation outcomes에 성공과 실패 패턴을 서술하고, Discussion에 원인과 근거를 연결한다. 현장 CSV의 회차 ID와 RGB 프레임 시각을 지정해 대표 주행의 영상·odom 그림을 만들면 빌드가 본문과 소스 ZIP에 넣는다. 마지막에 Abstract, Conclusion, 커버레터의 수치와 분모를 대조한다. 완료한 `\pending`은 그 지점의 실제 내용으로 교체한다. 주황색 표시와 검토표는 내부 검토본에 표시된다. [대표 주행 그림 생성](../analysis/README.md#대표-주행의-rgb와-궤적)

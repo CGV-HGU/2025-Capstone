@@ -174,6 +174,20 @@ python3 render_archive_figures.py \
 bash ../manuscript/build_manuscript.sh ~/data/jint/field_log.csv
 ```
 
+### 대표 주행의 RGB와 궤적
+
+현장 CSV의 `record_id`를 지정하면 `bag_asset_id`의 녹화에서 RGB 세 장과 `/odom` 궤적을 그린다. 장애물이 보이는 접근, 우회, 통과 구간의 시각을 초 단위로 지정한다. 실패 사례는 접근과 정지 등 실패 지점을 설명하는 세 장을 고른다. 타임스탬프는 녹화 시작 기준이고, 도달·실패 표시는 집계 코드와 같은 현장 CSV 판정을 사용한다.
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 render_trial_sequence.py ~/data/jint/field_log.csv "$record_id" \
+  --frames "$first_s" "$middle_s" "$last_s" \
+  --output ../manuscript/figures/formal_trial_sequence.pdf
+bash ../manuscript/build_manuscript.sh ~/data/jint/field_log.csv
+```
+
+다른 대표 사례는 `formal_trial_sequence_2.pdf`로 추가하면 본문에 함께 들어간다. 집계표와 같은 설정의 회차를 고른다. CSV에 목표 수락·종료 시각이 있으면 그 구간을 그린다. 시각이 없는 기록에는 `--window START STOP`으로 범위를 지정할 수 있다. 스크립트 출력에 RGB와 대응 `/odom`의 정확한 기록 시각과 차이가 남는다. [대표 주행 그림 코드](render_trial_sequence.py)
+
 ## 현장 CSV의 자동 기록과 집계
 
 첫 파일럿이나 장비·녹화 설정을 바꾼 직후, 녹화가 끝난 bag에서 RGB·`/scan`·`/odom` 표본이 실제로 열리는지 확인한다. 아래 명령은 각 토픽의 첫 메시지를 SQLite에서 읽어 디코딩하고, 명령·TF·경로·코스트맵의 기록 건수를 같이 표시한다. `--result`와 `--trial-id`를 함께 주면 결과 JSON에 같은 회차 ID가 저장됐는지도 확인한다. 진단 결과와 현장 성공 판정은 별도로 기록한다.

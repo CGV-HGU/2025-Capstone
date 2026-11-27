@@ -9,6 +9,16 @@
 \newif\ifformalsites
 \IfFileExists{figures/formal_sites.pdf}{\formalsitestrue}{%
   \IfFileExists{formal_sites.pdf}{\formalsitestrue}{}}
+\newcommand{\showtrialsequence}[1]{%
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{#1.pdf}
+    \caption{Recorded views and wheel-odometry path for the indicated formal trial. Times are measured from the start of the recording. The lettered markers identify the nearest odometry samples in recorder time, relative to the first plotted pose. The path axes are scaled independently}
+    \label{fig:#1}
+  \end{figure}}
+\newcommand{\loadtrialsequence}[1]{%
+  \IfFileExists{figures/#1.pdf}{\showtrialsequence{#1}}{%
+    \IfFileExists{#1.pdf}{\showtrialsequence{#1}}{}}}
 
 \newif\ifdraftreview
 \ifdefined\JINTAuthorReview\draftreviewtrue\fi
@@ -236,6 +246,8 @@ Figure~\ref{fig:formal-outcomes} shows the success estimates and their descripti
   \label{fig:formal-outcomes}
 \end{figure}
 \fi
+\loadtrialsequence{formal_trial_sequence}
+\loadtrialsequence{formal_trial_sequence_2}
 }{
   Formal trial outcomes are pending.
   \pending{R1}{Insert verified formal trials from the field log.}
