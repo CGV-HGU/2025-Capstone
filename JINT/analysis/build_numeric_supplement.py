@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export numerical evidence for the JINT CPU, scan-timing, and filter results."""
+"""Export numerical evidence for the JINT timing, filter, and trial results."""
 
 import argparse
 from pathlib import Path
@@ -27,6 +27,11 @@ METHODS = {
 TIMING_BAGS = (
     "nav_test_11_26", "nav_trail_1_26", "nav_bridge_01", "nav_bridge_02",
     "nav_bridge_03", "nav_bridge_04", "nav_bridge_05", "vlidar_run01", "vlidar_run02",
+)
+TRIAL_CSVS = (
+    "hall_session_2026-09-21.csv", "bridge_session_2026-11-27_audit.csv",
+    "bridge_session_2026-11-27_rgb_odom_pairs.csv", "bridge_session_2026-11-27_image_continuity.csv",
+    "class5_session_2026-11-27.csv",
 )
 
 
@@ -74,6 +79,7 @@ def build(destination, bags, precheck):
         files = list(directory.iterdir()) + [ANALYSIS / name for name in (
             "recompute_numeric_supplement.py", "scan_filter_metrics.py", "scan_recorder_timing.py",
         )]
+        files.extend(EVIDENCE / name for name in TRIAL_CSVS)
         destination.parent.mkdir(parents=True, exist_ok=True)
         with ZipFile(destination, "w", compression=ZIP_DEFLATED) as archive:
             archive.writestr(ZipInfo("README.txt"), readme().encode("utf-8"), compress_type=ZIP_DEFLATED)
@@ -88,8 +94,8 @@ def readme():
 {' '.join(SUPPLEMENT_AFFILIATION.splitlines())}
 Corresponding author: Sung Soo Hwang ({CORRESPONDING_EMAIL})
 
-Numerical data for the offline CPU timing, recorded scan cadence, and paired
-temporal-filter results. The scan and CPU measurements come from prior recordings.
+Numerical data for offline CPU timing, recorded scan cadence, paired temporal
+filter results, and the recorded navigation diagnostics.
 
 Unzip this archive and run `python3 recompute_numeric_supplement.py` with NumPy
 installed. It creates three recomputed_*.csv files beside the script.
@@ -112,6 +118,15 @@ image acquisition times for the moving clips, where frames match recorded scan
 source stamps. It is empty for the fixed-scene clips sampled by recorder time.
 
 This archive supports recalculation of the reported scan and timing statistics.
+hall_session_2026-09-21.csv gives the 20 historical hall endpoints relative to
+nominal goals reconstructed from the first recorded odometry pose. Its entry
+times are relative to recording start. The bridge session CSVs contain client
+outcomes and RGB-odometry comparisons. The Fifth Reading Room session CSV
+contains client outcomes, odometric goal distances, and recovery events. Trial
+times for the bridge audit and Fifth Reading Room are relative to goal acceptance
+unless the column specifies otherwise. These trial tables contain recorded
+navigation diagnostics. External field assessments are separate.
+
 Raw RGB, robot control logs, and adjudicated outcomes are separate records.
 """
 

@@ -37,7 +37,7 @@
 
 ## 수치 보충 자료
 
-[Online Resource 2](evidence/ESM_2.zip)에는 CPU 프레임별 처리 시간, RGB·스캔 상대 시각, 필터 전후 스캔 배열이 있다. 압축을 푼 뒤 NumPy 환경에서 `python3 recompute_numeric_supplement.py`를 실행하면 세 표의 수치를 다시 계산한다. 원본 rosbag, RGB 영상, 본 주행의 현장 판정은 별도 자료다.
+[Online Resource 2](evidence/ESM_2.zip)에는 CPU 프레임별 처리 시간, RGB·스캔 상대 시각, 필터 전후 스캔 배열, 기존 홀·구름다리·5열람실의 회차별 진단값이 있다. 압축을 푼 뒤 NumPy 환경에서 `python3 recompute_numeric_supplement.py`를 실행하면 CPU·스캔·필터 세 표의 수치를 다시 계산한다. 원본 rosbag, RGB 영상, 본 주행의 현장 판정은 별도 자료다.
 
 현재 PC의 원본에서 이 ZIP을 다시 만들 때는 `JINT/analysis/`에서 아래 명령을 실행한다. 투고할 때 [그림 `ESM_1.pdf`](evidence/ESM_1.pdf)와 [수치 `ESM_2.zip`](evidence/ESM_2.zip)을 원고 소스 ZIP과 별도의 파일로 올린다. [JINT 보충 자료 지침](https://link.springer.com/journal/10846/submission-guidelines#Supplementary%20Information%20(SI))
 
@@ -139,16 +139,31 @@ python3 replay_scan_filter.py --scan-stamped --start 6.296 --seconds 45.940 \
 
 ### 기준 장소와 낮 주행 기록
 
-기존 IEEE Access와 IJCAS 원고의 Experiment 2 세팅 사진은 같은 JPEG이며, EXIF 촬영 시각은 2026년 5월 27일 17:22:53 KST다. `~/data/db/video/NTH4F.mp4`의 약 70초에서 같은 ‘ARISE & SHINE’ 표지와 출입문이, 약 100초에서 벽돌 계단실과 둥근 기둥이 보인다. 4조건 본 주행의 낮·밤 기준 장소는 이 사진의 **뉴턴홀 4층 열린 홀**로 잡는다. EXIF 시각은 세팅 사진의 시각이며, 기존 주행 회차의 시각은 따로 확인해야 한다. [기존 세팅 사진](../../IJCAS/ICCAS/IJCAS/paper/experiment2_setup.jpeg) · [360° 영상 인벤토리](../../paper/review/04_Robot_PC_Asset_Audit_and_Log_Inventory.md)
+기존 IEEE Access와 IJCAS 원고의 Experiment 2 세팅 사진은 같은 JPEG이며, EXIF 촬영 시각은 2026년 5월 27일 17:22:53 KST다. `~/data/db/video/NTH4F.mp4`의 약 70초에서 같은 ‘ARISE & SHINE’ 표지와 출입문이, 약 100초에서 벽돌 계단실과 둥근 기둥이 보인다. 팀에서 부르는 기준 장소는 넓은 복도 ‘팔각정’이다. 기존 세팅 사진은 위 표지를 확인할 수 있는 원고용 자료이며, 새 낮·밤 주행에서 실제 출발점과 목표점은 별도로 표시한다. EXIF는 세팅 사진 자체의 시각이다. [기존 세팅 사진](../../IJCAS/ICCAS/IJCAS/paper/experiment2_setup.jpeg) · [360° 영상 인벤토리](../../paper/review/04_Robot_PC_Asset_Audit_and_Log_Inventory.md)
 
 | 보관 기록 | 확인한 위치 및 활용 범위 |
 | --- | --- |
 | `nav_trail_1_26` · 11월 26일 14:54 KST | Bag의 약 37초 RGB와 `~/data/db/video/OH3F.mp4`의 약 50초에 같은 문 장식, 창틀, 맞은편 유리벽이 보인다. **오석관 3층 유리벽 복도**이며, 인공조명 위주 실내 조건 후보의 파일럿으로 쓴다. 본 주행 때 조명 환경과 실제 도달·접촉 여부를 기록한다. |
 | `nav_test_11_26` · 11월 26일 13:50 KST | 약 57초 RGB에서 계단 입구와 목재 사물함이 있는 좁은 복도가 보인다. 기준 사진의 열린 홀과 배치가 다르며 정확한 건물과 층은 미확인이다. |
-| `minimal_A_scen1_run01…20` · 9월 21일 오전 | 활성 폴더의 20회에 scan·odom이 있다. RGB가 없어 기준 홀의 배치를 화면으로 대조할 수 없다. 같은 이름의 휴지통 `run01`은 전날 23:59 KST에 시작한 별개 녹화다. |
-| `nav_debug_avoidance`와 `vlidar_run01/02` · 9–10월 야간 | 의자 또는 박스가 있는 반사 바닥 홀의 RGB와 scan을 보존했다. 기존 사진과 동일한 10 m 배치였는지는 미확인이다. |
+| `minimal_A_scen1_run01…20` · 9월 21일 08:58–09:43 KST | 활성 폴더의 20회에 scan·odom이 있다. RGB가 없어 기준 홀의 배치를 화면으로 대조할 수 없다. 같은 이름의 휴지통 `run01`은 전날 23:59 KST에 시작한 별개 녹화다. |
+| 활성 `vlidar_run01/02` · 10월 2일 19:03·19:21 KST | 첫 3초 전방 RGB 두 장에 박스, 반사 바닥, 둥근 기둥, 우측 유리창이 보인다. 두 영상에서 박스 접근 장면도 확인했다. `NTH4F.mp4`와 기존 사진을 다시 대조했지만 이 영상에 쓰인 10 m 시작점·목표·박스 위치를 낮의 위치와 연결할 수 없었다. |
+| 휴지통 `nav_debug_avoidance` · 9월 21일 00:16 KST | 의자를 사용한 반사 바닥 홀 RGB다. 야간 박스 회차와 구별해 보관한다. |
 
-보관 자료에서 뉴턴홀 4층의 낮 주행으로 대조 가능한 RGB rosbag은 확인되지 않았다. 관찰 기록과 bag ID를 연결할 수 있게 기준 홀의 낮·밤을 같은 배치로 취득한다. [PC rosbag 목록](evidence/rosbag_inventory.csv)
+기준 장소의 낮 주행과 대조 가능한 RGB rosbag은 확인되지 않았다. 낮 세팅 사진과 과거 야간 주행은 참고 자료로 사용하고, 네 조건 표의 기준 장소 낮·밤은 같은 표시·배치와 독립 현장 판정으로 채운다. [PC rosbag 목록](evidence/rosbag_inventory.csv) · [네 조건의 상태](../planning/2026-11-27_plan.md#네-조건의-취득과-판정-상태)
+
+#### 기존 원고 주행 결과의 재사용
+
+| 원자료 | 확인한 결과 | JINT에 쓸 수 있는 범위 |
+| --- | --- | --- |
+| IEEE Access Experiment 2, Table III | 단일 박스·10 m·바퀴 odom 주행에서 18/20 완료를 보고했다. Bag 시작 시각은 모두 2026-09-21 08:58–09:43 KST 범위다. 18회에 대해 원고의 운동 시간은 47.8 ± 7.3초이며, 인쇄된 값에서 모집단 표준편차를 쓰면 재현된다. | 원본 odom에서 20회의 종점을 다시 계산했다. 첫 자세 기준 10 m 목표의 0.50 m 안에서 끝난 회차는 18개(최종 거리 0.220–0.242 m)였다. 08·12번은 목표까지 6.36·7.17 m가 남았다. 인쇄된 운동 시간은 새 본 주행에서 정의한 첫 실제 도달 시간과 정의가 달라 별도로 기록한다. [Access 원고](../../paper/workspace/IEEE_Access/main.tex#L479) · [재계산 CSV](evidence/hall_session_2026-09-21.csv) |
+| IJCAS Experiment 2와 ICCAS 확장초록 | 단일 박스·10 m, 단안 SLAM과 Nav2 구성의 39/50(78%)이다. ICCAS에도 같은 수와 구성이 나온다. 원고에는 주행 시간대별 분모·성공 수와 회차별 시간이 없다. | ICCAS로 인용해 과거 연구 결과로 설명한다. 야간 수치나 이번 구성의 결과로 배정할 회차 기록은 확인되지 않았다. [IJCAS 원고](../../IJCAS/ICCAS/IJCAS_Manuscript.pdf) · [ICCAS 확장초록](../../IJCAS/ICCAS/ICCAS_Extended_Abstract.pdf) |
+
+두 저널 원고의 Experiment 2는 SHA-256이 같은 세팅 사진을 사용한다. 사진은 장소의 모습을 보여준다. 50회가 밤에 수행됐거나 20회와 같은 종료 기준을 썼다는 근거는 되지 않는다. 기존 자료로 넓은 홀의 과거 주행과 구름다리·5열람실의 관찰 사례를 함께 보고할 수 있다. 팔각정의 낮·밤 성공률을 직접 비교하는 주장을 유지한다면 동일 경로·설정과 실제 도달·접촉·개입을 확인할 기록부터 찾고, 비어 있는 회차만 취득한다.
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 JINT/analysis/audit_hall_archive.py
+```
 
 ### 원고에 반영한 장면
 
@@ -195,7 +210,7 @@ python3 render_archive_figures.py \
 OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 render_navigation_examples.py
 ```
 
-초안의 Figure 4에는 이전 뉴턴홀 낮 세팅 사진, 오석관 복도 `nav_trail_1_26` 45.715 s RGB(상자, 기록 시각 `1795672542699066130` ns), 구름다리 `nav_bridge_01` 21.026 s RGB(파란 통, 기록 시각 `1795676413882222431` ns)를 넣었다. 각 장면은 조명·바닥을 볼 수 있는 4:3 영역을 사용하며 화살표로 실제 장애물을 표시했다. 뉴턴홀 밤 칸은 동일 장소의 RGB를 확인할 때까지 TBD다. 패널 아래에는 세팅 사진과 파일럿 RGB의 출처를 표시했다. [Figure 4 초안](../manuscript/figures/site_views_draft.pdf) · [크롭·표식 설정](evidence/site_views_draft.json)
+초안의 Figure 4에는 이전 뉴턴홀 낮 세팅 사진, 5열람실 앞 `nav_class5_20` 4.134 s RGB(의자, 기록 시각 `1795766751503500500` ns), 구름다리 `nav_bridge_01` 21.026 s RGB(파란 통, 기록 시각 `1795676413882222431` ns)를 넣었다. 각 장면은 조명·바닥을 볼 수 있는 4:3 영역을 사용하며 화살표로 실제 장애물을 표시했다. 뉴턴홀 밤 칸은 동일 장소의 RGB를 확인할 때까지 TBD다. 패널 아래에는 세팅 사진과 파일럿 RGB의 출처를 표시했다. [Figure 4 초안](../manuscript/figures/site_views_draft.pdf) · [크롭·표식 설정](evidence/site_views_draft.json) · [5열람실 회차별 결과와 재현 방법](../planning/2026-11-27_class5_review.md)
 
 본 실험을 마치면 같은 스크립트에 RGB 프레임을 **기준 장소 낮 → 기준 장소 밤 → 인공조명 실내 → 자연광 구름다리** 순서로 지정한다. 네 조건을 비교하기 좋게 같은 박스 배치(`S1`)의 주행에서 우회 직전 박스와 바닥이 함께 보이는 전방 프레임을 우선 고른다. 대표 프레임의 bag ID와 시각을 현장 로그에 남긴다. `formal_sites.pdf`가 있으면 빌드에서 같은 크기의 네 칸에 본 실험 사진이 들어간다.
 

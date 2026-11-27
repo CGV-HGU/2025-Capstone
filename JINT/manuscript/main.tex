@@ -50,7 +50,7 @@
 \affil[1]{\orgdiv{School of Artificial Intelligence, Computer and Electrical Engineering},
 \orgname{Handong Global University}, \orgaddress{\city{Pohang}, \postcode{37554}, \country{Republic of Korea}}}
 
-\abstract{Floor segmentation identifies traversable image regions for mobile robot obstacle avoidance. Using these regions in a navigation costmap requires an estimate of metric geometry and stable observations over time. This paper presents V-LiDAR, a monocular pipeline that projects visible ground-contact boundaries into a planar virtual scan for the Robot Operating System 2 Navigation2 stack. A calibrated lookup table estimates range and bearing from image coordinates, and temporal filtering stabilizes individual scan channels. The OpenVINO perception wrapper averaged 13.49 ms per frame in an offline onboard CPU benchmark. We define a repeatable avoidance protocol for a wheeled robot. It uses marked 10 m routes at three sites under four conditions and records physical goal arrival, contact, and manual intervention. Bridge pilot recordings illustrate passage around an open-frame cart and a bin. Camera and wheel-odometry discrepancies in other runs motivate reset and data-validation checks. \ifdraftreview\hyperlink{author-checklist}{\reviewbadge{R4}}\space\fi The study focuses on structured, approximately planar environments and examines the operating limits imposed by reflections, incomplete floor masks, and near-field visibility.}
+\abstract{Floor segmentation identifies traversable image regions for mobile robot obstacle avoidance. Using these regions in a navigation costmap requires an estimate of metric geometry and stable observations over time. This paper presents V-LiDAR, a monocular pipeline that projects visible ground-contact boundaries into a planar virtual scan for the Robot Operating System 2 Navigation2 stack. A calibrated lookup table estimates range and bearing from image coordinates, and temporal filtering stabilizes individual scan channels. The OpenVINO perception wrapper averaged 13.49 ms per frame in an offline onboard CPU benchmark. We define a repeatable avoidance protocol for a wheeled robot. It uses marked 10 m routes at three sites under four conditions and records physical goal arrival, contact, and manual intervention. Bridge pilots illustrate passage around an open-frame cart and a bin. In an artificially lit corridor pilot, four Nav2 completions first reached the nominal 0.50 m goal region in wheel odometry after 90 s. Recorded disagreements between camera, odometry, and wheel position motivate reset and data-validation checks. \ifdraftreview\hyperlink{author-checklist}{\reviewbadge{R4}}\space\fi The study focuses on structured, approximately planar environments and examines the operating limits imposed by reflections, incomplete floor masks, and near-field visibility.}
 
 \keywords{Monocular vision, Virtual scan, Floor segmentation, Mobile robot, Obstacle avoidance, ROS 2}
 \pacs[MSC Classification]{68T40, 68T45}
@@ -193,17 +193,17 @@ Figure~\ref{fig:site-views} illustrates the planned settings with an earlier set
     \caption{Forward camera frames from the formal trial recordings. (a) Reference hall by day. (b) Reference hall at night. (c) Artificial-light interior. (d) Daylit bridge}
   \else
     \includegraphics[width=\linewidth]{site_views_draft.pdf}
-    \caption{Preview of the four planned settings. (a) Earlier daytime setup photograph of the reference hall. (b) Night view of the reference hall pending. (c) Pilot camera frame from the candidate corridor for the artificial-light condition. (d) Pilot camera frame from the daylit bridge. Arrows identify the objects in the available views}
+    \caption{Preview of the four planned settings. (a) Earlier daytime setup photograph of the reference hall. (b) Night view of the reference hall pending. (c) Forward camera frame showing a chair in the artificially lit Fifth Reading Room corridor. (d) Pilot camera frame from the daylit bridge. Arrows identify the test obstacles}
   \fi
   \label{fig:site-views}
 \end{figure}
 
-At each location, the straight-line displacement between marked start and goal locations is 10~m. The obstacle layouts use a box alone and the same box with a chair. Obstacles, starting pose, limits, and navigation settings are fixed and logged. Primary success is physical entry into the marked goal region within the trial time limit, without obstacle contact or manual intervention. A field observer or external video supplies these labels. Nav2 status, time from goal acceptance, trajectory, and message logs provide secondary diagnostics. Report success as a count over all eligible attempts for each condition, with uncertainty and reasons for unusable recordings. Preserve failed attempts and separately identify invalid measurements using documented reasons.
+At each location, the straight-line displacement between marked start and goal locations is 10~m. The obstacle layouts use a box alone and the same box with a chair. The proposed goal region is a circle of radius $0.50\m$ centered at the marked goal. Primary success requires the robot's ground-projected reference point to enter this region under a common stopping rule, with no obstacle contact or manual intervention during the trial. A field observer or external video supplies these labels. Time to arrival is measured from goal acceptance to the first physical entry. Nav2 status, wheel-odometry distance, and message logs provide secondary diagnostics. The success rate uses all eligible attempts, with arrival times summarized for successful attempts. Failed attempts and documented invalid measurements are retained in the trial record.
 
 To examine failure causes, review image and scan timestamps, whether an obstacle was represented before the avoidance maneuver, the generated path, and feedback during execution. Compare these timelines for successful and failed attempts. Classify failures as perception, planning, execution, or undetermined when the available signals support that decision. The location of detection and the lowest lateral distance inferred from odometry are diagnostic estimates and depend on the quality of that odometry.
 
 \pending{R1}{Verify the observed outcomes and the corresponding recording IDs for each trial.}
-\pending{R2}{Confirm the goal-region dimensions, time limit, and measured obstacle positions.}
+\pending{R2}{Confirm the goal-region marking, common stopping rule, and measured obstacle positions for the formal trials.}
 
 \subsection{Scan updates and recorder timing}
 
@@ -250,11 +250,17 @@ Figure~\ref{fig:formal-outcomes} shows the success estimates and their descripti
 \loadtrialsequence{formal_trial_sequence}
 \loadtrialsequence{formal_trial_sequence_2}
 }{
-  Formal trial outcomes are pending.
-  \pending{R1}{Insert verified formal trials from the field log.}
+  A matched day--night comparison at the reference hall requires measured obstacle placement and independently adjudicated outcomes. The archived hall and the two later pilot sessions provide the evidence reported below.
+  \pending{R1}{Link verified field outcomes to their recording IDs and confirm the same marked reference-hall route by day and by night.}
 }
 
 \pending{R4}{Report the observed pattern across conditions and layouts, and illustrate a representative success and failure if available.}
+
+\subsection{Archived single-hall trials}\label{sec:archived-hall}
+
+The earlier conference abstract reported 39 completions in 50 attempts with monocular SLAM and a single cardboard box~\cite{lee2026iccas}. In a separate wheel-odometry session associated with the IEEE Access submission, the robot faced one box and was sent toward a nominal goal 10~m ahead. The 20 available recordings began between 08:58 and 09:43 local time on 21 September 2026. We reconstructed the nominal goal 10~m ahead of each first recorded odometry pose and measured the final planar distance. Eighteen endpoints were within 0.50~m, at distances of 0.220--0.242~m. The two remaining endpoints were 6.36~m and 7.17~m from that nominal goal. The per-run values are in Online Resource~2, with additional terminal odometry diagnostics in Online Resource~1, Fig.~S3.
+
+The 20 trial recordings preserve virtual scans and wheel odometry. RGB and independent measurements of goal arrival, contact, and intervention are unavailable for these runs. Separate evening recordings show box approaches on a reflective floor, with no verified link to the same marked 10~m route. The archive supports a historical single-hall reference and leaves the day--night comparison open.
 
 \subsection{Exploratory bridge trials}
 
@@ -273,7 +279,9 @@ Other recordings from this session show conflicting camera and wheel-odometry si
 
 Six interrupted bin runs ended in the vicinity of the bridge exit. In the last five seconds before interruption, run 05 registered effectively zero forward and angular commands in all 100 samples. In runs 11, 13, 15, 16, and 19, 69--98 of 100 commands exceeded $0.02$~rad/s in angular magnitude, while each path stayed within 0.18~m of its first odometry position in that window. The last published local grids contained zero to eight inscribed or lethal cells out of 16 in a 0.25~m radius around the nominal goal. The command traces document distinct behaviors near the exit. The published grids do not establish why the controller chose a particular command or why the operator ended a run.
 
-An earlier pair of bridge bags shows the robot passing a stationary bin. The recorded Nav2 logs show success messages 61.1 and 44.9~s after navigation began, respectively. Those trials preceded the present reset and wheel feedback changes. Their maximum lateral displacements were 0.51 and 0.56~m in wheel odometry relative to the starting heading. The 20 earlier single-hall runs provide additional archived odometry diagnostics in Online Resource~1, Fig.~S3.
+In runs 01, 03, 06, and 07 of the follow-up bridge session, intervals of exactly repeated nonzero odometry velocities coincided with little apparent camera motion. For example, in run 01, the median tracked-feature displacement was 0.14 pixels over 9.99~s while odometry reported 2.49~m of planar displacement. All 301 RGB samples in the interval had distinct acquisition timestamps and pixel payloads. In run 03, the median feature displacement was 1.38 pixels over 5.10~s while odometry reported 1.51~m of displacement and $19.5^\circ$ of yaw change. The camera comparison flags the corresponding odometric trajectories as unreliable for goal-arrival assessment. Raw wheel feedback would help locate the source of the discrepancy.
+
+An earlier pair of bridge bags shows the robot passing a stationary bin. The recorded Nav2 logs show success messages 61.1 and 44.9~s after navigation began, respectively. Those trials preceded the present reset and wheel feedback changes. Their maximum lateral displacements were 0.51 and 0.56~m in wheel odometry relative to the starting heading.
 
 In the second bridge pilot, we tracked a fixed $0.25\m$ radius region centered at the median of five earlier scan endpoints projected into the odometry frame (Online Resource~1, Fig.~S6). The last scan with endpoints in this region was recorded at 22.336~s. The image at 23.016~s shows the bin with its base outside the frame. Two cells with the inscribed obstacle cost (99) remained in the published local costmap at 24.697~s, 2.36~s after the last nearby scan return. The contributions of clearing and inflation to the retained costs remain unresolved.
 
@@ -286,6 +294,36 @@ Each of the five planning failures was followed by a global-costmap clear reques
   \includegraphics[width=\linewidth]{pilot_command_odometry.pdf}
   \caption{Recorded command and odometry signals for two bridge pilots. The lower traces show the nearest finite virtual-scan range within $10^\circ$ of the center ray. The shaded region marks identical nonzero turning feedback in the fifth recording. The range trace can include surfaces other than the test obstacle}
   \label{fig:pilot-diagnostic}
+\end{figure}
+
+\subsection{Exploratory trials in the artificially lit corridor}\label{sec:class5-pilot}
+
+The Fifth Reading Room corridor session used a 10~m nominal goal and produced 17 readable recordings from 20 allocated trial IDs. Two recordings were set aside after reported contact in the presence of moving obstacles, and one initialization failed before recording. A chair is visible in the forward camera before goal acceptance in all retained recordings. The trial client used a 90~s deadline in the first eight retained runs and waited for a Nav2 result or operator interruption in the subsequent nine. Table~\ref{tab:class5-pilot} reports logged outcomes. Obstacle position measurements and independent outcome labels are incomplete, so the table describes an exploratory session.
+
+\begin{table}[htbp]
+\caption{Logged navigation outcomes in the artificially lit corridor pilot. The deadline was set in the trial client.}
+\label{tab:class5-pilot}
+\centering
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Client deadline & Recorded & Nav2 completed & Timed out & Interrupted \\
+\midrule
+90~s & 8 & 1 & 7 & 0 \\
+None & 9 & 8 & 0 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We calculated planar distances from the recorded wheel poses to the logged map goal using the identity map-to-odometry transform. Four Nav2 completions without the client deadline first entered the nominal $0.50\m$ region in odometry at 93.7--133.3~s. In run 20, the chair moved from the center of the forward camera view to the left edge and then out of view as the robot progressed along the corridor (Fig.~\ref{fig:class5-recovery}). The controller later logged two progress failures, each followed by a local-costmap clear and renewed forward motion. The first odometric entry was at 93.7~s and Nav2 returned success at 147.6~s. Run 01 crossed the same odometric radius at 47.0~s and timed out at 90~s. The session order and incomplete layout information limit comparison between the recording groups.
+
+In a separate recording after the operator canceled run 19, reported wheel joint positions stayed constant across 218 samples while odometry changed by 1.75~m and $21.4^\circ$ over about 5.6~s. The recorder received no new velocity commands during that interval. This disagreement identifies an odometry validity issue in the post-cancel period. Raw microcontroller packets would be needed to identify the source of the mismatch.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{class5_pilot_recovery.pdf}
+  \caption{Recorded chair passage and recovery in artificially lit corridor run 20. (a) Forward camera frames at 4, 12, and 20~s after goal acceptance. (b) Wheel-odometry distance to the nominal goal. (c) Commanded and reported forward speed. Purple dashed lines mark local-costmap clear requests. The first nearly coincides with the dotted line at the earlier 90~s deadline. Physical arrival requires the field observation specified in Sect.~\ref{sec:evaluation}}
+  \label{fig:class5-recovery}
 \end{figure}
 
 \subsection{Recorded scan update rate}
@@ -373,16 +411,18 @@ The archived nominal obstacle coordinates lack a documented measurement origin. 
 
 The offline comparisons characterize computational cost and scan stability in stationary and moving clips. The physical trials address how the full sensing and control stack behaves in the tested configurations. The ablation leaves the recorded viewpoints unchanged, so it cannot establish a change in closed-loop success or quantify the effect of waiting for confirmation when approaching an obstacle. Cross-site results should be interpreted alongside the observed layouts, floor appearances, and illumination, which can vary together. The protocol focuses on stationary obstacle avoidance with wheel odometry in the stated operating conditions.
 
+The corridor pilot exposes two different limitations in the recorded feedback. After prolonged zero commands, local-costmap clearing preceded renewed motion in run 20. After cancellation in run 19, reported pose drifted while the reported wheel joint positions stayed fixed. These observations motivate recording both the stopping rule and the independent physical outcome. They also motivate capturing wheel joint positions around resets, recovery, and operator stops.
+
 \pending{R4}{Tie the operating limits to observed failures and state the uncertainty in their attribution.}
 
 \section{Conclusion}\label{sec:conclusion}
 
-\vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
+\vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. Corridor recordings show that controller recovery can extend the time to goal arrival and that odometry can disagree with wheel joint positions after a stop. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
 
 \bmhead{Supplementary information}
 Online Resource~1 contains selected camera frames, empirical CPU timing distributions, terminal odometry diagnostics, an image--odometry comparison, a global-costmap comparison around a planning failure, a local-costmap trace around earlier scan observations, and an RGB--scan--costmap comparison for the open-frame cart.
 
-Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and scripts to recalculate the numerical summaries.
+Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and per-run diagnostics for the archived hall, the daylit bridge, and the Fifth Reading Room corridor. Included scripts recalculate the CPU, scan timing, and filter summaries.
 
 \bibliography{references}
 
@@ -393,7 +433,7 @@ Online Resource~2 contains per-frame CPU timings, relative scan and camera times
 
 \noindent\textbf{Competing interests.} The disclosure is pending confirmation. \pending{R5}{Confirm the competing interests statement with the coauthors.}
 
-\noindent\textbf{Data availability.} Numerical samples and aggregation scripts for the CPU timing, scan cadence, and temporal-filter results are included in Online Resource~2. Access details for trial outcomes, setup records, and raw sensor recordings are pending confirmation. \pending{R6}{Insert the verified archive location and access terms for trial records and footage.}
+\noindent\textbf{Data availability.} Numerical samples, trial diagnostics, and aggregation scripts are included in Online Resource~2. Access details for independent trial outcomes, setup records, and raw sensor recordings are pending confirmation. \pending{R6}{Insert the verified archive location and access terms for trial records and footage.}
 
 \noindent\textbf{Author contributions.} All authors contributed equally to this work.
 

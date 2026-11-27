@@ -7,11 +7,11 @@
   },
   {"label": "Reference hall at night"},
   {
-    "bag": "~/data/bags/nav_trail_1_26",
-    "seconds": 45.7,
-    "label": "Corridor pilot RGB",
-    "crop": [16, 60, 576, 480],
-    "callout": {"text": "Box", "target": [113, 431], "position": [194, 391]}
+    "bag": "~/data/bags/nav_class5_20",
+    "seconds": 4.133569140,
+    "label": "Reading room pilot RGB",
+    "crop": [8, 6, 632, 474],
+    "callout": {"text": "Chair", "target": [329, 319], "position": [199, 333]}
   },
   {
     "bag": "~/data/bags/nav_bridge_01",
