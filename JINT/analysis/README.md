@@ -226,6 +226,18 @@ python3 audit_bag_storage.py --target ~/data/bags --trials 80 --recording-second
   ~/data/bags/nav_bridge_0{1,2,3,4,5} ~/data/bags/{nav_test_11_26,nav_trail_1_26}
 ```
 
+### 조건별 백업
+
+한 조건의 녹화와 현장 로그를 마친 뒤 실제 백업 장치의 경로를 `backup_root`로 지정한다. 아래 명령은 해당 조건의 CSV 행, 완료된 rosbag, 결과 JSON과 행에 연결된 설정 JSON을 함께 복사한다. 각 복사본의 SHA-256이 원본과 일치할 때 백업 폴더가 생성된다. 외부 관찰 영상은 현장 CSV의 영상 ID와 함께 별도 보관한다.
+
+```bash
+python3 archive_field_trials.py ~/data/jint/field_log.csv \
+  --environment original_day --output "$backup_root/original_day"
+(cd "$backup_root/original_day" && sha256sum -c SHA256SUMS)
+```
+
+백업의 `field_log.csv`는 포함된 결과와 설정의 상대 경로를 담는다. 궤적을 다시 그릴 때 이 CSV와 백업의 `bags/`를 `render_trial_sequence.py --bags`에 지정한다. 전송할 위치와 자료 접근 범위는 교신저자가 확인한다. [백업 스크립트](archive_field_trials.py)
+
 ## 현장 CSV의 자동 기록과 집계
 
 첫 파일럿이나 장비·녹화 설정을 바꾼 직후, 녹화가 끝난 bag에서 RGB·`/scan`·`/odom` 표본이 실제로 열리는지 확인한다. 아래 명령은 각 토픽의 첫 메시지를 SQLite에서 읽어 디코딩하고, 명령·TF·경로·코스트맵의 기록 건수를 같이 표시한다. `--result`와 `--trial-id`를 함께 주면 결과 JSON에 같은 회차 ID가 저장됐는지도 확인한다. 진단 결과와 현장 성공 판정은 별도로 기록한다.

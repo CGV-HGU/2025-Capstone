@@ -45,6 +45,7 @@ MODEL_FILES = {
     "pytorch": [f"{FSD_SCRIPTS}/best.pt"],
 }
 CONFIGURATION_ID_SCHEME = "artifact-content-v1"
+OUTCOME_NOTE = "outcome JSON "
 
 
 def file_digest(path):
@@ -178,7 +179,7 @@ def add_trial(args):
         raise ValueError(f"{args.result}: JSON trial_id differs from {args.trial_id}")
     # Explicit paths allow remaining historical JSON/bag pairs with blank trial_id.
     start = ""
-    notes = [f"outcome JSON {args.result}"] if args.result else []
+    notes = [f"{OUTCOME_NOTE}{args.result.resolve()}"] if args.result else []
     if result.get("goal_end_event"):
         notes.append(f"terminal event {result['goal_end_event']}")
     accepted_ns = result.get("goal_accepted_time_ns")
@@ -204,7 +205,7 @@ def add_trial(args):
         "configuration_id": manifest.get("configuration_id", ""),
         "code_commit": manifest.get("code_commit", ""),
         "model_sha256": manifest.get("model_sha256", ""),
-        "lut_sha256_manifest": str(args.configuration) if args.configuration else "",
+        "lut_sha256_manifest": str(args.configuration.resolve()) if args.configuration else "",
         "goal_accepted_time_ns": accepted_ns,
         "result_or_cancel_time_ns": end_ns,
         "elapsed_s": elapsed_s,
