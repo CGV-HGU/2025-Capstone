@@ -191,9 +191,7 @@ python3 summarize_trials.py ~/data/jint/field_log.csv
 논문 결과 표에는 본 주행 CSV의 확인된 결과를 바로 넣을 수 있다. 기본 환경 ID 순서는 `original_day`, `original_night`, `indoor_artificial`, `bridge_daylight`다. 배치 ID는 박스가 `S1`, 박스와 의자가 `S2`다. 현장에서 다른 ID를 사용했다면 `--condition-ids`에 환경 ID 4개, `--layout-ids`에 배치 ID 2개를 이 순서로 넘긴다.
 
 ```bash
-python3 summarize_trials.py ~/data/jint/field_log.csv \
-  --latex-output ../manuscript/formal_trial_rows.tex
-bash ../manuscript/build_manuscript.sh
+bash ../manuscript/build_manuscript.sh ~/data/jint/field_log.csv
 ```
 
-CSV에 본 주행 설정이 여러 개 있으면 `--configuration`으로 표에 사용할 설정 ID를 지정한다. 시도 수에는 무효와 판정 보류가 남고, 성공률과 Wilson 구간은 판정 가능한 시도 기준으로 계산한다. 해당 조건의 본 주행이 비어 있으면 표에 대시가 들어간다.
+CSV에 본 주행 설정이 여러 개 있으면 `--configuration`으로 설정 ID를 지정한다. 빌드가 표와 성공률 그래프에 같은 설정·환경·배치·분모를 적용한다. 시도 수에는 무효와 판정 보류가 남고, 성공률과 Wilson 구간은 판정 가능한 시도 기준으로 계산한다. 그래프의 `n/a`는 미기록 조합이고, `0 eval.`은 시도가 기록됐으나 판정 가능한 시도가 없는 조합이다.

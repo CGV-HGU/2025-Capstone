@@ -26,12 +26,11 @@ import numpy as np
 from ultralytics import YOLO
 
 from summarize_trials import (
-    CONDITION_LABELS,
     DEFAULT_CONDITION_IDS,
     DEFAULT_LAYOUT_IDS,
-    LAYOUT_LABELS,
+    plot_outcomes,
     read_main_trials,
-    report,
+    select_outcomes,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -690,58 +689,9 @@ def render_cand_06_reflective_hall_and_origin_sensitivity() -> None:
 # ---------------------------------------------------------------------------
 def render_formal_outcomes_from_csv(field_log: Path, config: str | None = None) -> None:
     trials = read_main_trials(field_log)
-    if not trials:
-        raise ValueError(f"{field_log}: no main trials found")
-    configs = sorted({k[0] for k in trials})
-    if config is None:
-        if len(configs) != 1:
-            raise ValueError(f"specify --configuration among: {', '.join(configs)}")
-        config = configs[0]
-
-    fig, ax = plt.subplots(figsize=(5.6, 2.9), layout="constrained")
-    x = np.arange(len(DEFAULT_CONDITION_IDS))
-    w = 0.34
-    for offset, layout_id, layout_label, col in (
-        (-w / 2, DEFAULT_LAYOUT_IDS[0], LAYOUT_LABELS[0], BLUE),
-        (+w / 2, DEFAULT_LAYOUT_IDS[1], LAYOUT_LABELS[1], ORANGE),
-    ):
-        rates, err_lo, err_hi, texts = [], [], [], []
-        for cond_id in DEFAULT_CONDITION_IDS:
-            counts = trials.get((config, cond_id, layout_id))
-            if not counts:
-                rates.append(0.0)
-                err_lo.append(0.0)
-                err_hi.append(0.0)
-                texts.append("0/0")
-                continue
-            _, evaluated, successes, _, _, _, interval = report(counts)
-            if not evaluated:
-                rates.append(0.0)
-                err_lo.append(0.0)
-                err_hi.append(0.0)
-                texts.append("0/0")
-                continue
-            lo_s, hi_s = interval.rstrip("%").split("-")
-            p_pct = 100.0 * successes / evaluated
-            rates.append(p_pct)
-            err_lo.append(max(0.0, p_pct - float(lo_s)))
-            err_hi.append(max(0.0, float(hi_s) - p_pct))
-            texts.append(f"{successes}/{evaluated}")
-        ax.bar(x + offset, rates, w, color=col, edgecolor=NAVY, lw=0.7, label=layout_label)
-        ax.errorbar(x + offset, rates, yerr=[err_lo, err_hi], fmt="none", ecolor=NAVY, elinewidth=1.0, capsize=3)
-        for xi, r_val, hi_val, txt in zip(x + offset, rates, err_hi, texts):
-            ax.text(xi, min(108.0, r_val + hi_val + 2.5), txt, ha="center", va="bottom", fontsize=7.0, color=NAVY)
-
-    ax.set_xticks(x, [lbl.replace(" (", "\n(") for lbl in CONDITION_LABELS])
-    ax.set_ylim(0, 126)
-    ax.set_ylabel("Physical success rate (%)")
-    ax.grid(axis="y")
-    ax.set_axisbelow(True)
-    ax.legend(frameon=False, fontsize=7.5, loc="upper right", ncol=2)
-    _style_axis(ax)
-    ax.set_title(f"Formal navigation success rates with 95% Wilson intervals ({config})",
-                 loc="left", fontweight="bold")
-    _save_candidate(fig, "cand_formal_outcomes_wilson", "Formal navigation outcomes with 95% Wilson CI")
+    _, selected = select_outcomes(trials, config, DEFAULT_CONDITION_IDS, DEFAULT_LAYOUT_IDS)
+    figure = plot_outcomes(selected, DEFAULT_CONDITION_IDS, DEFAULT_LAYOUT_IDS)
+    _save_candidate(figure, "cand_formal_outcomes_wilson", "Formal navigation outcomes with 95% Wilson CI")
 
 
 def main() -> None:

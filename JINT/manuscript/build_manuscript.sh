@@ -12,14 +12,23 @@ if (( $# > 0 )); then
 fi
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+staging=$(mktemp -d)
+trap 'rm -rf -- "$staging"' EXIT
 if [[ -n $field_log ]]; then
-  python3 ../analysis/summarize_trials.py "$field_log" --latex-output formal_trial_rows.tex "$@"
+  python3 ../analysis/summarize_trials.py "$field_log" \
+    --latex-output "$staging/formal_trial_rows.tex" \
+    --figure-output "$staging/formal_trial_outcomes.pdf" "$@"
+  mv "$staging/formal_trial_rows.tex" formal_trial_rows.tex
+  mv "$staging/formal_trial_outcomes.pdf" formal_trial_outcomes.pdf
 fi
 
 shopt -s nullglob
 sources=(main.tex references.bib sn-jnl.cls sn-mathphys-num.bst figures/*.pdf)
 if [[ -f formal_trial_rows.tex ]]; then
   sources+=(formal_trial_rows.tex)
+  if grep -Fq '\JINTFormalOutcomesFigure{formal_trial_outcomes.pdf}' formal_trial_rows.tex; then
+    sources+=(formal_trial_outcomes.pdf)
+  fi
 fi
 
 # Rebuild when the optional formal-results file appears or disappears.
@@ -27,8 +36,6 @@ latex_options=(-g -pdf -interaction=nonstopmode -halt-on-error -outdir=.build)
 latexmk "${latex_options[@]}" main.tex
 latexmk "${latex_options[@]}" -jobname=author_review -usepretex='\def\JINTAuthorReview{}' main.tex
 
-staging=$(mktemp -d)
-trap 'rm -rf -- "$staging"' EXIT
 zip -qj "$staging/JINT_draft_source.zip" "${sources[@]}"
 unzip -tq "$staging/JINT_draft_source.zip"
 unzip -q "$staging/JINT_draft_source.zip" -d "$staging/check"

@@ -222,6 +222,15 @@ The condition-level outcomes for the selected configuration are reported in Tabl
   \input{formal_trial_rows.tex}
   \end{tabular}
 \end{table}
+\ifdefined\JINTFormalOutcomesFigure
+Figure~\ref{fig:formal-outcomes} shows the success estimates and their descriptive uncertainty.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{\JINTFormalOutcomesFigure}
+  \caption{Physical avoidance success by condition and obstacle layout. Points show success among evaluated attempts and lines show descriptive 95\% Wilson intervals. Fractions give successful over evaluated attempts. ``n/a'' indicates an unrecorded group and ``0 eval.'' indicates that recorded attempts remained invalid or unadjudicated}
+  \label{fig:formal-outcomes}
+\end{figure}
+\fi
 }{
   Formal trial outcomes are pending.
   \pending{R1}{Insert verified formal trials from the field log.}
