@@ -1,0 +1,8 @@
+bag_id,map_to_odom_samples,identity_samples,max_translation_m,max_rotation_deg,odom_frames
+nav_bridge_01,1729,1729,0.0,0.0,odom -> base_footprint
+nav_bridge_02,1144,1144,0.0,0.0,odom -> base_footprint
+nav_bridge_03,1410,1410,0.0,0.0,odom -> base_footprint
+nav_bridge_04,1909,1909,0.0,0.0,odom -> base_footprint
+nav_bridge_05,1709,1709,0.0,0.0,odom -> base_footprint
+nav_test_11_26,2531,2531,0.0,0.0,odom -> base_footprint
+nav_trail_1_26,1836,1836,0.0,0.0,odom -> base_footprint

@@ -215,13 +215,17 @@ python3 trial_records.py check \
   --trial-id original_day_s1_01
 ```
 
-실험에 사용할 설정과 파일을 정했을 때 한 번 저장한다. 해시는 현재 PC의 파일에 대한 기록이다. 실차에서 로드된 런치 인수와 유효 파라미터는 별도로 현장 기록에서 확인한다. [현재 PC 파일 스냅샷](evidence/robot_checkout_snapshot_2026-11-26.json)
+실험에 사용할 설정을 정하면 아래 명령으로 한 번 저장한다. `--installed`는 현재 ROS 환경이 찾는 파일 경로와 해시를 함께 남긴다. 11월 27일 PC에서는 MCU·패킷 수신 코드, 바닥 검출과 스캔 노드, Nav2 설정과 관련 런치의 11개 파일이 소스와 일치했다. `pose_converter`는 설치된 실행 파일의 해시도 따로 남겼다. 런치 인수와 실행 중에 실제 적용된 파라미터는 현장 기록에서 확인한다. [설치본 스냅샷](evidence/robot_install_snapshot_2026-11-27.json)
 
 ```bash
-python3 trial_records.py snapshot \
+source /opt/ros/humble/setup.bash
+source ../../install/setup.bash
+python3 trial_records.py snapshot --installed \
   --output ~/data/jint/field_config_01.json \
   --camera-calibration ~/data/cam/usb_webcam.yaml
 ```
+
+11월 파일럿 일곱 개의 `/tf`와 `/tf_static` 전체에서 `map → odom` 12,268개를 읽었고 모두 항등 변환이었다. `/odom`은 일관되게 `odom → base_footprint`를 기록했다. 설치된 Nav2 YAML은 AMCL의 TF 발행을 끄고 costmap에 장애물·팽창 레이어를 사용한다. 이 기록은 파일럿의 경로가 바퀴 odom 좌표를 따랐다는 근거다. [파일럿 좌표계 집계](evidence/pilot_odometry_frames.csv) · [집계 코드](audit_odometry_frame.py)
 
 주행 직후 기존 러너의 세션 이름을 회차 ID로 사용해 다음처럼 등록한다. 이 명령은 bag과 JSON을 읽고 현장 CSV에만 기록한다. 예시의 환경 ID와 배치 ID를 해당 조건에 맞춰 바꾼다. [실제 파일럿에서 확인한 CSV](evidence/pilot_field_log.csv)
 

@@ -158,6 +158,8 @@ Finite detections are confirmed across two processed frames. A tracked range is 
 
 Recorded transforms in the pilot and archived benchmark bags placed the virtual scan frame \texttt{lidar\_link} at $(-0.55,0,0)\m$ relative to \texttt{base\_link}. The RGB header used \texttt{camera\_frame}. The recorded values specify software frames and should be distinguished from the physical optical-center calibration.
 
+The reference Nav2 configuration disables AMCL's transform broadcaster and uses obstacle and inflation layers in the costmaps. The frame bridge supplies the identity transform from \texttt{map} to \texttt{odom} when visual-SLAM poses are absent. All 12,268 recorded \texttt{map}-to-\texttt{odom} transforms across the seven November pilot bags were identities. The recorded wheel-odometry messages used \texttt{odom} as the parent frame and \texttt{base\_footprint} as the child frame.
+
 Figure~\ref{fig:archive-nav2} links a camera frame from a corridor pilot with the corresponding published costmap and local path. The camera shows a box near the left wall. The path lies in the lower-cost region between the higher-cost sides of the corridor.
 
 \begin{figure}[htbp]

@@ -6,6 +6,7 @@ import csv
 from datetime import datetime, timezone
 import fcntl
 import hashlib
+from importlib.util import find_spec
 import io
 import json
 from pathlib import Path
@@ -52,6 +53,47 @@ def file_digest(path):
     return digest.hexdigest()
 
 
+def installed_artifacts():
+    """Resolve the files the sourced ROS overlay would use on a fresh launch."""
+    from ament_index_python.packages import get_package_prefix, get_package_share_directory
+
+    share_files = {
+        "robot_launch_package": ("launch/multi_node_launch.py",),
+        "omo_r1_bringup": ("launch/omo_r1_bringup.launch.py", "launch/omo_r1_mcu.launch.py",
+                           "param/omo_r1_mcu.yaml"),
+        "omo_r1_navigation2": ("launch/navigation2.launch.py", "param/omo_r1.yaml"),
+        "freespace_detection": ("launch/freespace_detection_launch.py",),
+    }
+    pairs = {}
+    for package, names in share_files.items():
+        share = Path(get_package_share_directory(package))
+        pairs.update({f"src/{package}/{name}": share / name for name in names})
+    modules = {
+        "omo_r1_bringup.scripts.omo_r1_mcu_node": "src/omo_r1_bringup/omo_r1_bringup/scripts/omo_r1_mcu_node.py",
+        "omo_r1_bringup.scripts.omo_packet_handler": "src/omo_r1_bringup/omo_r1_bringup/scripts/omo_packet_handler.py",
+        "freespace_detection.floor_detector": "src/freespace_detection/freespace_detection/floor_detector.py",
+        "fake_lidar_with_tf.fake_lidar_with_tf": "src/fake_lidar_with_tf/fake_lidar_with_tf/fake_lidar_with_tf.py",
+    }
+    for module, source in modules.items():
+        spec = find_spec(module)
+        if spec is None or spec.origin is None:
+            raise ValueError(f"Cannot resolve {module} in the sourced ROS setup")
+        pairs[source] = Path(spec.origin)
+
+    artifacts = {}
+    for source, installed in pairs.items():
+        checksum = file_digest(installed)
+        artifacts[source] = {"lookup_path": str(installed), "resolved_path": str(installed.resolve()),
+                             "sha256": checksum, "matches_checkout": checksum == file_digest(ROOT / source)}
+    pose_converter = Path(get_package_prefix("pose_converter")) / "lib/pose_converter/pose_converter_node"
+    artifacts["pose_converter executable"] = {"lookup_path": str(pose_converter),
+                                               "resolved_path": str(pose_converter.resolve()),
+                                               "sha256": file_digest(pose_converter),
+                                               "checkout_source_sha256": file_digest(
+                                                   ROOT / "src/pose_converter/src/pose_converter_node.cpp")}
+    return artifacts
+
+
 def snapshot(args):
     model_files = MODEL_FILES[args.backend]
     paths = TRIAL_FILES + LUT_FILES + model_files
@@ -71,6 +113,8 @@ def snapshot(args):
         "model_sha256": artifacts[model_files[0]],
         "lut_sha256_manifest": {name: artifacts[name] for name in LUT_FILES},
     }
+    if args.installed:
+        definition["installed_files"] = installed_artifacts()
     canonical = json.dumps(definition, ensure_ascii=False, sort_keys=True).encode()
     manifest = {
         "configuration_id": hashlib.sha256(canonical).hexdigest()[:16],
@@ -201,11 +245,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(required=True)
 
-    capture = commands.add_parser("snapshot", help="hash available checkout artifacts")
+    capture = commands.add_parser("snapshot", help="hash checkout and optionally installed artifacts")
     capture.add_argument("--output", type=Path, required=True)
     capture.add_argument("--backend", choices=MODEL_FILES, default="openvino")
     capture.add_argument("--device", default="CPU")
     capture.add_argument("--camera-calibration", type=Path)
+    capture.add_argument("--installed", action="store_true",
+                         help="also hash files resolved from the currently sourced ROS workspace")
     capture.set_defaults(handler=snapshot)
 
     trial = commands.add_parser("add", help="add bag and outcome provenance to the field CSV")
