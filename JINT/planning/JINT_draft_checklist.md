@@ -15,9 +15,11 @@
 | 첫 페이지 | 분야 번호 (3), (6), (7), 저자별 이름과 소속, 황성수 교신저자의 이메일, MSC 분류 68T40·68T45를 넣었다. 저자 사진·약력은 일반 첫 페이지 필수 항목에 없다. 각 저자의 ORCID는 확인된 경우에 추가한다. |
 | 초록·키워드 | 초록 150–250단어, 키워드 4–6개. 현재 키워드는 6개이며 본 주행 결과를 반영한 후 초록 분량을 다시 확인한다. |
 | 참고문헌·선언 | 본문은 대괄호 번호 인용을 사용한다. 참고문헌 뒤에 `Statements and Declarations`를 두었다. 연구비·이해충돌·자료 접근 문구는 확인된 내용으로 채우고 저자 기여 및 이해충돌은 포털에도 입력한다. |
-| 제출 파일 | 투고 형식 PDF와 편집 가능한 LaTeX 소스·그림·서지 파일을 준비한다. 소스 ZIP의 파일을 한 디렉터리로 풀어 독립 컴파일을 확인한다. |
+| 제출 파일 | 투고 형식 PDF와 편집 가능한 LaTeX 소스·그림·서지 파일을 준비한다. 소스 ZIP의 파일을 한 디렉터리로 풀어 독립 컴파일을 확인한다. 논문 제목·저널·저자·소속·교신 이메일을 넣은 [보충 PDF](../analysis/evidence/ESM_1.pdf)는 별도 파일로 올린다. |
 
 [JINT 공식 투고 지침](https://link.springer.com/journal/10846/submission-guidelines) · [Springer 사전 제출 체크리스트](https://link.springer.com/pre-submission?journalId=10846) · [Springer LaTeX 안내](https://www.springernature.com/la/authors/campaigns/latex-author-support)
+
+IJCAS 원고의 ORCID 4개를 공개 등록 이름과 대조하고, Hyunmo Kang의 공개 ORCID는 이름과 한동대 소속을 확인해 제목 페이지에 연결했다. [Hyunwoo Gu](https://orcid.org/0009-0008-2779-648X) · [Gunmin Yoo](https://orcid.org/0009-0001-6453-8075) · [Hyunseo Lee](https://orcid.org/0009-0004-8217-7201) · [Hyunmo Kang](https://orcid.org/0009-0004-7846-649X) · [Sung Soo Hwang](https://orcid.org/0000-0002-0863-7503)
 
 ## 원고에 남은 항목
 

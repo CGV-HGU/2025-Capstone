@@ -29,6 +29,15 @@ FIGURES = JINT / "manuscript/figures"
 PDF_METADATA = {"CreationDate": None, "ModDate": None}
 BLUE, ORANGE = "#175676", "#a14c12"
 
+# Match the title page in manuscript/main.tex.
+SUPPLEMENT_TITLE = ("V-LiDAR: Monocular Virtual Scans for Reactive\n"
+                    "Obstacle Avoidance in Structured Indoor Environments")
+SUPPLEMENT_AUTHORS = "Hyunwoo Gu, Gunmin Yoo, Hyunseo Lee, Hyunmo Kang, Minseok Lee, and Sung Soo Hwang"
+SUPPLEMENT_JOURNAL = "Journal of Intelligent & Robotic Systems"
+SUPPLEMENT_AFFILIATION = ("School of Artificial Intelligence, Computer and Electrical Engineering,\n"
+                          "Handong Global University, Pohang 37554, Republic of Korea")
+CORRESPONDING_EMAIL = "sshwang@handong.edu"
+
 ARCHIVE_FRAMES = (
     ("nav_debug_avoidance", 1789917441448965025, "(a) Office chair in the hall"),
     ("vlidar_run01.3", 1790854533842965842, "(b) Metal cart with thin legs"),
@@ -137,13 +146,24 @@ def read_archive_frame(db, timestamp):
 
 
 def supplementary_pages(archive):
-    with PdfPages(EVIDENCE / "ESM_1.pdf", metadata={**PDF_METADATA, "Title": "Archived V-LiDAR evidence"}) as pdf:
-        figure, axes = plt.subplots(2, 2, figsize=(7.1, 6.0))
-        figure.subplots_adjust(top=.80, bottom=.05, left=.04, right=.96, wspace=.08, hspace=.36)
-        figure.suptitle("S1. Recorded obstacles and environmental conditions", y=.97, fontsize=14)
-        figure.text(.5, .882, "Selected archived RGB frames illustrate visual conditions.\n"
+    metadata = {**PDF_METADATA, "Title": " ".join(SUPPLEMENT_TITLE.splitlines()),
+                "Author": SUPPLEMENT_AUTHORS, "Subject": f"{SUPPLEMENT_JOURNAL} — Online Resource 1"}
+    with PdfPages(EVIDENCE / "ESM_1.pdf", metadata=metadata) as pdf:
+        figure, axes = plt.subplots(2, 2, figsize=(7.1, 7.65))
+        figure.subplots_adjust(top=.600, bottom=.04, left=.04, right=.96, wspace=.08, hspace=.36)
+        figure.text(.5, .97, f"{SUPPLEMENT_JOURNAL}  |  Online Resource 1",
+                    ha="center", va="top", fontsize=9, color=BLUE)
+        figure.text(.5, .932, SUPPLEMENT_TITLE, ha="center", va="top", fontsize=14, fontweight="bold")
+        figure.text(.5, .862, SUPPLEMENT_AUTHORS, ha="center", va="top", fontsize=9)
+        figure.text(.5, .834, SUPPLEMENT_AFFILIATION, ha="center", va="top", fontsize=8.7)
+        figure.text(.5, .788, f"Correspondence: Sung Soo Hwang ({CORRESPONDING_EMAIL})",
+                    ha="center", va="top", fontsize=8.7, color=BLUE)
+        figure.add_artist(plt.Line2D((.08, .92), (.755, .755), transform=figure.transFigure,
+                                    color="#a8bac4", linewidth=.6))
+        figure.suptitle("S1. Recorded obstacles and environmental conditions", y=.731, fontsize=12)
+        figure.text(.5, .683, "Selected archived RGB frames illustrate visual conditions.\n"
                     "They were acquired under different protocols from the formal evaluation.",
-                    ha="center", fontsize=10)
+                    ha="center", va="top", fontsize=9)
         for axis, (name, timestamp, label) in zip(axes.flat, ARCHIVE_FRAMES):
             db, = sorted((archive / name).glob("*.db3"))
             axis.imshow(read_archive_frame(db, timestamp))
