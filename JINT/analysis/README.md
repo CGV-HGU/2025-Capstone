@@ -222,8 +222,11 @@ source /opt/ros/humble/setup.bash
 source ../../install/setup.bash
 python3 trial_records.py snapshot --installed \
   --output ~/data/jint/field_config_01.json \
-  --camera-calibration ~/data/cam/usb_webcam.yaml
+  --camera-calibration ~/data/cam/usb_webcam.yaml \
+  --lidar-x-offset -0.55
 ```
+
+`--lidar-x-offset`에는 통합 러너에 전달할 실험값을 넣는다. 새 `configuration_id`는 기록한 백엔드·장치·오프셋과 파일 해시로 계산한다. 같은 파일과 설정을 다시 기록하면 문서 커밋이나 보정 파일 경로가 바뀌어도 같은 ID를 얻는다. 당시 Git 커밋과 파일 경로는 스냅샷에 따로 남으며, 기존 CSV와 스냅샷의 ID는 그대로 읽는다.
 
 11월 파일럿 일곱 개의 `/tf`와 `/tf_static` 전체에서 `map → odom` 12,268개를 읽었고 모두 항등 변환이었다. `/odom`은 일관되게 `odom → base_footprint`를 기록했다. 설치된 Nav2 YAML은 AMCL의 TF 발행을 끄고 costmap에 장애물·팽창 레이어를 사용한다. 이 기록은 파일럿의 경로가 바퀴 odom 좌표를 따랐다는 근거다. [파일럿 좌표계 집계](evidence/pilot_odometry_frames.csv) · [집계 코드](audit_odometry_frame.py)
 

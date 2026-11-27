@@ -9,6 +9,7 @@ import hashlib
 from importlib.util import find_spec
 import io
 import json
+import math
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -43,6 +44,7 @@ MODEL_FILES = {
                  f"{FSD_SCRIPTS}/best_openvino_model/best.xml"],
     "pytorch": [f"{FSD_SCRIPTS}/best.pt"],
 }
+CONFIGURATION_ID_SCHEME = "artifact-content-v1"
 
 
 def file_digest(path):
@@ -94,7 +96,23 @@ def installed_artifacts():
     return artifacts
 
 
+def configuration_id(definition):
+    identity = {
+        "scheme": CONFIGURATION_ID_SCHEME,
+        "backend": definition["intended_backend"],
+        "device": definition["intended_device"],
+        "lidar_x_offset_m": definition["intended_lidar_x_offset_m"],
+        "files": definition["file_sha256"],
+        "installed": {name: artifact["sha256"] for name, artifact in definition.get("installed_files", {}).items()},
+    }
+    canonical = json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(canonical).hexdigest()[:16]
+
+
 def snapshot(args):
+    offset = args.lidar_x_offset
+    if offset is not None and not math.isfinite(offset):
+        raise ValueError("--lidar-x-offset must be finite")
     model_files = MODEL_FILES[args.backend]
     paths = TRIAL_FILES + LUT_FILES + model_files
     artifacts = {name: file_digest(ROOT / name) for name in paths}
@@ -107,7 +125,8 @@ def snapshot(args):
     definition = {
         "code_commit": commit,
         "intended_backend": args.backend,
-        "intended_device": args.device,
+        "intended_device": args.device.strip().upper(),
+        "intended_lidar_x_offset_m": 0.0 if offset == 0 else offset,
         "camera_calibration_path": str(args.camera_calibration) if args.camera_calibration else None,
         "file_sha256": artifacts,
         "model_sha256": artifacts[model_files[0]],
@@ -115,9 +134,9 @@ def snapshot(args):
     }
     if args.installed:
         definition["installed_files"] = installed_artifacts()
-    canonical = json.dumps(definition, ensure_ascii=False, sort_keys=True).encode()
     manifest = {
-        "configuration_id": hashlib.sha256(canonical).hexdigest()[:16],
+        "configuration_id": configuration_id(definition),
+        "configuration_id_scheme": CONFIGURATION_ID_SCHEME,
         "created_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "relevant_git_status": status,
         **definition,
@@ -250,6 +269,7 @@ def main():
     capture.add_argument("--backend", choices=MODEL_FILES, default="openvino")
     capture.add_argument("--device", default="CPU")
     capture.add_argument("--camera-calibration", type=Path)
+    capture.add_argument("--lidar-x-offset", type=float, help="record the scan offset supplied to the trial runner")
     capture.add_argument("--installed", action="store_true",
                          help="also hash files resolved from the currently sourced ROS workspace")
     capture.set_defaults(handler=snapshot)
