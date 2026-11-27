@@ -31,7 +31,7 @@ IJCAS 원고의 ORCID 4개를 공개 등록 이름과 대조하고, Hyunmo Kang�
 | **R4 결과와 해석** | Formal navigation outcomes · Discussion · Abstract · Conclusion | 조건·배치별 전체 시도, 성공/판정 가능 시도, 95% Wilson 구간, 무효·판정 보류를 보고한다. 대표 성공 및 실패 회차가 있으면 RGB·scan·경로·odom을 시각에 맞춰 실패 지점을 확인한다. 판정 근거가 모자라면 원인 미상으로 남긴다. 결과에 맞춰 초록과 결론의 수치 및 주장 범위를 갱신한다. [결과 집계 코드](../analysis/summarize_trials.py) · [기존 파일럿 사건표](../analysis/evidence/pilot_nav_events.csv) |
 | **R5 저자 선언** | Statements and Declarations | IEEE 원고의 저자 6명과 순서를 적용했다. 교신저자는 황성수 교수님이며, 전원 동등 기여 문구를 넣었다. JINT 연구에 해당하는 지원 과제와 이해충돌 선언을 확인해 채운다. [IEEE Access 원고](../../paper/workspace/IEEE_Access/main.tex) |
 | **R6 자료 공개** | Data availability | CPU 시간·스캔 갱신률·시간 필터의 수치 근거와 재계산 스크립트는 Online Resource 2에 있다. 본 주행의 회차별 결과, 설정과 공개 가능한 센서 기록의 저장 위치 및 접근 조건을 확인해 원고에 넣는다. [수치 근거 ZIP](../analysis/evidence/ESM_2.zip) · [현재 rosbag 목록](../analysis/evidence/rosbag_inventory.csv) |
-| **R7 선행 발표·투고 상태** | Introduction · 커버레터 | ICCAS 프로그램에 인용한 초록의 최종 공개 형태와 서지정보를 확인한다. IJCAS 등 관련 원고의 상태와 내용 중복·추가 범위를 공저자들과 확인해 커버레터를 마무리한다. [커버레터 초안](cover_letter_draft.md) |
+| **R7 선행 발표·투고 상태** | Introduction · 커버레터 | ICCAS는 확인된 기술 프로그램을 인용했다. IEEE Access 거절 통지와 세 원고의 공유·추가 내용을 커버레터에 정리했다. ICCAS 개별 proceedings 수록과 IJCAS의 최종 처분은 확인 후 반영한다. [커버레터와 근거](cover_letter_draft.md#공저자-확인용) |
 
 ## 현장 실험과 결과 반영
 

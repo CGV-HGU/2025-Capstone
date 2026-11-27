@@ -50,7 +50,7 @@ OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 build_numeric_supplement.py
 
 - 공식 양식 ZIP의 SHA-256은 `812e76dcaa9c28dc1bff1fb6065d51729b67d4ea140552a05088317414a3ecae`다. ZIP의 `sn-jnl.cls`와 번호 인용용 `sn-mathphys-num.bst`를 사용했다.
 - 첫 페이지에 분야 번호, 150–250단어 영문 초록, 키워드 6개를 넣었다. 원고의 `Pending`은 본 실험 수치·최종 설정·학습 출처 및 분할·저자 선언·자료 공개 범위를 확인할 위치다. 저자 순서와 교신저자는 IEEE 원고에서 가져왔다. 초안 작성에 사용한 언어 모델은 Methods에 명시했다. [JINT 투고 지침](https://link.springer.com/journal/10846/submission-guidelines)
-- ICCAS 공식 프로그램 FrBT3.1에 같은 제목의 확장초록과 39/50 결과가 공개되어 있다. 원고와 커버레터에 인용하고, 이번 연구에서 추가한 방법·비교·4조건 실차 평가를 명시했다. ICCAS의 IJCAS 연계 안내에서 proceedings와 IEEE Xplore 등재는 해당 원고의 처리 결과 및 저자 선택에 따라 달라진다. 이 초록의 별도 proceedings·DOI, IJCAS 심사 상태, 공저자 승인, 게재료와 영상 공유 범위는 투고 전 확인해야 한다. [ICCAS 프로그램](https://ras.papercept.net/conferences/conferences/ICCAS2026/program/ICCAS2026_ContentListWeb_4.html#frbt3_01) · [ICCAS–IJCAS 연계 안내](https://2026.iccas.org/authors-guideline-for-initial-submission/) · [JINT 가이드](https://link.springer.com/journal/10846/submission-guidelines)
+- ICCAS FrBT3.1은 2026년 10월 30일 공식 프로그램으로 인용했다. 학회에는 11월 10일자 proceedings 배포본이 표시되며, 개별 수록 파일과 DOI는 미확인이다. IEEE Access 거절 통지와 IJCAS 보관 원고를 대조해 공유 내용과 JINT의 재분석을 커버레터에 정리했다. [ICCAS 프로그램](https://ras.papercept.net/conferences/conferences/ICCAS2026/program/ICCAS2026_ContentListWeb_4.html#frbt3_01) · [Proceedings 페이지](https://sigongji.2026.iccas.org/Proceedings/HomeIF.asp) · [커버레터의 근거](../planning/cover_letter_draft.md#공저자-확인용)
 
 아래 명령은 `JINT/analysis/`에서 실행한다. 투고 형식 초안은 `JINT/`, 주석이 있는 내부 검토본은 `JINT/planning/`, 소스 ZIP은 `JINT/manuscript/`에 생성된다. 소스 ZIP은 별도 디렉터리에서 컴파일을 확인한 뒤 저장한다.
 
