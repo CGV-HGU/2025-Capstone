@@ -17,6 +17,7 @@ from sensor_msgs.msg import Image
 from ultralytics import YOLO
 
 from bag_sqlite import bag_messages, bag_metadata
+from scan_recorder_timing import IMAGE as RGB_TOPIC, SCAN as SCAN_TOPIC, header_timestamp
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -86,7 +87,24 @@ def flicker_and_delta(raw, filtered):
     )
 
 
-def replay(directory, model, start_s, sample_s):
+def onset_timing(raw, filtered, stamps):
+    """Count withheld onsets and measure the delay to next-frame confirmation."""
+    raw_valid, filtered_valid = valid_ranges(raw), valid_ranges(filtered)
+    withheld = ~raw_valid[:-2] & raw_valid[1:-1] & ~filtered_valid[1:-1]
+    confirmed = withheld & raw_valid[2:] & filtered_valid[2:]
+    isolated = withheld & ~raw_valid[2:] & ~filtered_valid[2:]
+    intervals_ms = np.diff(stamps[1:]) / 1e6
+    delays_ms = intervals_ms[np.where(confirmed)[0]]
+    return {
+        "withheld_onsets": int(withheld.sum()),
+        "withheld_single_frame_onsets": int(isolated.sum()),
+        "confirmed_next_frame_onsets": int(confirmed.sum()),
+        "confirmation_delay_median_ms": np.median(delays_ms) if delays_ms.size else "",
+        "confirmation_delay_p95_ms": np.percentile(delays_ms, 95) if delays_ms.size else "",
+    }
+
+
+def replay(directory, model, start_s, sample_s, scan_stamped=False):
     info = bag_metadata(directory)
     origin = info["starting_time"]["nanoseconds_since_epoch"]
     start_ns = origin + round(start_s * 1e9)
@@ -94,27 +112,43 @@ def replay(directory, model, start_s, sample_s):
     window = (start_ns, stop_ns)
     session = ReplayScan()
     bridge = CvBridge()
-    raws, filtered, pose = [], [], []
+    raws, filtered, pose, stamps = [], [], [], []
+    scan_sources = set()
+    if scan_stamped:
+        scan_sources = {header_timestamp(prefix) for _, _, prefix in
+                        bag_messages(directory, info, (SCAN_TOPIC,), payload_bytes=12)}
+        scan_sources.discard(0)
     bucket = -1
-    for stamp, topic, data in bag_messages(directory, info, ("/odom", "/camera/image_raw"), window):
+    for stamp, topic, data in bag_messages(directory, info, ("/odom", RGB_TOPIC), window):
         if topic == "/odom":
             odom = deserialize_message(data, Odometry)
             point = odom.pose.pose.position
             twist = odom.twist.twist
             pose.append((point.x, point.y, abs(twist.linear.x), abs(twist.angular.z)))
         else:
-            next_bucket = (stamp - start_ns) // FRAME_PERIOD_NS
-            if next_bucket == bucket:
-                continue
-            bucket = next_bucket
+            if scan_stamped:
+                acquisition = header_timestamp(data[:12])
+                if acquisition not in scan_sources:
+                    continue
+                scan_sources.remove(acquisition)
+            else:
+                next_bucket = (stamp - start_ns) // FRAME_PERIOD_NS
+                if next_bucket == bucket:
+                    continue
+                bucket = next_bucket
             image = deserialize_message(data, Image)
             bgr = bridge.imgmsg_to_cv2(image, "bgr8")
             raw, kept = session.run(model, bgr, image.header.stamp)
             if stamp >= start_ns + 1_000_000_000:
                 raws.append(raw)
                 filtered.append(kept)
+                if scan_stamped:
+                    stamps.append(acquisition)
     if len(raws) < 2 or not pose:
         raise ValueError(f"{directory}: insufficient RGB or odometry in the selected interval")
+    if scan_stamped and (len(stamps) < 3 or np.any(np.diff(stamps) <= 0)):
+        raise ValueError(f"{directory}: expected at least three strictly ordered matched acquisition stamps")
+    raw_ranges, filtered_ranges = np.asarray(raws), np.asarray(filtered)
     x0, y0 = pose[0][:2]
     return {
         "bag_path": str(directory),
@@ -128,7 +162,8 @@ def replay(directory, model, start_s, sample_s):
             "raw_validity_flips", "filtered_validity_flips", "all_channel_transitions",
             "common_valid_transitions", "raw_mean_abs_range_step_m",
             "filtered_mean_abs_range_step_m", "raw_valid_fraction", "filtered_valid_fraction",
-        ), flicker_and_delta(np.asarray(raws), np.asarray(filtered)))),
+        ), flicker_and_delta(raw_ranges, filtered_ranges))),
+        **(onset_timing(raw_ranges, filtered_ranges, stamps) if scan_stamped else {}),
     }
 
 
@@ -136,13 +171,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--start", type=float, default=0.0, help="start in bag-relative seconds")
     parser.add_argument("--seconds", type=float, default=12.0, help="window duration in seconds")
+    parser.add_argument("--scan-stamped", action="store_true", help="replay only RGB frames with matching scan stamps")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("bags", type=Path, nargs="+")
     args = parser.parse_args()
     if args.start < 0 or args.seconds <= 1:
         parser.error("select a nonnegative start and a window longer than the one-second warmup")
     model = YOLO(str(MODEL_DIR / "best_openvino_model"), task="segment")
-    rows = [replay(bag, model, args.start, args.seconds) for bag in args.bags]
+    rows = [replay(bag, model, args.start, args.seconds, args.scan_stamped) for bag in args.bags]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=rows[0].keys(), lineterminator="\n")

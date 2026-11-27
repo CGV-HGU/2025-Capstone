@@ -92,12 +92,24 @@ python3 audit_scan_geometry.py --output-dir evidence --comparison-dir evidence \
   ~/data/bags/vlidar_run0{1,2}
 ```
 
+### 시간 필터 재생 실험
+
 같은 환경에서 카메라 원본으로 시간 필터 비교표를 재현할 수 있다. 스크립트는 ROS 노드를 시작하지 않고, 모델·마스크·LUT를 공유하는 경로에서 필터 전후 거리를 모은다. 원본과 코드의 해시 목록은 저장소 루트 기준이다. [입력 해시 목록](evidence/temporal_filter_inputs.sha256)
 
 ```bash
 OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 replay_scan_filter.py \
   --seconds 12 --output evidence/temporal_filter_replay.csv \
   ~/data/jint_sources/bridge_static_20261126 ~/data/bags/vlidar_run01
+```
+
+이동 구간은 `Begin navigating`부터 `Goal succeeded`까지다. 이전 1초로 필터를 초기화했다. 기록된 `/scan`과 획득 타임스탬프가 같은 RGB만 사용해 당시의 영상 간격을 반영했다. 현재 모델과 LUT로 두 변형을 재생한 값이다. 최초 유효 반환이 활성화 버전에서 보류되고 바로 다음 프레임에서 두 변형 모두 유효한 경우, 두 RGB 획득 시각의 차이를 확인 지연으로 집계했다. 유효 반환의 변화와 지연은 각 각도 채널에서 측정했다. 이 자료에는 장애물별 정답 라벨이 없다. [구름다리 01](evidence/temporal_filter_bridge_01.csv) · [구름다리 02](evidence/temporal_filter_bridge_02.csv) · [구간 근거 로그](evidence/pilot_nav_events.csv)
+
+```bash
+export OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4
+python3 replay_scan_filter.py --scan-stamped --start 11.078 --seconds 62.062 \
+  --output evidence/temporal_filter_bridge_01.csv ~/data/bags/nav_bridge_01
+python3 replay_scan_filter.py --scan-stamped --start 6.296 --seconds 45.940 \
+  --output evidence/temporal_filter_bridge_02.csv ~/data/bags/nav_bridge_02
 ```
 
 ## 실험 환경 사진과 기존 원고 그림

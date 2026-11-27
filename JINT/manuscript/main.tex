@@ -202,7 +202,9 @@ A historical replay uses two archived robot recordings from a hall with reflecti
 
 \subsection{Temporal filter ablation}
 
-To isolate scan stabilization, we replayed the first 12~s from a stationary bridge precheck and from the first reflective-hall recording used in the historical comparison. In both windows, wheel odometry reported a fixed pose and zero linear and angular velocity. We sampled at most one RGB frame per 100~ms bin and discarded the first second for filter initialization. The same segmentation outputs and range lookup table supplied a bypass and the deployed temporal filter. For every angular channel we counted transitions between a valid range and an invalid return. We also computed the mean absolute range change on adjacent frames for the common set of channels with valid returns in both configurations at both times. The experiment measures temporal behavior for fixed scenes.
+We replayed two stationary clips and the navigation intervals of the first two bridge pilots. The stationary clips were the first 12~s of a bridge precheck and of the first reflective-hall recording used in the historical comparison. Wheel odometry reported a fixed pose and zero linear and angular velocity in both stationary clips. We sampled at most one RGB frame per 100~ms bin for the stationary clips. For the moving clips, we used only RGB frames whose acquisition timestamps matched a recorded virtual scan. The Nav2 navigation start and completion log times delimit the moving intervals. We replayed one second before each moving interval to initialize the filter and omitted the first second of the stationary clips.
+
+The same segmentation outputs and range lookup table supplied both the bypass and the temporal filter. We counted validity transitions for each angular channel and computed the mean absolute range step across adjacent frames with valid returns in both configurations at both times. A valid return was finite and within the configured $0.1$--$10$~m scan bounds. For the moving clips, we also examined onsets for which a channel became valid with the bypass and remained invalid with the filter. When the channel was valid in both configurations on the next sampled frame, we used the acquisition timestamp difference to measure the confirmation delay.
 
 \section{Results}\label{sec:results}
 
@@ -303,22 +305,26 @@ Depth Anything V2 Small, PyTorch & $518 \times 686$ & 561.39 & 593.84 \\
 \end{tabular}
 \end{table}
 
-\subsection{Temporal filter ablation on two fixed scenes}
+\subsection{Temporal filter ablation}\label{sec:filter-results}
 
-Each clip contributed 110 processed frames after initialization. Enabling the filter reduced the mean adjacent-frame change by 41\% in the bridge precheck and 43\% in the reflective hall on the common valid samples (Table~\ref{tab:filter}). The filter also reduced validity transitions, with a similar fraction of valid entries in each clip. Confirming a new return requires one additional processed frame compared with the bypass when valid readings persist. Single-frame returns are suppressed.
+For the two stationary clips, enabling the filter reduced the mean adjacent-frame change by 41\% in the bridge precheck and 43\% in the reflective hall on common valid samples (Table~\ref{tab:filter}). During the two bridge pilots, the mean range steps fell by 26\% and 23\%, and validity transitions fell by 43\% and 41\%, respectively. The fraction of valid entries changed by less than 0.4 percentage points in each clip.
+
+In the moving clips, 81 and 58 initially withheld channel onsets were valid in both configurations on the next sampled frame. Their median confirmation delays were 132 and 100~ms, respectively, with a 95th percentile of 136~ms in both clips. Another 109 and 96 initially withheld onsets lasted one bypass frame and were invalid in the filtered output on both frames. Channel observations are correlated. These replays characterize scan stability and confirmation time along the recorded paths.
 
 \begin{table}[htbp]
-\caption{Fixed-scene replay with the temporal filter bypassed and enabled. Each clip has 15,369 adjacent-frame channel pairs. Range steps are computed on 13,835 common valid pairs for the bridge and 8,945 for the hall. The table is descriptive for two recordings.}
+\caption{Paired replay with the temporal filter bypassed and enabled. Range steps use adjacent-frame channel pairs with valid returns in both variants at both times. The four clips have 13,835, 8,945, 60,604, and 40,291 such pairs, respectively.}
 \label{tab:filter}
 \centering
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-& \multicolumn{2}{c}{Validity transitions} & \multicolumn{2}{c}{Mean range step (cm)} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-Clip & Bypass & Enabled & Bypass & Enabled \\
+& & \multicolumn{2}{c}{Validity transitions} & \multicolumn{2}{c}{Mean range step (cm)} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+Clip & Frames & Bypass & Enabled & Bypass & Enabled \\
 \midrule
-Bridge precheck & 8 & 0 & 1.29 & 0.76 \\
-Reflective hall & 50 & 25 & 6.13 & 3.52 \\
+Bridge precheck & 110 & 8 & 0 & 1.29 & 0.76 \\
+Reflective hall & 110 & 50 & 25 & 6.13 & 3.52 \\
+Bridge pilot 1 & 518 & 1,624 & 930 & 27.01 & 19.98 \\
+Bridge pilot 2 & 350 & 980 & 576 & 22.49 & 17.42 \\
 \bottomrule
 \end{tabular}
 \end{table}

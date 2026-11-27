@@ -42,7 +42,7 @@ IJCAS 원고의 ORCID 4개를 공개 등록 이름과 대조하고, Hyunmo Kang�
 ## 현재 초안에 반영된 근거
 
 - 구름다리 파일럿의 주행 궤적과 Nav2 완료·계획 실패·속도 피드백 사례가 있다. 당시 완료 상태는 탐색 결과로 다루며, 본 실험 성공률에는 현장 판정과 본 실험 프로토콜을 충족한 회차를 사용한다. [파일럿 궤적](../manuscript/figures/bridge_pilot_odom.pdf) · [속도와 odom](../manuscript/figures/pilot_command_odometry.pdf)
-- 같은 RGB 프레임에서 단안 방법의 CPU 처리 시간, 두 고정 장면에서의 시간 필터 켜기/끄기 결과, 파일럿 scan 발행률을 정리했다. 각 결과는 처리 시간, 스캔 안정성, 발행률을 설명하는 데 사용한다. [CPU 비교](../analysis/evidence/pytorch_comparison_summary.csv) · [시간 필터 재생 실험](../analysis/evidence/temporal_filter_replay.csv) · [스캔 기록 분석](../analysis/evidence/scan_recorder_timing.csv)
+- 같은 RGB 프레임에서 단안 방법의 CPU 처리 시간, 고정 장면 두 건과 구름다리 주행 두 건의 필터 켜기/끄기 비교, 파일럿 scan 발행률을 정리했다. 이동 구간의 유효·무효 전환, 거리 변화량, 일시 반환의 보류와 확인 지연을 추가했다. [CPU 비교](../analysis/evidence/pytorch_comparison_summary.csv) · [시간 필터 재생 실험](../analysis/README.md#시간-필터-재생-실험) · [스캔 기록 분석](../analysis/evidence/scan_recorder_timing.csv)
 
 ## 빌드
 
