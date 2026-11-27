@@ -137,6 +137,21 @@ python3 replay_scan_filter.py --scan-stamped --start 6.296 --seconds 45.940 \
 
 ## 실험 환경 사진과 기존 원고 그림
 
+### 기준 장소와 낮 주행 기록
+
+기존 IEEE Access와 IJCAS 원고의 Experiment 2 세팅 사진은 같은 JPEG이며, EXIF 촬영 시각은 2026년 5월 27일 17:22:53 KST다. `~/data/db/video/NTH4F.mp4`의 약 70초에서 같은 ‘ARISE & SHINE’ 표지와 출입문이, 약 100초에서 벽돌 계단실과 둥근 기둥이 보인다. 4조건 본 주행의 낮·밤 기준 장소는 이 사진의 **뉴턴홀 4층 열린 홀**로 잡는다. EXIF 시각은 세팅 사진의 시각이며, 기존 주행 회차의 시각은 따로 확인해야 한다. [기존 세팅 사진](../../IJCAS/ICCAS/IJCAS/paper/experiment2_setup.jpeg) · [360° 영상 인벤토리](../../paper/review/04_Robot_PC_Asset_Audit_and_Log_Inventory.md)
+
+| 보관 기록 | 확인한 위치 및 활용 범위 |
+| --- | --- |
+| `nav_trail_1_26` · 11월 26일 14:54 KST | Bag의 약 37초 RGB와 `~/data/db/video/OH3F.mp4`의 약 50초에 같은 문 장식, 창틀, 맞은편 유리벽이 보인다. **오석관 3층 유리벽 복도**이며, 인공조명 위주 실내 조건 후보의 파일럿으로 쓴다. 본 주행 때 조명 환경과 실제 도달·접촉 여부를 기록한다. |
+| `nav_test_11_26` · 11월 26일 13:50 KST | 약 57초 RGB에서 계단 입구와 목재 사물함이 있는 좁은 복도가 보인다. 기준 사진의 열린 홀과 배치가 다르며 정확한 건물과 층은 미확인이다. |
+| `minimal_A_scen1_run01…20` · 9월 21일 오전 | 활성 폴더의 20회에 scan·odom이 있다. RGB가 없어 기준 홀의 배치를 화면으로 대조할 수 없다. 같은 이름의 휴지통 `run01`은 전날 23:59 KST에 시작한 별개 녹화다. |
+| `nav_debug_avoidance`와 `vlidar_run01/02` · 9–10월 야간 | 의자 또는 박스가 있는 반사 바닥 홀의 RGB와 scan을 보존했다. 기존 사진과 동일한 10 m 배치였는지는 미확인이다. |
+
+보관 자료에서 뉴턴홀 4층의 낮 주행으로 대조 가능한 RGB rosbag은 확인되지 않았다. 관찰 기록과 bag ID를 연결할 수 있게 기준 홀의 낮·밤을 같은 배치로 취득한다. [PC rosbag 목록](evidence/rosbag_inventory.csv)
+
+### 원고에 반영한 장면
+
 현재 환경 사진은 `vlidar_run01`의 15초 이후 첫 RGB 프레임(반사 바닥과 박스), `nav_bridge_02`의 5초 이후 첫 RGB 프레임(구름다리와 통)이다. 모두 bag 시작 시각 기준이며 스크립트가 사용한 실제 프레임 시각을 출력한다. 이 두 장은 이전 기록의 환경과 장애물을 보여준다. [실험 환경 그림](../manuscript/figures/reference_sites.pdf)
 
 카메라·costmap 그림은 `nav_trail_1_26`의 37.062 s RGB(`1795672534045552227` ns)로 다시 그렸다. `/scan`은 RGB와 획득 시각이 같고, `/local_costmap/costmap`, `/local_plan`, `/odom`은 RGB의 기록 시각 기준으로 각각 +61.2, +36.1, −3.3 ms다. 로봇 중심의 좌표 변환은 같은 bag의 TF를 사용했다. 반사 바닥 그림은 `vlidar_run01.4`의 5.013 s RGB(`1790932901883577839` ns)를 현재 OpenVINO 모델로 재생했다. 같은 검출 결과에 하단 밴드 조건을 적용했을 때 영상 위쪽의 마스크 1,421픽셀(320×256 모델 격자)이 빠졌다. 앞서 사용한 회피 화면과 반사 예시는 IEEE Access와 IJCAS 소스에서 확인할 수 있다. [새 복도 그림](../manuscript/figures/archive_nav2_view.pdf) · [새 마스크 그림](../manuscript/figures/archive_floor_reflection.pdf) · [기존 회피 화면](../../paper/workspace/IEEE_Access/figures/nav2_obstacle_avoidance_sequence.png) · [기존 반사 예시](../../paper/workspace/IEEE_Access/figures/segmentation_artifact.png)

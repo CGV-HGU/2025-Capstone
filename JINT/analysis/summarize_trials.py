@@ -16,8 +16,8 @@ COLUMNS = {
     "invalid_reason", "external_goal_check",
 }
 CONDITION_LABELS = (
-    "Original corridor (day)",
-    "Original corridor (night)",
+    "Reference hall (day)",
+    "Reference hall (night)",
     "Artificial-light interior",
     "Daylit bridge",
 )
