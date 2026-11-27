@@ -1,0 +1,21 @@
+trial_id,visible_object,nav2_status,goal_end_event,accepted_to_event_s,near_end_odom_x_m,near_end_odom_y_m,near_end_odom_yaw_deg,near_end_odom_distance_to_nominal_goal_m,first_sample_rgb_stamp_ns,source_integrity,field_goal_contact_intervention_verified,recorded_observation
+c_bridge_01,black chair,TIMEOUT,timeout,90.001,10.736,-0.941,141.786,1.195,1795753681061339638,original_decompressed,,"Held near-static RGB between 43.023 s and 53.012 s, with 2.489 m change in reported odom."
+c_bridge_02,white open-frame cart,SUCCEEDED,nav2_result,38.860,9.768,0.049,-14.164,0.237,1795754049259657095,original_decompressed,,"Cart ahead, then visible at near left edge; subsequently advanced toward bridge exit. Selected example."
+c_bridge_03,white open-frame cart,CANCELED,operator_interrupt,39.398,5.507,0.061,-9.234,4.493,1795754149851977048,original_decompressed,,Camera/odom divergence immediately before operator signal; compare 37.977–43.077 s.
+c_bridge_04,white open-frame cart,TIMEOUT,timeout,90.001,7.627,0.778,10.233,2.497,1795754235502008217,original_decompressed,,Progress checker triggered; Nav2 later canceled after the 90 s timeout.
+c_bridge_05,blue bin,CANCELED,operator_interrupt,86.375,9.508,-0.284,34.310,0.568,1795754515579626813,original_decompressed,,TF lookup extrapolated at goal setup; script substituted the origin. Operator motive unrecorded.
+c_bridge_06,blue bin,CANCELED,operator_interrupt,50.456,6.512,0.283,-20.931,3.500,1795754639706064956,original_decompressed,,Camera/odom divergence in final seconds before operator signal; compare 49.711–54.076 s.
+c_bridge_07,blue bin,CANCELED,operator_interrupt,67.338,11.915,2.636,-21.733,3.258,1795755212482421597,original_decompressed,,Goal distance feedback jumped from 6.37 to 15.19 m shortly before operator signal. Final pair shows 11.20 degrees of odom yaw change.
+c_bridge_08,blue bin,SUCCEEDED,nav2_result,47.160,9.764,-0.049,10.397,0.241,1795755341240154899,original_decompressed,,"Bin ahead and alongside, then advanced to bridge exit. Selected example."
+c_bridge_09,blue bin,TIMEOUT,timeout,90.001,5.200,-0.805,0.548,4.867,1795755471905480061,original_decompressed,,Progress checker and global path generation failures before timeout.
+c_bridge_10,blue bin,SUCCEEDED,nav2_result,45.661,9.765,0.027,-2.115,0.236,1795755618426539225,original_decompressed,,Camera sequence shows the bin passed and the approach to the exit.
+c_bridge_11,blue bin,CANCELED,operator_interrupt,62.862,9.563,-0.969,51.847,1.063,1795755737469516868,original_decompressed,,Manual interrupt near exit; camera faces the side glazing.
+c_bridge_12,blue bin,SUCCEEDED,nav2_result,38.270,9.788,-0.111,13.357,0.239,1795755841196422495,original_decompressed,,Camera sequence shows the bin passed; a person was visible in an earlier frame.
+c_bridge_13,blue bin,CANCELED,operator_interrupt,61.988,9.522,-0.487,9.164,0.683,1795755923216867660,recovered_sqlite_verified,,Reconstructed SQLite recovered all messages. Manual interrupt near the left brick jamb.
+c_bridge_14,blue bin,CANCELED,operator_interrupt,7.799,1.690,-0.105,3.809,8.310,1795756061800814396,original_decompressed,,Manual interrupt 7.8 s after goal acceptance with the bin still ahead.
+c_bridge_15,blue bin,CANCELED,operator_interrupt,53.821,9.858,-0.258,53.319,0.294,1795756102223987912,original_decompressed,,Manual interrupt near the left brick jamb; odom heading about +53 deg.
+c_bridge_16,blue bin,CANCELED,operator_interrupt,41.770,9.316,0.246,-44.136,0.727,1795756197528318325,original_decompressed,,Manual interrupt near the right side of the exit; odom heading about -44 deg.
+c_bridge_17,blue bin,SUCCEEDED,nav2_result,35.170,9.792,0.100,-17.949,0.231,1795756287544540374,original_decompressed,,Camera sequence shows the bin passed and the approach to the exit.
+c_bridge_18,blue bin,SUCCEEDED,nav2_result,46.660,9.774,0.055,-10.692,0.233,1795756375406399666,original_decompressed,,Camera sequence shows the bin passed and the approach to the exit.
+c_bridge_19,blue bin,CANCELED,operator_interrupt,38.551,9.529,0.166,-28.923,0.500,1795756496783148491,original_decompressed,,Manual interrupt near the right side of the exit; odom heading about -29 deg.
+c_bridge_20,blue bin,SUCCEEDED,nav2_result,41.060,9.768,0.049,-7.928,0.237,1795756577244308461,original_decompressed,,Camera sequence shows the bin passed and the approach to the exit.

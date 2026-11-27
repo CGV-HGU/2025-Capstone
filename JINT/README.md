@@ -1,6 +1,7 @@
 # JINT
 
 - [11월 27일 팀 인수인계와 현장 체크리스트](planning/2026-11-27_plan.md)
+- [11월 27일 구름다리 20회 결과와 코드 점검](planning/2026-11-27_bridge_review.md)
 - [JINT 투고 형식 초안 PDF](JINT_first_draft.pdf) · [Springer Nature LaTeX 양식](template/springer-nature-latex-2024-12.zip)
 - [원고 소스와 그림](manuscript/) · [소스 ZIP](manuscript/JINT_draft_source.zip)
 - [주석이 있는 내부 검토본 PDF](planning/JINT_author_review.pdf) · [투고 전략](planning/2026-11-27_JINT_submission_strategy.md) · [초안 체크리스트](planning/JINT_draft_checklist.md) · [커버레터](planning/cover_letter_draft.md)
