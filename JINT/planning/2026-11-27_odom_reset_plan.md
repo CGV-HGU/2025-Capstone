@@ -31,7 +31,30 @@ ros2 topic echo /navigate_to_pose/_action/status action_msgs/msg/GoalStatusArray
 ros2 run tf2_ros tf2_echo map base_link
 ```
 
-통합 러너는 재사용 리셋을 rosbag 시작 전에 실행한다. 리셋 전후를 대조할 수 있도록 **첫 파일럿의 러너 콘솔과 별도 odom·목표 상태 관찰**을 같은 회차 ID로 보관한다. `/scan`과 costmap 재반영 확인 시각, bag과 JSON 경로도 함께 적는다.
+### 리셋 구간 진단 bag
+
+통합 러너는 재사용 리셋 뒤에 주행 bag을 시작한다. 첫 연속 파일럿의 두 번째 회차에서 아래 경량 녹화를 먼저 켜고, `/odom` 등 주요 토픽의 구독 메시지를 확인한 뒤 같은 ID로 통합 러너를 실행한다. 첫 목표를 새 스택에서 보내는 구간도 같은 방식으로 남길 수 있다. 진단 녹화는 카메라 없이 시작 전과 리셋 중, 다음 목표 전후의 신호를 담는다. 회차가 끝나면 `Ctrl+C`로 마감한다. 러너 콘솔과 현장 정지 관찰도 같은 ID로 보관한다.
+
+```bash
+cd ~/ros2_ws
+source /opt/ros/humble/setup.bash
+trial_id=pilot_original_day_s1_02
+diag_root=~/data/jint/reset_diagnostics
+mkdir -p "$diag_root"
+ros2 bag record -s sqlite3 --include-hidden-topics -o "$diag_root/$trial_id" \
+  /odom /cmd_vel /joint_states /tf /tf_static /scan /local_costmap/costmap \
+  /navigate_to_pose/_action/status /rosout
+```
+
+녹화 완료 후 토픽 수를 확인하고 진단 JSON을 만든다. 정지 직후나 리셋 직후만 비교할 때는 bag 시작 기준 초로 `--window START STOP`을 지정한다. JSON에 odom 메시지 간격과 위치·yaw 변화, 바퀴 위치 변화, `/cmd_vel`, 목표 ID별 상태 전환을 함께 표시한다. 메시지가 0건이면 해당 신호는 확인이 필요하다. 예를 들어 목표 상태가 0건이면 콘솔의 최종 결과를 확인한다. 정지 구간을 골라 해석하고, 현장 관찰과 같이 판정한다.
+
+```bash
+ros2 bag info "$diag_root/$trial_id"
+python3 JINT/analysis/summarize_reset_diagnostics.py "$diag_root/$trial_id" \
+  > "$diag_root/$trial_id.summary.json"
+```
+
+현장 CSV의 `notes`에 진단 bag ID와 이상의 bag 시작 기준 시각을 남긴다. `/scan`과 costmap 재반영 확인 시각, 본 주행 bag과 JSON 경로도 같은 회차 기록에 연결한다.
 
 ## 코드 개선과 완료 조건
 
