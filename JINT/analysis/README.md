@@ -158,7 +158,7 @@ python3 replay_scan_filter.py --scan-stamped --start 6.296 --seconds 45.940 \
 
 ### 추가 그림의 출처
 
-Figure 1은 ICCAS 확장초록의 전체 구성도를 참고해 RGB·바닥 마스크와 경계·가상 스캔·코스트맵을 같은 크기의 패널로 연결했다. 아래에는 목표, Nav2 제어기, 로봇, odom 피드백을 배치했다. 예시 RGB는 `nav_bridge_02`의 19.052 s 프레임(기록 시각 `1795676540151140856` ns)이다. OpenVINO 재생으로 바닥 마스크를 만들었고, `/scan`은 RGB와 획득 시각이 같은 기록을 사용했다. 코스트맵·로컬 경로·odom은 RGB 기록 시각 기준으로 각각 +44.3, −30.3, −3.2 ms의 메시지를 골랐다. 로봇 위치 변환에는 bag의 TF를 적용했다. [ICCAS 확장초록](../../IJCAS/ICCAS/ICCAS_Extended_Abstract.pdf) · [JINT Figure 1](../manuscript/figures/pipeline.pdf)
+Figure 1은 `nav_bridge_02`의 19.052 s RGB(기록 시각 `1795676540151140856` ns)에 OpenVINO 재생으로 만든 마스크와 경계를 겹쳐 표시한다. 강조한 경계점은 모델 입력 좌표 `(197, 237)`이고, ROS 스캔 인덱스 53(−8.5°)에 들어가는 최소 LUT 값은 2.560 m다. 같은 획득 시각의 기록된 스캔에서 그 채널의 필터 출력은 3.011 m다. 그림의 투영 단면은 이 연결을 설명하는 도식이다. 코스트맵·로컬 경로·odom은 RGB 기록 시각 기준으로 각각 +44.3, −30.3, −3.2 ms의 메시지를 골랐고, 로봇 위치 변환에는 bag의 TF를 적용했다. [ICCAS 확장초록](../../IJCAS/ICCAS/ICCAS_Extended_Abstract.pdf) · [JINT Figure 1](../manuscript/figures/pipeline.pdf)
 
 ```bash
 source /opt/ros/humble/setup.bash

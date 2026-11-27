@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib import patheffects
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
 import numpy as np
 from nav_msgs.msg import OccupancyGrid, Odometry, Path as NavPath
 from rclpy.serialization import deserialize_message
@@ -30,13 +30,13 @@ FIGURE = Path(__file__).resolve().parents[1] / "manuscript/figures/pipeline.pdf"
 TOPICS = {"/camera/image_raw": Image, "/scan": LaserScan,
           "/local_costmap/costmap": OccupancyGrid, "/local_plan": NavPath,
           "/odom": Odometry, "/tf": TFMessage}
-INK, LINE, BORDER = "#18283a", "#52677a", "#bdcad3"
-TEAL, BLUE, ORANGE = "#116f73", "#23618d", "#f6a52c"
-FIGURE_SIZE = (5.13, 2.55)
-PANEL_X = (.021, .266, .511, .756)
-PANEL_WIDTH = .222
-PANEL_BOTTOM = .515
-PANEL_HEIGHT = .75 * PANEL_WIDTH * FIGURE_SIZE[0] / FIGURE_SIZE[1]
+INK, LINE, BORDER = "#14283a", "#506879", "#c9d7db"
+TEAL, BLUE, AMBER, DARK_AMBER = "#0f766e", "#316381", "#ffc15a", "#8b450f"
+FIGURE_SIZE = (5.13, 3.64)
+SCENE = (.028, .526, .527, .387)
+GEOMETRY = (.028, .261, .527, .205)
+SCAN = (.632, .637, .340, .276)
+COSTMAP = (.632, .267, .340, .238)
 
 
 def header_ns(message):
@@ -85,60 +85,153 @@ def read_snapshot(bag, seconds):
     return np.asarray(rgb_image(image)), scan, costmap, path, odom, transform
 
 
-def box(figure, x, y, width, height, color, label, *, text_color=INK):
+def box(figure, x, y, width, height, color, label=""):
     figure.add_artist(FancyBboxPatch((x, y), width, height, transform=figure.transFigure,
                                      boxstyle="round,pad=0,rounding_size=0.012",
                                      facecolor=color, edgecolor="none", zorder=0))
-    figure.text(x + width / 2, y + height / 2, label, ha="center", va="center",
-                color=text_color, fontsize=9.4, fontweight="semibold")
+    if label:
+        figure.text(x + width / 2, y + height / 2, label, ha="center", va="center",
+                    color=INK, fontsize=8.3, fontweight="semibold")
 
 
-def connector(figure, points, *, dashed=False):
+def connector(figure, points, *, dashed=False, color=LINE):
     for start, stop in zip(points[:-2], points[1:-1]):
         figure.add_artist(Line2D((start[0], stop[0]), (start[1], stop[1]), transform=figure.transFigure,
-                                 color=LINE, lw=1.05, linestyle="--" if dashed else "-"))
+                                 color=color, lw=1.05, linestyle="--" if dashed else "-"))
     figure.add_artist(FancyArrowPatch(points[-2], points[-1], transform=figure.transFigure,
-                                     arrowstyle="-|>", color=LINE, linewidth=1.05, mutation_scale=8.5,
+                                     arrowstyle="-|>", color=color, linewidth=1.05, mutation_scale=8.5,
                                      linestyle="--" if dashed else "-", shrinkA=0, shrinkB=0))
 
 
-def perception(image, overlay, rgb):
+def boundary_sample(rgb, scan):
     replay = ReplayScan()
     model = YOLO(str(MODEL_DIR / "best_openvino_model"), task="segment")
     floor = replay.segment_floor(model, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
     rows = np.where(floor[replay.y_min_scan:] == 0, replay.row_indices, -1).max(axis=0)
-    if not floor.any() or not np.any(rows >= 0):
-        raise ValueError("choose an RGB frame with a visible floor and boundary")
+    columns = np.flatnonzero(rows >= 0)
+    ranges = np.asarray(scan.ranges)
+    if ranges.size != replay.num_channels:
+        raise ValueError("the recorded scan and deployed lookup table have different channel counts")
+    # The ROS LaserScan reverses the LUT channels so that positive bearing is left.
+    bins = ranges.size - 1 - replay.col_to_ch_lut[columns]
+    distances = replay.distance_lut[rows[columns], columns]
+    minimum = np.full(ranges.size, np.inf)
+    np.minimum.at(minimum, bins, distances)
+    eligible = (np.isfinite(distances) & (distances == minimum[bins]) &
+                (ranges[bins] >= scan.range_min) & (ranges[bins] <= scan.range_max))
+    visible = np.flatnonzero(eligible)
+    if not floor.any() or not visible.size:
+        raise ValueError("choose an image with a visible floor and a boundary contributing to the recorded scan")
+    central = visible[np.abs(columns[visible] - floor.shape[1] / 2) <= .17 * floor.shape[1]]
+    region = central if central.size else visible
+    selected = region[np.argmin(distances[region])]
+    u, v, channel = int(columns[selected]), int(rows[columns[selected]]), int(bins[selected])
+    raw = float(distances[selected])
+    print(f"LUT pixel ({u}, {v}) -> scan bin {channel}: {raw:.3f} m before filtering; {ranges[channel]:.3f} m recorded")
+    return floor, rows, replay.y_min_scan, u, v, channel, raw
+
+
+def tile(figure, bounds, facecolor="white"):
+    axis = figure.add_axes(bounds, facecolor=facecolor)
+    axis.set(xticks=[], yticks=[])
+    for spine in axis.spines.values():
+        spine.set(color=BORDER, linewidth=.65)
+    return axis
+
+
+def scene(figure, rgb, floor, rows, band, u, v):
+    axis = tile(figure, SCENE)
 
     height, width = rgb.shape[:2]
-    for axis in (image, overlay):
-        axis.imshow(rgb)
+    axis.imshow(rgb)
 
     tint = np.empty((height, width, 4), dtype=np.float32)
     tint[:, :, :3] = matplotlib.colors.to_rgb(TEAL)
-    tint[:, :, 3] = .43 * cv2.resize(floor, (width, height), interpolation=cv2.INTER_NEAREST)
-    overlay.imshow(tint)
-    columns = np.flatnonzero(rows >= 0)[::2]
-    overlay.scatter((columns + .5) * width / floor.shape[1] - .5,
-                    (rows[columns] + .5) * height / floor.shape[0] - .5,
-                    c=ORANGE, edgecolors=INK, linewidths=.22, s=3.3)
+    tint[:, :, 3] = .49 * cv2.resize(floor, (width, height), interpolation=cv2.INTER_NEAREST)
+    axis.imshow(tint)
+    scale_x, scale_y = width / floor.shape[1], height / floor.shape[0]
+    columns = np.flatnonzero(rows >= 0)[::3]
+    axis.scatter((columns + .5) * scale_x - .5, (rows[columns] + .5) * scale_y - .5,
+                 c=AMBER, edgecolors=INK, linewidths=.24, s=4.2, zorder=3)
+    px, py = (u + .5) * scale_x - .5, (v + .5) * scale_y - .5
+    axis.axhline(band * scale_y, color="white", alpha=.63, lw=.8, ls=(0, (3, 3)))
+    axis.plot((px, px), (band * scale_y, height - 1), color="white", lw=.95, ls="--",
+              path_effects=[patheffects.withStroke(linewidth=1.8, foreground=INK)])
+    axis.scatter([px], [py], color=AMBER, edgecolors=INK, linewidths=1.0, s=47, zorder=5)
+    axis.annotate(r"$(u,v)$", (px, py), xytext=(16, 13), textcoords="offset points",
+                  color=INK, fontsize=9, ha="left", va="center", zorder=6,
+                  bbox={"facecolor": "#fff4dc", "edgecolor": "none", "boxstyle": "round,pad=.24"},
+                  arrowprops={"arrowstyle": "-", "color": AMBER, "lw": 1.4, "shrinkB": 5})
+    axis.text(.033, .072, "Floor mask", transform=axis.transAxes, va="bottom", fontsize=7.7,
+              color="white", bbox={"facecolor": "#104640", "edgecolor": "none", "boxstyle": "round,pad=.26"})
+    axis.text(.968, .918, "YOLO11-seg", transform=axis.transAxes, ha="right", va="top", fontsize=7.7,
+              color="white", bbox={"facecolor": INK, "edgecolor": "none", "boxstyle": "round,pad=.26"})
+    crop = width * SCENE[3] * FIGURE_SIZE[1] / (SCENE[2] * FIGURE_SIZE[0])
+    axis.set(xlim=(-.5, width - .5), ylim=(height - .5, height - .5 - crop))
+
+    inset = tile(figure, (.044, .753, .145, .153))
+    inset.imshow(rgb)
+    for spine in inset.spines.values():
+        spine.set(color="white", linewidth=1.0)
+    inset.text(.07, .08, "RGB input", transform=inset.transAxes, fontsize=7.0, color="white",
+               bbox={"facecolor": INK, "edgecolor": "none", "boxstyle": "round,pad=.21"})
 
 
-def scan_panel(axis, scan):
+def projection(figure, raw, bearing):
+    axis = tile(figure, GEOMETRY, "#eff7f5")
+    axis.set(xlim=(0, 1), ylim=(0, 1))
+    floor, lens_x, lens_y, contact_x = .28, .11, .73, .73
+    axis.fill_between((.06, .94), .10, floor, color="#e0eee9")
+    axis.plot((.06, .94), (floor, floor), color="#74978e", lw=.9)
+    axis.add_patch(Rectangle((lens_x - .035, lens_y - .056), .04, .112, facecolor=INK, edgecolor="none"))
+    axis.plot((lens_x, .49), (lens_y, lens_y), color="#829b9a", lw=.9, ls=(0, (3, 2)))
+    axis.plot((lens_x, contact_x), (lens_y, floor), color=DARK_AMBER, lw=1.45)
+    axis.scatter([contact_x], [floor], color=AMBER, edgecolor=DARK_AMBER, lw=.85, s=26, zorder=5)
+    aspect = GEOMETRY[2] * FIGURE_SIZE[0] / (GEOMETRY[3] * FIGURE_SIZE[1])
+    angle = math.atan2(floor - lens_y, (contact_x - lens_x) * aspect)
+    arc = np.linspace(angle, 0, 20)
+    axis.plot(lens_x + .17 * np.cos(arc), lens_y + .17 * aspect * np.sin(arc),
+              lw=.8, color=DARK_AMBER)
+    axis.annotate("", (lens_x, floor), (lens_x, lens_y),
+                  arrowprops={"arrowstyle": "<->", "color": TEAL, "lw": .85, "shrinkA": 0, "shrinkB": 0})
+    axis.text(.055, .505, r"$h$", color=TEAL, fontsize=8.5, va="center", ha="center")
+    axis.text(.30, .89, r"$\phi(v)+\gamma$", fontsize=8.1, color=DARK_AMBER,
+              ha="center", va="center")
+    axis.annotate("", (contact_x, .16), (lens_x, .16),
+                  arrowprops={"arrowstyle": "<->", "color": TEAL, "lw": .8, "shrinkA": 0, "shrinkB": 0})
+    axis.text(.42, .16, r"$x(v)$", color=TEAL, fontsize=8.2, ha="center", va="center",
+              bbox={"facecolor": "#e0eee9", "edgecolor": "none", "pad": 2})
+    bearing_label = f"{bearing:+.1f}°".replace("-", "−")
+    axis.text(.965, .85, f"{raw:.2f} m  /  {bearing_label}", ha="right", va="center",
+              fontsize=8.3, color=DARK_AMBER, fontweight="semibold")
+    axis.text(.965, .65, "LUT range / bin bearing", ha="right", va="center", fontsize=7.4, color=INK)
+
+
+def scan_panel(axis, scan, channel):
     ranges = np.asarray(scan.ranges)
     angles = scan.angle_min + np.arange(ranges.size) * scan.angle_increment
     valid = np.isfinite(ranges) & (ranges >= scan.range_min) & (ranges <= scan.range_max)
     if not valid.any():
         raise ValueError("the selected LaserScan contains no finite returns")
     x, y = ranges[valid] * np.sin(angles[valid]), ranges[valid] * np.cos(angles[valid])
-    ymax = max(5, math.ceil(y.max() + .2))
+    ray = ranges[channel] * np.array((np.sin(angles[channel]), np.cos(angles[channel])))
+    ymax = max(5, math.ceil(y.max() + .35))
     ymin = -.75
-    xmax = max(np.abs(x).max() + .25, 2 * (ymax - ymin) / 3)
+    aspect = SCAN[2] * FIGURE_SIZE[0] / (SCAN[3] * FIGURE_SIZE[1])
+    xmax = .5 * (ymax - ymin) * aspect
     # In ROS, positive lateral coordinates are to the robot's left.
     axis.set(xlim=(xmax, -xmax), ylim=(ymin, ymax), aspect="equal", facecolor="#f4f8fb")
-    axis.axvline(0, color="#d4e0ea", linewidth=.65)
-    axis.scatter(x, y, s=7.5, color=BLUE, linewidths=0, zorder=3)
+    left, right = ymax * np.tan((scan.angle_max, scan.angle_min))
+    axis.fill((0, left, right), (0, ymax, ymax), color="#e5eff4", zorder=0)
+    axis.axvline(0, color="#b9ccd6", linewidth=.72, ls=(0, (3, 3)))
+    axis.scatter(x, y, s=8, color=BLUE, linewidths=0, zorder=3)
     axis.scatter([0], [0], marker="^", color=INK, s=20, zorder=4)
+    axis.plot((0, ray[0]), (0, ray[1]), color=DARK_AMBER, linewidth=1.5, zorder=4)
+    axis.scatter(*ray, s=39, color=AMBER, edgecolor=DARK_AMBER, linewidth=.85, zorder=5)
+    axis.annotate(f"{ranges[channel]:.2f} m", ray, xytext=(-14, 9), textcoords="offset points",
+                  ha="right", va="center", fontsize=8.2, color=DARK_AMBER,
+                  bbox={"facecolor": "#fff4dc", "edgecolor": "none", "boxstyle": "round,pad=.23"},
+                  arrowprops={"arrowstyle": "-", "color": DARK_AMBER, "lw": .75, "shrinkB": 4})
     scale_left, scale_y = xmax - .65, ymax - .65
     axis.plot((scale_left, scale_left - 2), (scale_y, scale_y), color=LINE, linewidth=1)
     axis.annotate("2 m", (scale_left, scale_y), xytext=(0, -3), textcoords="offset points",
@@ -189,42 +282,50 @@ def navigation(axis, costmap, path, odom, transform):
     axis.plot(px, py, color=TEAL, lw=1.65,
               path_effects=[patheffects.withStroke(linewidth=3.05, foreground="white")])
     axis.scatter([0], [0], marker="^", color=INK, edgecolor="white", linewidths=.45, s=27, zorder=5)
-    axis.set(xlim=(2.2, -2.2), ylim=(-.35, 2.95), aspect="equal")
+    forward = (-.38, 3.0)
+    aspect = COSTMAP[2] * FIGURE_SIZE[0] / (COSTMAP[3] * FIGURE_SIZE[1])
+    lateral = .5 * (forward[1] - forward[0]) * aspect
+    axis.set(xlim=(lateral, -lateral), ylim=forward, aspect="equal")
     axis.set_facecolor("#f3f1f7")
+    axis.annotate("Local path", (px[len(px) // 2], py[len(py) // 2]), xytext=(14, -4),
+                  textcoords="offset points", va="center", fontsize=7.2, color=TEAL,
+                  bbox={"facecolor": "white", "edgecolor": "none", "boxstyle": "round,pad=.2"},
+                  arrowprops={"arrowstyle": "-", "color": TEAL, "lw": .75})
+
+
+def heading(figure, x, y, text):
+    figure.text(x, y, text, va="center", color=INK, fontsize=10.5, fontweight="semibold")
 
 
 def draw(rgb, scan, costmap, path, odom, transform, destination):
     figure = plt.figure(figsize=FIGURE_SIZE)
-    axes = []
-    for x, title, detail in zip(PANEL_X,
-                                ("(a) RGB input", "(b) Floor mask", "(c) Virtual scan", "(d) Costmap"),
-                                ("", "YOLO11-seg", "LUT + temporal filter", "Obstacle + inflation")):
-        center = x + PANEL_WIDTH / 2
-        figure.text(center, .925, title, ha="center", va="center", color=INK,
-                    fontsize=9.5, fontweight="semibold")
-        if detail:
-            figure.text(center, .458, detail, ha="center", va="center", fontsize=8.2, color=INK)
-        axis = figure.add_axes((x, PANEL_BOTTOM, PANEL_WIDTH, PANEL_HEIGHT))
-        axis.set(xticks=[], yticks=[])
-        for spine in axis.spines.values():
-            spine.set(color=BORDER, linewidth=.55)
-        axes.append(axis)
-    perception(axes[0], axes[1], rgb)
-    scan_panel(axes[2], scan)
-    navigation(axes[3], costmap, path, odom, transform)
-    middle = PANEL_BOTTOM + PANEL_HEIGHT / 2
-    for left, right in zip(PANEL_X, PANEL_X[1:]):
-        connector(figure, ((left + PANEL_WIDTH + .003, middle), (right - .003, middle)))
+    floor, rows, band, u, v, channel, raw = boundary_sample(rgb, scan)
+    bearing = math.degrees(scan.angle_min + channel * scan.angle_increment)
 
-    box(figure, .021, .242, .245, .107, "#e6f1ef", "OMO-R1 base")
-    box(figure, .562, .242, .416, .107, "#e9eef5", "Nav2 planner + controller")
-    box(figure, .846, .046, .132, .096, "#f0f3f6", "Goal")
-    connector(figure, ((.867, .417), (.867, .351)))
-    connector(figure, ((.558, .295), (.270, .295)))
-    figure.text(.414, .317, "/cmd_vel", ha="center", va="bottom", fontsize=8.5, color=INK)
-    connector(figure, ((.912, .146), (.912, .240)))
-    connector(figure, ((.143, .239), (.143, .096), (.678, .096), (.678, .240)), dashed=True)
-    figure.text(.412, .116, "Wheel odometry + TF", ha="center", va="bottom", fontsize=8.5, color=INK)
+    heading(figure, SCENE[0], .952, "(a) From image to ground")
+    heading(figure, SCAN[0], .952, "(b) Virtual scan")
+    heading(figure, COSTMAP[0], .545, "(c) Nav2 costmap")
+    scene(figure, rgb, floor, rows, band, u, v)
+    figure.text(SCENE[0], .495, "Calibrated ground projection", va="center", fontsize=8.5,
+                color=TEAL, fontweight="semibold")
+    projection(figure, raw, bearing)
+    scan_panel(tile(figure, SCAN), scan, channel)
+    navigation(tile(figure, COSTMAP), costmap, path, odom, transform)
+    connector(figure, ((.558, .363), (.589, .363), (.589, .755), (.628, .755)), color=DARK_AMBER)
+    figure.text(.634, .602, "Binning + temporal filter", va="center", fontsize=7.9, color=BLUE)
+    connector(figure, ((.949, .631), (.949, .510)))
+
+    heading(figure, .028, .219, "(d) Drive and feedback")
+    box(figure, .028, .022, .944, .158, "#f1f5f6")
+    box(figure, .048, .109, .232, .051, "#dcece8", "OMO-R1 base")
+    box(figure, .470, .109, .348, .051, "#e1eaf0", "Planner + controller")
+    box(figure, .860, .109, .090, .051, "white", "Goal")
+    connector(figure, ((.763, .262), (.763, .163)))
+    connector(figure, ((.855, .134), (.823, .134)))
+    connector(figure, ((.464, .134), (.286, .134)))
+    figure.text(.373, .141, "/cmd_vel", ha="center", va="bottom", fontsize=7.7, color=INK)
+    connector(figure, ((.164, .103), (.164, .051), (.644, .051), (.644, .105)), dashed=True)
+    figure.text(.403, .062, "Wheel odometry + TF", ha="center", va="bottom", fontsize=7.9, color=INK)
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     with plt.rc_context({"pdf.fonttype": 42}):

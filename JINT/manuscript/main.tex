@@ -122,7 +122,7 @@ The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A ligh
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{pipeline.pdf}
-  \caption{V-LiDAR system architecture. (a) Forward RGB image. (b) The floor mask in teal and selected boundary pixels in orange from offline replay of that image. (c) Recorded virtual scan with the same acquisition timestamp. (d) A nearby recorded local costmap and path in the robot frame, with darker cells indicating higher cost. Left and right follow the camera view. Triangles mark the scan origin in (c) and the robot pose in (d). The dashed loop shows wheel-odometry and transform (TF) feedback}
+  \caption{V-LiDAR system architecture illustrated with a bridge pilot. (a) The recorded RGB image and its offline-replayed floor mask. Dashed guides mark the scan band and the highlighted pixel column. A side-view schematic shows the calibrated projection. (b) The filtered scan with the same acquisition timestamp. Amber marks the same angular bin before filtering in (a) and in the recorded scan in (b). (c) The recorded local costmap and path in the robot frame. Darker cells indicate higher cost. (d) Velocity commands and wheel-odometry and transform (TF) feedback}
   \label{fig:pipeline}
 \end{figure}
 
