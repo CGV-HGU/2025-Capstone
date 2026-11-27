@@ -9,9 +9,10 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import sqlite3
 import subprocess
 
-from bag_sqlite import bag_metadata
+from bag_sqlite import bag_metadata, first_topic_payloads
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -152,6 +153,50 @@ def add_trial(args):
     print(f"{args.trial_id} {args.field_log}")
 
 
+def check_recording(args):
+    from nav_msgs.msg import Odometry
+    from rclpy.serialization import deserialize_message
+    from sensor_msgs.msg import Image, LaserScan
+
+    messages = {"/camera/image_raw": Image, "/scan": LaserScan, "/odom": Odometry}
+    types = {"/camera/image_raw": "sensor_msgs/msg/Image", "/scan": "sensor_msgs/msg/LaserScan",
+             "/odom": "nav_msgs/msg/Odometry"}
+    info = bag_metadata(args.bag)
+    topics = {entry["topic_metadata"]["name"]: entry for entry in info["topics_with_message_count"]}
+    for topic, expected in types.items():
+        entry = topics.get(topic, {})
+        metadata = entry.get("topic_metadata", {})
+        if not entry.get("message_count") or metadata.get("type") != expected or metadata.get("serialization_format") != "cdr":
+            raise ValueError(f"{args.bag}: expected recorded CDR messages of type {expected} on {topic}")
+
+    samples = first_topic_payloads(args.bag, info, messages)
+    for topic, message in messages.items():
+        if topic not in samples:
+            raise ValueError(f"{args.bag}: {topic} appears in metadata but has no readable database rows")
+        try:
+            decoded = deserialize_message(samples[topic], message)
+        except (TypeError, ValueError, RuntimeError) as error:
+            raise ValueError(f"{args.bag}: cannot decode {topic}: {error}") from error
+        if isinstance(decoded, Image):
+            if not (decoded.width and decoded.height and decoded.step) or len(decoded.data) != decoded.step * decoded.height:
+                raise ValueError(f"{args.bag}: incomplete image data on {topic}")
+        if isinstance(decoded, LaserScan) and not decoded.ranges:
+            raise ValueError(f"{args.bag}: empty range array on {topic}")
+
+    report = {"bag": args.bag.name,
+              "duration_seconds": info["duration"]["nanoseconds"] / 1e9,
+              "decoded_samples": list(messages),
+              "recorded_topic_counts": {topic: topics.get(topic, {}).get("message_count", 0)
+                                        for topic in (*messages, "/cmd_vel", "/tf", "/plan",
+                                                      "/local_plan", "/local_costmap/costmap")}}
+    if args.result:
+        result = json.loads(args.result.read_text(encoding="utf-8"))
+        if args.trial_id and result.get("trial_id") != args.trial_id:
+            raise ValueError(f"{args.result}: JSON trial_id differs from {args.trial_id}")
+        report["outcome_record"] = {key: result.get(key) for key in ("trial_id", "nav_status", "goal_end_event")}
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(required=True)
@@ -174,12 +219,20 @@ def main():
     trial.add_argument("--result", type=Path)
     trial.set_defaults(handler=add_trial)
 
+    check = commands.add_parser("check", help="read and decode representative samples from a completed ROS 2 bag")
+    check.add_argument("--bag", type=Path, required=True)
+    check.add_argument("--result", type=Path)
+    check.add_argument("--trial-id", help="require the supplied result JSON to match this trial ID")
+    check.set_defaults(handler=check_recording)
+
     args = parser.parse_args()
-    if hasattr(args, "trial_id") and not args.trial_id.strip():
+    if getattr(args, "trial_id", None) is not None and not args.trial_id.strip():
         parser.error("trial ID cannot be blank")
+    if args.handler is check_recording and args.trial_id and not args.result:
+        parser.error("--trial-id requires --result for check")
     try:
         args.handler(args)
-    except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as error:
+    except (ImportError, OSError, ValueError, KeyError, sqlite3.Error, subprocess.CalledProcessError) as error:
         parser.exit(2, f"{error}\n")
 
 

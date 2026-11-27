@@ -149,6 +149,16 @@ bash ../manuscript/build_manuscript.sh ~/data/jint/field_log.csv
 
 ## 현장 CSV의 자동 기록과 집계
 
+첫 파일럿이나 장비·녹화 설정을 바꾼 직후, 녹화가 끝난 bag에서 RGB·`/scan`·`/odom` 표본이 실제로 열리는지 확인한다. 아래 명령은 각 토픽의 첫 메시지를 SQLite에서 읽어 디코딩하고, 명령·TF·경로·코스트맵의 기록 건수를 같이 표시한다. `--result`와 `--trial-id`를 함께 주면 결과 JSON에 같은 회차 ID가 저장됐는지도 확인한다. 진단 결과와 현장 성공 판정은 별도로 기록한다.
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 trial_records.py check \
+  --bag ~/data/bags/nav_original_day_s1_01 \
+  --result ~/data/trial_outcomes/original_day_s1_01.json \
+  --trial-id original_day_s1_01
+```
+
 실험에 사용할 설정과 파일을 정했을 때 한 번 저장한다. 해시는 현재 PC의 파일에 대한 기록이다. 실차에서 로드된 런치 인수와 유효 파라미터는 별도로 현장 기록에서 확인한다. [현재 PC 파일 스냅샷](evidence/robot_checkout_snapshot_2026-11-26.json)
 
 ```bash
