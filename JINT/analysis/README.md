@@ -139,7 +139,7 @@ python3 replay_scan_filter.py --scan-stamped --start 6.296 --seconds 45.940 \
 
 현재 환경 사진은 `vlidar_run01`의 15초 이후 첫 RGB 프레임(반사 바닥과 박스), `nav_bridge_02`의 5초 이후 첫 RGB 프레임(구름다리와 통)이다. 모두 bag 시작 시각 기준이며 스크립트가 사용한 실제 프레임 시각을 출력한다. 이 두 장은 이전 기록의 환경과 장애물을 보여준다. [실험 환경 그림](../manuscript/figures/reference_sites.pdf)
 
-카메라·costmap 그림은 기존 회피 시퀀스의 가운데 화면에서 두 창을 잘라 냈다. 원고의 반사 사례는 box 주변을 잘라 floor mask와 기존 원 표시를 남겼다. 두 원본은 IEEE Access와 IJCAS 소스에 같은 파일로 들어 있다. 출판 상태와 재사용 조건을 교신저자가 제출 전에 확인한다. [기존 회피 화면](../../paper/workspace/IEEE_Access/figures/nav2_obstacle_avoidance_sequence.png) · [기존 반사 예시](../../paper/workspace/IEEE_Access/figures/segmentation_artifact.png)
+카메라·costmap 그림은 `nav_trail_1_26`의 37.062 s RGB(`1795672534045552227` ns)로 다시 그렸다. `/scan`은 RGB와 획득 시각이 같고, `/local_costmap/costmap`, `/local_plan`, `/odom`은 RGB의 기록 시각 기준으로 각각 +61.2, +36.1, −3.3 ms다. 로봇 중심의 좌표 변환은 같은 bag의 TF를 사용했다. 반사 바닥 그림은 `vlidar_run01.4`의 5.013 s RGB(`1790932901883577839` ns)를 현재 OpenVINO 모델로 재생했다. 같은 검출 결과에 하단 밴드 조건을 적용했을 때 영상 위쪽의 마스크 1,421픽셀(320×256 모델 격자)이 빠졌다. 앞서 사용한 회피 화면과 반사 예시는 IEEE Access와 IJCAS 소스에서 확인할 수 있다. [새 복도 그림](../manuscript/figures/archive_nav2_view.pdf) · [새 마스크 그림](../manuscript/figures/archive_floor_reflection.pdf) · [기존 회피 화면](../../paper/workspace/IEEE_Access/figures/nav2_obstacle_avoidance_sequence.png) · [기존 반사 예시](../../paper/workspace/IEEE_Access/figures/segmentation_artifact.png)
 
 ### 추가 그림의 출처
 
@@ -173,7 +173,8 @@ source /opt/ros/humble/setup.bash
 python3 render_archive_figures.py \
   --frame ~/data/bags/vlidar_run01 15 \
   --frame ~/data/bags/nav_bridge_02 5 \
-  --output ../manuscript/figures/reference_sites.pdf --archive-views
+  --output ../manuscript/figures/reference_sites.pdf
+OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 render_navigation_examples.py
 ```
 
 본 실험을 마치면 같은 스크립트에 장애물이 보이는 RGB 프레임을 지정한다. 아래 경로와 초는 현장 bag에 맞게 바꾸고, **기존 장소 낮 → 기존 장소 밤 → 인공조명 실내 → 자연광 구름다리** 순서를 유지한다. `formal_sites.pdf`가 있으면 빌드 시 본문에 해당 4패널이 표시된다. 대표 프레임의 bag ID와 시각을 현장 로그에 남긴다.

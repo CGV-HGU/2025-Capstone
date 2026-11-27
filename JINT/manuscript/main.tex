@@ -158,12 +158,12 @@ Finite detections are confirmed across two processed frames. A tracked range is 
 
 Recorded transforms in the pilot and archived benchmark bags placed the virtual scan frame \texttt{lidar\_link} at $(-0.55,0,0)\m$ relative to \texttt{base\_link}. The RGB header used \texttt{camera\_frame}. The recorded values specify software frames and should be distinguished from the physical optical-center calibration.
 
-Figure~\ref{fig:archive-nav2} illustrates the camera view and the local costmap during a previously recorded box avoidance maneuver. The costmap overlay shows how a scan-derived obstacle can change the planned path. The recorded overlay is a qualitative illustration of the interface.
+Figure~\ref{fig:archive-nav2} links a camera frame from a corridor pilot with the corresponding published costmap and local path. The camera shows a box near the left wall. The path lies in the lower-cost region between the higher-cost sides of the corridor.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{archive_nav2_view.pdf}
-  \caption{Archived visualization from the earlier single-box study. (a) Camera view with the archive viewer's feature overlay. (b) Cropped Navigation2 display showing the obstacle marking and path around the box. Both panels come from the visualization archived with the IEEE Access and IJCAS manuscripts}
+  \caption{Corridor pilot snapshot 37.062~s after recording began. (a) RGB frame sharing the virtual scan's acquisition stamp. (b) Published local costmap and local path displayed relative to the robot. Their recorder times are 61.2 and 36.1~ms after the RGB sample, respectively. Left and right follow the camera view}
   \label{fig:archive-nav2}
 \end{figure}
 
@@ -349,12 +349,12 @@ Bridge pilot 2 & 350 & 980 & 576 & 22.49 & 17.42 \\
 
 The virtual scan interface enables the navigation stack to consume observations from monocular floor segmentation. Its operating envelope depends on a forward-facing camera, visible ground contact, and a stable camera-to-base relationship. Floor reflections, strong shadows, low floor-to-object contrast, and pitch variation can degrade the boundary projection. Limited field of view and the ground-contact blind region also constrain the configurations that can be covered. A wheel odometry fault can produce a separate failure even when the camera continues to provide plausible observations.
 
-In the archived example in Fig.~\ref{fig:floor-reflection}, the projected floor-mask boundary is ambiguous beneath the box. Online Resource~1, Fig.~S1 shows additional archived views of a chair, a cart, glare, and a narrow passage. A temporal filter can suppress a transient return, while a persistent segmentation error can affect consecutive frames. Causally attributing a collision or a failure to avoid therefore requires agreement between the camera, scan, and navigation records.
+In the archived scene with a box and window glare (Fig.~\ref{fig:floor-reflection}), offline inference produced an isolated mask above the scan band. The spatial mask-selection rule removed this region. Online Resource~1, Fig.~S1 shows additional archived views of a chair, a cart, glare, and a narrow passage. A temporal filter can suppress a transient return, while a persistent segmentation error can affect consecutive frames. Causally attributing a collision or a failure to avoid therefore requires agreement between the camera, scan, and navigation records.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=.54\linewidth]{archive_floor_reflection.pdf}
-  \caption{Archived segmentation overlay in a reflective-floor scene. The circled region beneath the box illustrates an ambiguous floor boundary. The overlay is cropped from the earlier IEEE Access and IJCAS manuscripts}
+  \includegraphics[width=\linewidth]{archive_floor_reflection.pdf}
+  \caption{Offline replay of one archived image from a reflective hall. (a) Mask union with lower-band selection bypassed, including a spurious upper region in orange. (b) Mask union with deployed selection. Teal indicates the retained mask, and the dashed line marks the start of the lower scan band}
   \label{fig:floor-reflection}
 \end{figure}
 

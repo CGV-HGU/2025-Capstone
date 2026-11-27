@@ -165,7 +165,7 @@ def yaw(orientation):
     return math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
 
 
-def navigation(figure, costmap, path, odom, transform):
+def costmap_in_robot_frame(costmap, path, odom, transform):
     if not path.poses:
         raise ValueError("the selected local path is empty")
     pose = odom.pose.pose
@@ -183,7 +183,6 @@ def navigation(figure, costmap, path, odom, transform):
         dx, dy = world_x - robot_x, world_y - robot_y
         return -s * dx + c * dy, c * dx + s * dy
 
-    axis = figure.add_axes((.737, .373, .218, .448))
     info = costmap.info
     origin = info.origin
     gx, gy = np.meshgrid(np.arange(info.width + 1) * info.resolution,
@@ -191,12 +190,18 @@ def navigation(figure, costmap, path, odom, transform):
     a, b = math.cos(yaw(origin.orientation)), math.sin(yaw(origin.orientation))
     x, y = relative(origin.position.x + a * gx - b * gy, origin.position.y + b * gx + a * gy)
     cost = np.asarray(costmap.data).reshape(info.height, info.width)
+    px, py = relative(np.array([p.pose.position.x for p in path.poses]),
+                      np.array([p.pose.position.y for p in path.poses]))
+    return x, y, cost, px, py
+
+
+def navigation(figure, costmap, path, odom, transform):
+    x, y, cost, px, py = costmap_in_robot_frame(costmap, path, odom, transform)
+    axis = figure.add_axes((.737, .373, .218, .448))
     color_map = LinearSegmentedColormap.from_list(
         "cost", ("#fbfbfc", "#e8e0f2", "#c1a6df", "#654397", "#35204f"))
     axis.pcolormesh(x, y, np.ma.masked_less(cost, 0), cmap=color_map,
                     vmin=0, vmax=100, shading="flat", rasterized=True)
-    px, py = relative(np.array([p.pose.position.x for p in path.poses]),
-                      np.array([p.pose.position.y for p in path.poses]))
     axis.plot(px, py, color=TEAL, lw=1.5)
     axis.scatter([0], [0], marker="^", color=INK, edgecolor="white", linewidths=.45, s=27, zorder=5)
     axis.set(xlim=(1.48, -1.48), ylim=(-.42, 3.10), aspect="equal")

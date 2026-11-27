@@ -2,12 +2,10 @@
 """Make the calibration, bridge sequence, and supplementary evidence figures."""
 
 import argparse
-from contextlib import closing
 import csv
 import json
 import math
 from pathlib import Path
-import sqlite3
 
 import cv2
 import matplotlib
@@ -16,14 +14,11 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import MultipleLocator
 import numpy as np
-from PIL import Image
-from rclpy.serialization import deserialize_message
-from sensor_msgs.msg import Image as RosImage
 
 from audit_planner_costmaps import planner_snapshot_page
 from bag_sqlite import bag_metadata
 from plot_pilot_odometry import align_to_start, read_poses
-from render_archive_figures import bag_frame
+from render_archive_figures import bag_frame, read_archive_frame
 
 
 JINT = Path(__file__).resolve().parents[1]
@@ -132,20 +127,6 @@ def bridge_sequence(bags):
     path_axis.legend(loc="upper left", ncol=3, fontsize=8, frameon=False)
     figure.savefig(FIGURES / "bridge_pilot_odom.pdf", dpi=320, metadata=PDF_METADATA)
     plt.close(figure)
-
-
-def read_archive_frame(db, timestamp):
-    with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True)) as database:
-        row = database.execute("""SELECT messages.data FROM messages JOIN topics
-                                  ON messages.topic_id = topics.id
-                                  WHERE topics.name = '/camera/image_raw' AND messages.timestamp = ?""",
-                               (timestamp,)).fetchone()
-    if row is None:
-        raise ValueError(f"{db}: no archived RGB frame at {timestamp}")
-    message = deserialize_message(row[0], RosImage)
-    raw_mode = {"rgb8": "RGB", "bgr8": "BGR"}[message.encoding]
-    return Image.frombytes("RGB", (message.width, message.height), bytes(message.data),
-                           "raw", raw_mode, message.step, 1)
 
 
 def bridge_feedback_figure(bag):

@@ -1,35 +1,40 @@
 #!/usr/bin/env python3
-"""Render manuscript panels from bag RGB frames and optional archived author figures."""
+"""Render manuscript panels from recorded RGB frames."""
 
 import argparse
 from contextlib import closing
 from pathlib import Path
+import sqlite3
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from PIL import Image, ImageOps
+from PIL import Image
 from rclpy.serialization import deserialize_message
 from sensor_msgs.msg import Image as RosImage
 
 from bag_sqlite import bag_messages, bag_metadata
 
 
-ROOT = Path(__file__).resolve().parents[2]
-ARCHIVE = ROOT / "paper/workspace/IEEE_Access/figures"
-OUTPUT = ROOT / "JINT/manuscript/figures"
 METADATA = {"CreationDate": None, "ModDate": None}
-
-
-def archived_image(name):
-    with Image.open(ARCHIVE / name) as image:
-        return ImageOps.exif_transpose(image).convert("RGB")
 
 
 def rgb_image(message):
     modes = {"rgb8": "RGB", "bgr8": "BGR"}
     return Image.frombytes("RGB", (message.width, message.height), bytes(message.data),
                            "raw", modes[message.encoding], message.step, 1)
+
+
+def read_archive_frame(db, timestamp):
+    """Read one exact RGB frame from an older SQLite archive without metadata.yaml."""
+    with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True)) as database:
+        row = database.execute("""SELECT messages.data FROM messages JOIN topics
+                                  ON messages.topic_id = topics.id
+                                  WHERE topics.name = '/camera/image_raw' AND messages.timestamp = ?""",
+                               (timestamp,)).fetchone()
+    if row is None:
+        raise ValueError(f"{db}: no archived RGB frame at {timestamp}")
+    return rgb_image(deserialize_message(row[0], RosImage))
 
 
 def bag_frame(bag, seconds):
@@ -63,28 +68,11 @@ def save_panels(images, destination):
     plt.close(figure)
 
 
-def save_archived_views():
-    sequence = archived_image("nav2_obstacle_avoidance_sequence.png")
-    second_view = sequence.crop((3316, 0, 6632, 1788))
-    rgb = second_view.crop((550, 130, 1650, 900))
-    costmap = second_view.crop((1770, 475, 2870, 1245))
-    save_panels((rgb, costmap), OUTPUT / "archive_nav2_view.pdf")
-
-    reflection = archived_image("segmentation_artifact.png").crop((380, 180, 1140, 709))
-    figure = plt.figure(figsize=(2.33, 2.33 * reflection.height / reflection.width))
-    axis = figure.add_axes((0, 0, 1, 1))
-    axis.imshow(reflection)
-    axis.set_axis_off()
-    figure.savefig(OUTPUT / "archive_floor_reflection.pdf", dpi=330, metadata=METADATA)
-    plt.close(figure)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--frame", action="append", nargs=2, required=True, metavar=("BAG", "SECONDS"),
                         help="use the first recorded RGB frame at or after this time from bag start")
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--archive-views", action="store_true", help="also render legacy RViz and floor-reflection views")
     args = parser.parse_args()
     if not 2 <= len(args.frame) <= 4:
         parser.error("provide two to four --frame entries in panel order")
@@ -95,8 +83,6 @@ def main():
     except (OSError, ValueError, KeyError) as error:
         parser.error(str(error))
     save_panels(frames, args.output)
-    if args.archive_views:
-        save_archived_views()
 
 
 if __name__ == "__main__":
