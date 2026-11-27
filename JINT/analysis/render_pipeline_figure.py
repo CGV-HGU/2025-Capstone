@@ -143,8 +143,10 @@ def scan_panel(figure, scan):
     axis.set_facecolor("white")
     ymax = max(5, math.ceil(y.max() + .2))
     xmax = max(2, math.ceil(np.abs(x).max() + .12))
-    axis.set(xlim=(-xmax, xmax), ylim=(-.2, ymax), xticks=(-xmax, 0, xmax),
+    # In ROS, positive lateral coordinates are to the robot's left.
+    axis.set(xlim=(xmax, -xmax), ylim=(-.2, ymax), xticks=(xmax, 0, -xmax),
              yticks=(0, ymax / 2, ymax))
+    axis.set_xticklabels((f"+{xmax} (L)", "0", f"−{xmax} (R)"))
     axis.grid(color="#d8e4ed", linewidth=.5)
     axis.scatter(x, y, s=9, color=BLUE, edgecolors="white", linewidths=.23, zorder=3)
     axis.scatter([0], [0], marker="^", color=INK, s=20, zorder=4)
@@ -197,7 +199,7 @@ def navigation(figure, costmap, path, odom, transform):
                       np.array([p.pose.position.y for p in path.poses]))
     axis.plot(px, py, color=TEAL, lw=1.5)
     axis.scatter([0], [0], marker="^", color=INK, edgecolor="white", linewidths=.45, s=27, zorder=5)
-    axis.set(xlim=(-1.48, 1.48), ylim=(-.42, 3.10), aspect="equal")
+    axis.set(xlim=(1.48, -1.48), ylim=(-.42, 3.10), aspect="equal")
     axis.set_facecolor("#f3f1f7")
     axis.set_xticks([])
     axis.set_yticks([])
