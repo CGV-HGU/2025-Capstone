@@ -9,6 +9,7 @@ import math
 from pathlib import Path
 import sqlite3
 
+import cv2
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -19,6 +20,7 @@ from PIL import Image
 from rclpy.serialization import deserialize_message
 from sensor_msgs.msg import Image as RosImage
 
+from bag_sqlite import bag_metadata
 from plot_pilot_odometry import align_to_start, read_poses
 from render_archive_figures import bag_frame
 
@@ -145,7 +147,70 @@ def read_archive_frame(db, timestamp):
                            "raw", raw_mode, message.step, 1)
 
 
-def supplementary_pages(archive):
+def bridge_feedback_figure(bag):
+    with (EVIDENCE / "pilot_trace_summary.csv").open(newline="") as stream:
+        trace = next(row for row in csv.DictReader(stream) if row["bag_id"] == bag.name)
+    with (EVIDENCE / "pilot_nav_events.csv").open(newline="") as stream:
+        preemption = next(float(row["bag_elapsed_s"]) for row in csv.DictReader(stream)
+                          if row["bag_id"] == bag.name and row["message"] == "Received goal preemption request")
+
+    frames = [bag_frame(bag, second) for second in (2.9, preemption, 14.0)]
+    poses = read_poses(bag)
+    start = bag_metadata(bag)["starting_time"]["nanoseconds_since_epoch"]
+    elapsed = np.array([(stamp - start) / 1e9 for stamp, *_ in poses])
+    selected = [min(range(len(poses)), key=lambda i: abs(poses[i][0] - stamp)) for _, stamp in frames]
+    yaw = np.unwrap([row[3] for row in poses])
+    relative_yaw = np.rad2deg(yaw - yaw[selected[0]])
+
+    first, last = (cv2.cvtColor(np.asarray(frames[i][0]), cv2.COLOR_RGB2GRAY) for i in (0, -1))
+    corners = cv2.goodFeaturesToTrack(first, maxCorners=250, qualityLevel=.01, minDistance=9)
+    tracked, status, _ = cv2.calcOpticalFlowPyrLK(first, last, corners, None)
+    returned, back_status, _ = cv2.calcOpticalFlowPyrLK(last, first, tracked, None)
+    round_trip_error = np.linalg.norm(corners[:, 0] - returned[:, 0], axis=1)
+    valid = (status[:, 0] == 1) & (back_status[:, 0] == 1) & (round_trip_error < 1)
+    displacement = np.linalg.norm(corners[valid, 0] - tracked[valid, 0], axis=1)
+    median = float(np.median(displacement))
+    print(f"{bag.name}: {valid.sum()}/{len(corners)} tracked corners; median {median:.3f} px")
+    for (_, stamp), index in zip(frames, selected):
+        print(f"  RGB {stamp} ns; odometry {poses[index][0]} ns; relative yaw {relative_yaw[index]:.2f} deg")
+
+    figure = plt.figure(figsize=(7.1, 4.9))
+    grid = figure.add_gridspec(2, 3, height_ratios=(1, 1.18), left=.13, right=.97,
+                              bottom=.22, top=.84, hspace=.45, wspace=.10)
+    figure.suptitle("S4. Camera views during repeated wheel feedback", y=.97, fontsize=14)
+    figure.text(.5, .895, "Fifth bridge pilot. Times are measured from the start of the recording.",
+                ha="center", fontsize=9.5)
+    for column, ((image, stamp), label) in enumerate(zip(frames, "abc")):
+        image_axis = figure.add_subplot(grid[0, column])
+        image_axis.imshow(image)
+        image_axis.set_title(f"({label}) {(stamp - start) / 1e9:.2f} s", fontsize=9)
+        image_axis.set_axis_off()
+
+    axis = figure.add_subplot(grid[1, :])
+    axis.axvspan(float(trace["repeated_turn_start_s"]), float(trace["repeated_turn_end_s"]),
+                 color="#e8e0eb", label="Identical nonzero /odom twist")
+    axis.axvline(preemption, color="0.42", ls="--", lw=1, label="Goal preemption")
+    axis.plot(elapsed, relative_yaw, color=BLUE, lw=1.5)
+    axis.scatter(elapsed[selected], relative_yaw[selected], s=20, color=BLUE, zorder=3)
+    for index, label in zip(selected, "abc"):
+        axis.annotate(f"({label})", (elapsed[index], relative_yaw[index]), xytext=(5, 3),
+                      textcoords="offset points", color=BLUE, fontsize=9)
+    axis.set(xlim=(0, 17.5), ylim=(-265, 85), xticks=(0, 4, 8, 12, 16),
+             yticks=(0, -90, -180), xlabel="Time from recording start (s)",
+             ylabel="Relative odom yaw (°)")
+    axis.grid(axis="y", color=".90")
+    axis.set_axisbelow(True)
+    axis.legend(loc="upper right", fontsize=8, ncol=2)
+
+    figure.text(.13, .080,
+                f"Between (a) and (c), odometry yaw changes by {abs(relative_yaw[selected[-1]]):.0f}°.\n"
+                f"Median image displacement is {median:.2f} px over {valid.sum()} tracked corners "
+                f"({first.shape[1]} × {first.shape[0]} px frames).",
+                va="top", fontsize=9)
+    return figure
+
+
+def supplementary_pages(archive, bags):
     metadata = {**PDF_METADATA, "Title": " ".join(SUPPLEMENT_TITLE.splitlines()),
                 "Author": SUPPLEMENT_AUTHORS, "Subject": f"{SUPPLEMENT_JOURNAL} — Online Resource 1"}
     with PdfPages(EVIDENCE / "ESM_1.pdf", metadata=metadata) as pdf:
@@ -215,6 +280,10 @@ def supplementary_pages(archive):
         pdf.savefig(figure)
         plt.close(figure)
 
+        figure = bridge_feedback_figure(bags / "nav_bridge_05")
+        pdf.savefig(figure, dpi=300)
+        plt.close(figure)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -223,7 +292,7 @@ def main():
     args = parser.parse_args()
     visibility_figure()
     bridge_sequence(args.bags)
-    supplementary_pages(args.archive)
+    supplementary_pages(args.archive, args.bags)
 
 
 if __name__ == "__main__":

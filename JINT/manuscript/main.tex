@@ -250,7 +250,7 @@ A pair of archived bridge bags shows the robot passing a stationary bin. The rec
   \label{fig:pilot}
 \end{figure}
 
-The third and fourth bridge recordings each contain two global planning failures. In the fifth recording, a new goal preempted the previous goal at 9.28~s from the start of the recording. This event fell within a 15.95~s interval in which the reported odometric forward velocity and yaw rate remained exactly $0.31542$~m/s and $-0.333$~rad/s. Figure~\ref{fig:pilot-diagnostic} compares the recorded scan, commands, and odometry of this run with the second bridge run. The fixed feedback interval and the planning errors motivate separate checks for localization feedback and path generation before assigning a cause to a failed trial.
+The third and fourth bridge recordings each contain two global planning failures. In the fifth recording, a new goal preempted the previous goal at 9.28~s from the start of the recording. This event fell within a 15.95~s interval in which the reported odometric forward velocity and yaw rate remained exactly $0.31542$~m/s and $-0.333$~rad/s. Figure~\ref{fig:pilot-diagnostic} compares the recorded scan, commands, and odometry of this run with the second bridge run. At 2.96 and 14.02~s, corresponding features in the two RGB frames moved by a median of less than one pixel while the nearest recorded odometry poses differed by $211^\circ$ in unwrapped yaw (Online Resource~1, Fig.~S4). This discrepancy supports flagging the odometry interval as unreliable. The record leaves open whether the trial would have reached the goal with fresh feedback.
 
 \begin{figure}[htbp]
   \centering
@@ -347,7 +347,7 @@ The offline comparisons characterize computational cost and scan stability in fi
 \vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
 
 \bmhead{Supplementary information}
-Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, and terminal odometry diagnostics from earlier recordings.
+Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, terminal odometry diagnostics from earlier recordings, and an image--odometry comparison for the fifth bridge pilot.
 
 \bibliography{references}
 

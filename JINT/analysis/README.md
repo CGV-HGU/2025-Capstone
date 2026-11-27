@@ -122,8 +122,11 @@ python3 render_pipeline_figure.py ~/data/bags/nav_bridge_02 19
 | 보충 그림 S1 | rosbag `/camera/image_raw`의 기록 시각 기준. `(a) nav_debug_avoidance` 1789917441448965025 ns, `(b) vlidar_run01.3` 1790854533842965842 ns, `(c) vlidar_run01.4` 1790932912384048917 ns, `(d) vlidar_run01.5` 1790933826258576115 ns. 의자·카트·역광·좁은 복도의 대표 장면이다. |
 | 보충 그림 S2 | [비교 run01](evidence/pytorch_comparison_run01.csv)과 [run02](evidence/pytorch_comparison_run02.csv)의 CPU 처리 시간에서 첫 프레임을 한 장씩 제외했다. 구현당 198개 값의 경험적 누적 분포다. |
 | 보충 그림 S3 | [9월 20회 원본 점검 JSON](../../paper/review/verification/robot_20261118/twenty_runs.json)의 최종 odom x와 녹화 말미 정지 시간이다. 외부 도달·접촉 판정은 확인되지 않았다. |
+| 보충 그림 S4 | `nav_bridge_05`의 RGB 2.959·9.291·14.017 s와 가장 가까운 `/odom`을 대조했다. 기록 시각 차이는 각각 +6.9·−6.9·−12.5 ms(odom−RGB)다. 첫 프레임부터 마지막 프레임까지 odom의 누적 yaw 변화는 −210.60°였고 영상 내 대응점 이동의 중앙값은 0.18 px였다. |
 
-원고에는 그림 S1–S3을 Online Resource 1로 인용했다. 투고 시 [보충 자료 `ESM_1.pdf`](evidence/ESM_1.pdf)를 LaTeX 소스 ZIP과 별도 파일로 올린다. 기존 원고에 있는 정지 2.50 m 거리 그래프는 독립 실측 원점과 원본 프레임별 값이 확인되면 거리 정확도의 근거로 재검토할 수 있다. [기존 거리 그림](../../paper/workspace/IEEE_Access/figures/experiment1_results.png) · [좌표 원점 민감도](evidence/scan_origin_reference_sensitivity.csv)
+S4에서는 첫 640×480 RGB 프레임에서 OpenCV로 코너를 최대 250개 검출하고 마지막 프레임까지 Lucas–Kanade로 추적했다. 양방향 추적이 성공하고 원래 지점까지의 복귀 오차가 1 px 미만인 247개를 집계했다. 카메라 영상은 odom 이상을 확인하는 정성적 근거이며, 차체 자세의 실측값이나 피드백이 정상일 때의 도달 여부는 이 기록으로 구할 수 없다. [S4 재생성 코드](render_evidence_figures.py)
+
+원고에는 그림 S1–S4를 Online Resource 1로 인용했다. 투고 시 [보충 자료 `ESM_1.pdf`](evidence/ESM_1.pdf)를 LaTeX 소스 ZIP과 별도 파일로 올린다. 기존 원고에 있는 정지 2.50 m 거리 그래프는 독립 실측 원점과 원본 프레임별 값이 확인되면 거리 정확도의 근거로 재검토할 수 있다. [기존 거리 그림](../../paper/workspace/IEEE_Access/figures/experiment1_results.png) · [좌표 원점 민감도](evidence/scan_origin_reference_sensitivity.csv)
 
 `JINT/analysis/`에서 아래 명령으로 세 그림을 재생성할 수 있다.
 
