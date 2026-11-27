@@ -15,6 +15,7 @@ import sqlite3
 import subprocess
 
 from bag_sqlite import bag_metadata, first_topic_payloads
+from summarize_trials import FAILURES
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -175,7 +176,7 @@ def append_record(filename, row):
 def add_trial(args):
     manifest = json.loads(args.configuration.read_text(encoding="utf-8")) if args.configuration else {}
     result = json.loads(args.result.read_text(encoding="utf-8")) if args.result else {}
-    if result.get("trial_id") not in (None, args.trial_id):
+    if result.get("trial_id") not in (None, "", args.trial_id):
         raise ValueError(f"{args.result}: JSON trial_id differs from {args.trial_id}")
     # Explicit paths allow remaining historical JSON/bag pairs with blank trial_id.
     start = ""
@@ -210,11 +211,39 @@ def add_trial(args):
         "result_or_cancel_time_ns": end_ns,
         "elapsed_s": elapsed_s,
         "nav2_status": result.get("nav_status", ""),
+        "outcome": args.observed_outcome,
+        "contact_observed": args.contact,
+        "manual_intervention": args.intervention,
+        "evaluation_included": {"invalid": "false", "": ""}.get(args.observed_outcome, "true"),
+        "invalid_reason": args.invalid_reason,
+        "external_goal_check": args.goal_check,
         "bag_asset_id": args.bag.name if args.bag else "",
         "notes": "; ".join(notes),
     }
     append_record(args.field_log, row)
     print(f"{args.trial_id} {args.field_log}")
+
+
+def check_observation(trial, args):
+    outcome = args.observed_outcome
+    args.goal_check = args.goal_check.strip()
+    args.invalid_reason = args.invalid_reason.strip()
+    if outcome == "success":
+        if not args.goal_check:
+            trial.error("observed success requires --goal-check with physical arrival evidence")
+        expected = {"contact": "false", "intervention": "false"}
+    elif outcome == "collision":
+        expected = {"contact": "true"}
+    elif outcome == "manual_intervention":
+        expected = {"intervention": "true"}
+    else:
+        expected = {}
+    for field, value in expected.items():
+        if getattr(args, field) not in ("", value):
+            trial.error(f"--{field} contradicts observed outcome {outcome}")
+        setattr(args, field, value)
+    if (outcome == "invalid") != bool(args.invalid_reason):
+        trial.error("--invalid-reason is required for an invalid attempt and only applies to that outcome")
 
 
 def check_recording(args):
@@ -284,6 +313,12 @@ def main():
     trial.add_argument("--configuration", type=Path)
     trial.add_argument("--bag", type=Path)
     trial.add_argument("--result", type=Path)
+    trial.add_argument("--observed-outcome", choices=("success", *sorted(FAILURES), "invalid"), default="",
+                       help="field outcome; success means physical arrival in time without contact or intervention")
+    trial.add_argument("--goal-check", default="", help="observer or external video evidence of physical arrival")
+    trial.add_argument("--contact", choices=("true", "false"), default="", help="contact observed in the field")
+    trial.add_argument("--intervention", choices=("true", "false"), default="", help="manual intervention observed")
+    trial.add_argument("--invalid-reason", default="", help="reason an invalid attempt could not be evaluated")
     trial.set_defaults(handler=add_trial)
 
     check = commands.add_parser("check", help="read and decode representative samples from a completed ROS 2 bag")
@@ -295,6 +330,8 @@ def main():
     args = parser.parse_args()
     if getattr(args, "trial_id", None) is not None and not args.trial_id.strip():
         parser.error("trial ID cannot be blank")
+    if args.handler is add_trial:
+        check_observation(trial, args)
     if args.handler is check_recording and args.trial_id and not args.result:
         parser.error("--trial-id requires --result for check")
     try:

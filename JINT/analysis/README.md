@@ -288,10 +288,11 @@ python3 trial_records.py add \
   --phase main --environment original_day --layout S1 \
   --configuration ~/data/jint/field_config_01.json \
   --bag ~/data/bags/nav_original_day_s1_01 \
-  --result ~/data/trial_outcomes/original_day_s1_01.json
+  --result ~/data/trial_outcomes/original_day_s1_01.json \
+  --observed-outcome success --goal-check '현장 관찰자가 표시된 목표 구역 도달 확인'
 ```
 
-결과 CSV에서 외부 목표 도달·접촉·개입과 최종 결과를 확인해 채운다. 성공 조건을 충족한 행은 `outcome=success`, `contact_observed=false`, `manual_intervention=false`, `evaluation_included=true`를 지정하고 `external_goal_check`에 관찰 근거를 남긴다. JSON의 Nav2 상태는 별도로 저장되고, 실패로 산출되지 않은 파일 인수는 생략해도 시도를 기록할 수 있다.
+위 예시는 실제로 제한시간 내 목표 구역에 도달했고 접촉·수동 개입이 없었던 회차에 사용한다. `--observed-outcome`은 파일 등록과 함께 현장 판정을 기록하며, `--goal-check`는 관찰자나 외부 영상의 판정 근거를 받는다. 실패는 `collision`, `timeout`, `nav_abort`, `manual_intervention` 중 해당 값을 사용한다. 복합 상황에서 확인한 사실은 `--contact true` 또는 `--intervention true`로 함께 기록한다. 무효 시도에는 `--observed-outcome invalid --invalid-reason '사유'`를 사용한다. 관찰 확인을 나중에 하려면 판정 옵션을 생략해 등록하고 CSV에서 해당 행을 채운다. Nav2 상태는 별도 열에 저장되며, 산출되지 않은 파일의 인수는 생략할 수 있다.
 
 새 Nav2 결과 JSON에는 클라이언트가 목표 수락과 첫 종료 사건을 관측한 ROS 시각을 기록한다. 타임아웃에서는 취소 요청을 시작한 시각을 쓰며, 뒤늦게 도착한 취소 응답은 기존 타임아웃을 덮어쓰지 않는다. 두 시각이 유효한 경우 CSV에 경과 시간이 자동으로 들어간다. 과거 JSON에 없던 시각은 공란으로 남는다. [주행 결과 JSON 작성 코드](../../scripts/test_avoidance_goal.py) · [현장 CSV 가져오기](trial_records.py)
 
