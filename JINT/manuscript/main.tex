@@ -183,21 +183,19 @@ The proposed evaluation uses three locations and four conditions. The reference 
 
 \ifformalsites
 Figure~\ref{fig:site-views} shows forward-facing camera frames with the target obstacles visible in the four formal conditions.
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\linewidth]{formal_sites.pdf}
-  \caption{Forward camera frames from the formal trial recordings. (a) Reference hall by day. (b) Reference hall at night. (c) Artificial-light interior. (d) Daylit bridge}
-  \label{fig:site-views}
-\end{figure}
 \else
-Figure~\ref{fig:site-views} shows the reflective hall used for the archived CPU comparison and the daylit bridge from a pilot run.
+Figure~\ref{fig:site-views} shows the planned arrangement of the four site views.
+\fi
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{reference_sites.pdf}
-  \caption{Forward camera frames from archived recordings. (a) Cardboard box on the reflective floor of the benchmark hall. (b) Stationary bin in the daylit bridge pilot. The images document the appearances encountered during the earlier recordings}
+  \ifformalsites
+    \includegraphics[width=\linewidth]{formal_sites.pdf}
+  \else
+    \includegraphics[width=\linewidth]{formal_sites_tbd.pdf}
+  \fi
+  \caption{\ifformalsites Forward camera frames from the formal trial recordings.\else Planned forward camera views for the formal trials.\fi{} (a) Reference hall by day. (b) Reference hall at night. (c) Artificial-light interior. (d) Daylit bridge}
   \label{fig:site-views}
 \end{figure}
-\fi
 
 At each location, the straight-line displacement between marked start and goal locations is 10~m. The obstacle layouts use a box alone and the same box with a chair. Obstacles, starting pose, limits, and navigation settings are fixed and logged. Primary success is physical entry into the marked goal region within the trial time limit, without obstacle contact or manual intervention. A field observer or external video supplies these labels. Nav2 status, time from goal acceptance, trajectory, and message logs provide secondary diagnostics. Report success as a count over all eligible attempts for each condition, with uncertainty and reasons for unusable recordings. Preserve failed attempts and separately identify invalid measurements using documented reasons.
 

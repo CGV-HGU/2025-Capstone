@@ -9,9 +9,8 @@ import sqlite3
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 from PIL import Image
-from rclpy.serialization import deserialize_message
-from sensor_msgs.msg import Image as RosImage
 
 from bag_sqlite import bag_messages, bag_metadata
 
@@ -25,6 +24,13 @@ def rgb_image(message):
                            "raw", modes[message.encoding], message.step, 1)
 
 
+def decode_rgb(payload):
+    from rclpy.serialization import deserialize_message
+    from sensor_msgs.msg import Image as RosImage
+
+    return rgb_image(deserialize_message(payload, RosImage))
+
+
 def read_archive_frame(db, timestamp):
     """Read one exact RGB frame from an older SQLite archive without metadata.yaml."""
     with closing(sqlite3.connect(db.resolve().as_uri() + "?mode=ro", uri=True)) as database:
@@ -34,7 +40,7 @@ def read_archive_frame(db, timestamp):
                                (timestamp,)).fetchone()
     if row is None:
         raise ValueError(f"{db}: no archived RGB frame at {timestamp}")
-    return rgb_image(deserialize_message(row[0], RosImage))
+    return decode_rgb(row[0])
 
 
 def bag_frame(bag, seconds):
@@ -47,7 +53,7 @@ def bag_frame(bag, seconds):
     if row is None:
         raise ValueError(f"{bag}: no RGB frame within one second of {seconds:g} s")
     timestamp, _, payload = row
-    image = rgb_image(deserialize_message(payload, RosImage))
+    image = decode_rgb(payload)
     print(f"{bag.name}: RGB frame at {(timestamp - start) / 1e9:.3f} s ({timestamp} ns)")
     return image, timestamp
 
@@ -59,8 +65,15 @@ def save_panels(images, destination):
                            wspace=0.035, hspace=0.20)
     for axis in axes.flat:
         axis.set_axis_off()
+        axis.set_box_aspect(3 / 4)
     for index, (axis, image) in enumerate(zip(axes.flat, images)):
-        axis.imshow(image)
+        if image is None:
+            axis.add_patch(Rectangle((0, 0), 1, 1, transform=axis.transAxes, clip_on=False,
+                                     facecolor="#f7f8fa", edgecolor="#a3adb8", linewidth=0.55))
+            axis.text(0.5, 0.5, "TBD", transform=axis.transAxes,
+                      ha="center", va="center", fontsize=10, color="#596776")
+        else:
+            axis.imshow(image)
         axis.text(0.5, -0.045, f"({chr(97 + index)})", transform=axis.transAxes,
                   ha="center", va="top", fontsize=9)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -70,17 +83,24 @@ def save_panels(images, destination):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--frame", action="append", nargs=2, required=True, metavar=("BAG", "SECONDS"),
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--frame", action="append", nargs=2, metavar=("BAG", "SECONDS"),
                         help="use the first recorded RGB frame at or after this time from bag start")
+    inputs.add_argument("--placeholder", action="store_true", help="render four empty RGB panels marked TBD")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if args.placeholder:
+        if args.output.name == "formal_sites.pdf":
+            parser.error("formal_sites.pdf is reserved for recorded RGB frames")
+        save_panels([None] * 4, args.output)
+        return
     if not 2 <= len(args.frame) <= 4:
         parser.error("provide two to four --frame entries in panel order")
     if args.output.name == "formal_sites.pdf" and len(args.frame) != 4:
         parser.error("formal_sites.pdf requires four panels in the manuscript caption order")
     try:
         frames = [bag_frame(Path(bag), float(seconds))[0] for bag, seconds in args.frame]
-    except (OSError, ValueError, KeyError) as error:
+    except (ImportError, OSError, ValueError, KeyError) as error:
         parser.error(str(error))
     save_panels(frames, args.output)
 

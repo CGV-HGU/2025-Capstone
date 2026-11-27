@@ -23,7 +23,14 @@ if [[ -n $field_log ]]; then
 fi
 
 shopt -s nullglob
-sources=(main.tex references.bib sn-jnl.cls sn-mathphys-num.bst figures/orcid_mark.png figures/*.pdf)
+sources=(main.tex references.bib sn-jnl.cls sn-mathphys-num.bst figures/orcid_mark.png)
+for figure in figures/*.pdf; do
+  if [[ $figure == figures/reference_sites.pdf ||
+        ( $figure == figures/formal_sites_tbd.pdf && -f figures/formal_sites.pdf ) ]]; then
+    continue
+  fi
+  sources+=("$figure")
+done
 if [[ -f formal_trial_rows.tex ]]; then
   sources+=(formal_trial_rows.tex)
   if grep -Fq '\JINTFormalOutcomesFigure{formal_trial_outcomes.pdf}' formal_trial_rows.tex; then
