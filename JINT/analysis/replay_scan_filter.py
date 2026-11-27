@@ -17,6 +17,7 @@ from sensor_msgs.msg import Image
 from ultralytics import YOLO
 
 from bag_sqlite import bag_messages, bag_metadata
+from scan_filter_metrics import flicker_and_delta, onset_timing
 from scan_recorder_timing import IMAGE as RGB_TOPIC, SCAN as SCAN_TOPIC, header_timestamp
 
 
@@ -27,7 +28,6 @@ from freespace_detection.floor_detector import RoiChecker
 
 MODEL_DIR = ROOT / "src/freespace_detection/scripts"
 FRAME_PERIOD_NS = 100_000_000
-RANGE_MIN, RANGE_MAX = 0.1, 10.0
 
 
 class ReplayScan:
@@ -76,43 +76,7 @@ class ReplayScan:
         return self.project(self.infer(model, image), stamp)
 
 
-def valid_ranges(values):
-    return np.isfinite(values) & (values >= RANGE_MIN) & (values <= RANGE_MAX)
-
-
-def flicker_and_delta(raw, filtered):
-    raw_valid, filtered_valid = valid_ranges(raw), valid_ranges(filtered)
-    raw_flips = raw_valid[1:] != raw_valid[:-1]
-    filtered_flips = filtered_valid[1:] != filtered_valid[:-1]
-    common = raw_valid[1:] & raw_valid[:-1] & filtered_valid[1:] & filtered_valid[:-1]
-    raw_delta = np.abs(raw[1:][common] - raw[:-1][common])
-    filtered_delta = np.abs(filtered[1:][common] - filtered[:-1][common])
-    return (
-        int(raw_flips.sum()), int(filtered_flips.sum()), int(raw_flips.size),
-        int(common.sum()), np.mean(raw_delta) if raw_delta.size else "",
-        np.mean(filtered_delta) if filtered_delta.size else "",
-        np.mean(raw_valid), np.mean(filtered_valid),
-    )
-
-
-def onset_timing(raw, filtered, stamps):
-    """Count withheld onsets and measure the delay to next-frame confirmation."""
-    raw_valid, filtered_valid = valid_ranges(raw), valid_ranges(filtered)
-    withheld = ~raw_valid[:-2] & raw_valid[1:-1] & ~filtered_valid[1:-1]
-    confirmed = withheld & raw_valid[2:] & filtered_valid[2:]
-    isolated = withheld & ~raw_valid[2:] & ~filtered_valid[2:]
-    intervals_ms = np.diff(stamps[1:]) / 1e6
-    delays_ms = intervals_ms[np.where(confirmed)[0]]
-    return {
-        "withheld_onsets": int(withheld.sum()),
-        "withheld_single_frame_onsets": int(isolated.sum()),
-        "confirmed_next_frame_onsets": int(confirmed.sum()),
-        "confirmation_delay_median_ms": np.median(delays_ms) if delays_ms.size else "",
-        "confirmation_delay_p95_ms": np.percentile(delays_ms, 95) if delays_ms.size else "",
-    }
-
-
-def replay(directory, model, start_s, sample_s, scan_stamped=False):
+def replay(directory, model, start_s, sample_s, scan_stamped=False, sample_output=None):
     info = bag_metadata(directory)
     origin = info["starting_time"]["nanoseconds_since_epoch"]
     start_ns = origin + round(start_s * 1e9)
@@ -157,6 +121,12 @@ def replay(directory, model, start_s, sample_s, scan_stamped=False):
     if scan_stamped and (len(stamps) < 3 or np.any(np.diff(stamps) <= 0)):
         raise ValueError(f"{directory}: expected at least three strictly ordered matched acquisition stamps")
     raw_ranges, filtered_ranges = np.asarray(raws), np.asarray(filtered)
+    if sample_output is not None:
+        stamps_ns = np.asarray(stamps, dtype=np.int64)
+        if stamps_ns.size:
+            stamps_ns -= stamps_ns[0]
+        np.savez_compressed(sample_output, bypass_m=raw_ranges, enabled_m=filtered_ranges,
+                            acquisition_elapsed_ns=stamps_ns)
     x0, y0 = pose[0][:2]
     return {
         "bag_path": str(directory),
@@ -166,11 +136,7 @@ def replay(directory, model, start_s, sample_s, scan_stamped=False):
         "max_odom_translation_m": max(math.hypot(x - x0, y - y0) for x, y, _, _ in pose),
         "max_odom_abs_vx_mps": max(row[2] for row in pose),
         "max_odom_abs_wz_radps": max(row[3] for row in pose),
-        **dict(zip((
-            "raw_validity_flips", "filtered_validity_flips", "all_channel_transitions",
-            "common_valid_transitions", "raw_mean_abs_range_step_m",
-            "filtered_mean_abs_range_step_m", "raw_valid_fraction", "filtered_valid_fraction",
-        ), flicker_and_delta(raw_ranges, filtered_ranges))),
+        **flicker_and_delta(raw_ranges, filtered_ranges),
         **(onset_timing(raw_ranges, filtered_ranges, stamps) if scan_stamped else {}),
     }
 

@@ -12,7 +12,8 @@ from sensor_msgs.msg import Image, LaserScan
 from ultralytics import YOLO
 
 from bag_sqlite import bag_messages, bag_metadata
-from replay_scan_filter import MODEL_DIR, ReplayScan, valid_ranges
+from replay_scan_filter import MODEL_DIR, ReplayScan
+from scan_filter_metrics import valid_ranges
 from scan_recorder_timing import IMAGE, SCAN, header_timestamp
 
 

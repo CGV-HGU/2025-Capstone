@@ -35,6 +35,17 @@
 
 초안은 구조화된 실내에서 정적 장애물을 피하는 범위로 썼다. 선행연구에서도 단안 분할 기반 가상 LiDAR를 다뤘으므로, 이번 원고는 Nav2가 쓰는 거리·방위 관측과 실제 회피 결과를 연결하는 데 초점을 둔다. [유사 선행연구](https://www.fujipress.jp/jrm/rb/robot003200061137/)
 
+## 수치 보충 자료
+
+[Online Resource 2](evidence/ESM_2.zip)에는 CPU 프레임별 처리 시간, RGB·스캔 상대 시각, 필터 전후 스캔 배열이 있다. 압축을 푼 뒤 NumPy 환경에서 `python3 recompute_numeric_supplement.py`를 실행하면 세 표의 수치를 다시 계산한다. 원본 rosbag, RGB 영상, 본 주행의 현장 판정은 별도 자료다.
+
+현재 PC의 원본에서 이 ZIP을 다시 만들 때는 `JINT/analysis/`에서 아래 명령을 실행한다. 투고할 때 [그림 `ESM_1.pdf`](evidence/ESM_1.pdf)와 [수치 `ESM_2.zip`](evidence/ESM_2.zip)을 원고 소스 ZIP과 별도의 파일로 올린다. [JINT 보충 자료 지침](https://link.springer.com/journal/10846/submission-guidelines#Supplementary%20Information%20(SI))
+
+```bash
+source /opt/ros/humble/setup.bash
+OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 build_numeric_supplement.py
+```
+
 ## 빌드 및 투고 전 확인
 
 - 공식 양식 ZIP의 SHA-256은 `812e76dcaa9c28dc1bff1fb6065d51729b67d4ea140552a05088317414a3ecae`다. ZIP의 `sn-jnl.cls`와 번호 인용용 `sn-mathphys-num.bst`를 사용했다.

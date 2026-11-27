@@ -323,7 +323,7 @@ Depth Anything V2 Small, PyTorch & $518 \times 686$ & 561.39 & 593.84 \\
 
 For the two stationary clips, enabling the filter reduced the mean adjacent-frame change by 41\% in the bridge precheck and 43\% in the reflective hall on common valid samples (Table~\ref{tab:filter}). During the two bridge pilots, the mean range steps fell by 26\% and 23\%, and validity transitions fell by 43\% and 41\%, respectively. The fraction of valid entries changed by less than 0.4 percentage points in each clip.
 
-In the moving clips, 81 and 58 initially withheld channel onsets were valid in both configurations on the next sampled frame. Their median confirmation delays were 132 and 100~ms, respectively, with a 95th percentile of 136~ms in both clips. Another 109 and 96 initially withheld onsets lasted one bypass frame and were invalid in the filtered output on both frames. Channel observations are correlated. These replays characterize scan stability and confirmation time along the recorded paths.
+In the moving clips, 81 and 58 initially withheld channel onsets were valid in both configurations on the next sampled frame. Their median confirmation delays were 132 and 100~ms, respectively, with a 95th percentile of 136~ms in both clips. Another 109 and 96 initially withheld onsets lasted one bypass frame and were invalid in the filtered output on both frames. Channel observations are correlated. These replays characterize scan stability and confirmation time along the recorded paths. Online Resource~2 provides samples and recalculation scripts for the filter, recorded scan timing, and CPU timing results.
 
 \begin{table}[htbp]
 \caption{Paired replay with the temporal filter bypassed and enabled. Range steps use adjacent-frame channel pairs with valid returns in both variants at both times. The four clips have 13,835, 8,945, 60,604, and 40,291 such pairs, respectively.}
@@ -369,6 +369,8 @@ The offline comparisons characterize computational cost and scan stability in fi
 \bmhead{Supplementary information}
 Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, terminal odometry diagnostics from earlier recordings, and an image--odometry comparison for the fifth bridge pilot.
 
+Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and scripts to recalculate the numerical summaries.
+
 \bibliography{references}
 
 \section*{Statements and Declarations}
@@ -378,7 +380,7 @@ Online Resource~1 contains selected archived camera frames, empirical CPU timing
 
 \noindent\textbf{Competing interests.} The disclosure is pending confirmation. \pending{R5}{Confirm the competing interests statement with the coauthors.}
 
-\noindent\textbf{Data availability.} The planned archive will include trial outcomes, setup records, analysis code, and selected sensor records. Access details are pending confirmation. \pending{R6}{Insert the verified archive link and access terms for sensor footage.}
+\noindent\textbf{Data availability.} Numerical samples and aggregation scripts for the CPU timing, scan cadence, and temporal-filter results are included in Online Resource~2. Access details for trial outcomes, setup records, and raw sensor recordings are pending confirmation. \pending{R6}{Insert the verified archive location and access terms for trial records and footage.}
 
 \noindent\textbf{Author contributions.} All authors contributed equally to this work.
 

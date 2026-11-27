@@ -9,9 +9,6 @@ import struct
 
 import numpy as np
 
-from bag_sqlite import bag_messages, bag_metadata
-
-
 IMAGE = "/camera/image_raw"
 SCAN = "/scan"
 TOPIC_TYPES = {IMAGE: "sensor_msgs/msg/Image", SCAN: "sensor_msgs/msg/LaserScan"}
@@ -33,7 +30,9 @@ def quantiles(values):
     return tuple(round(float(value), 3) for value in np.percentile(values, [50, 95])) if len(values) else ("", "")
 
 
-def measure(directory):
+def read_timestamps(directory):
+    from bag_sqlite import bag_messages, bag_metadata
+
     info = bag_metadata(directory)
     types = {
         entry["topic_metadata"]["name"]: entry["topic_metadata"]
@@ -47,6 +46,10 @@ def measure(directory):
     data = {IMAGE: [], SCAN: []}
     for receipt, topic, prefix in bag_messages(directory, info, (IMAGE, SCAN), payload_bytes=12):
         data[topic].append((header_timestamp(prefix), receipt))
+    return data
+
+
+def summarize_timestamps(bag_id, data):
     scan_receipt = {}
     for stamp, receipt in data[SCAN]:
         if stamp > 0:
@@ -62,7 +65,7 @@ def measure(directory):
     p50_scan_age, p95_scan_age = quantiles([(scan_receipt[stamp] - stamp) / 1e6 for stamp in pairs])
     nonzero_scan = sum(stamp > 0 for stamp, _ in data[SCAN])
     return {
-        "bag_id": directory.name,
+        "bag_id": bag_id,
         "rgb_messages": len(data[IMAGE]),
         "scan_messages": len(data[SCAN]),
         "unique_nonzero_scan_stamps": len(scan_receipt),
@@ -80,6 +83,10 @@ def measure(directory):
         "scan_header_to_recorder_median_ms": p50_scan_age,
         "scan_header_to_recorder_p95_ms": p95_scan_age,
     }
+
+
+def measure(directory):
+    return summarize_timestamps(directory.name, read_timestamps(directory))
 
 
 def main():
