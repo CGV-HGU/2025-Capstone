@@ -159,12 +159,15 @@ python3 render_pipeline_figure.py ~/data/bags/nav_bridge_02 19
 | 보충 그림 S3 | [9월 20회 원본 점검 JSON](../../paper/review/verification/robot_20261118/twenty_runs.json)의 최종 odom x와 녹화 말미 정지 시간이다. 외부 도달·접촉 판정은 확인되지 않았다. |
 | 보충 그림 S4 | `nav_bridge_05`의 RGB 2.959·9.291·14.017 s와 가장 가까운 `/odom`을 대조했다. 기록 시각 차이는 각각 +6.9·−6.9·−12.5 ms(odom−RGB)다. 첫 프레임부터 마지막 프레임까지 odom의 누적 yaw 변화는 −210.60°였고 영상 내 대응점 이동의 중앙값은 0.18 px였다. |
 | 보충 그림 S5 | `nav_bridge_04`의 두 번째 전역 계획 실패(93.798 s) 앞뒤 `/global_costmap/costmap`과 다음 `/plan`을 대조했다. 목표를 중심으로 x·y 각각 ±0.5 m 안에 중심이 있는 100칸을 집계했다. 실패 274 ms 전에는 99 또는 100인 칸이 96개였고, 초기화 요청 후 26 ms 시점 지도에서는 100칸 모두 0이었다. |
+| 보충 그림 S6 | `nav_bridge_02`의 19.052 s RGB와 획득 시각이 같은 가상 스캔에서 통 하단을 향하는 5개 채널(0 기준 52–56)의 투영점 중앙값을 기준으로 삼았다. 기록된 TF와 획득 시각이 가장 가까운 odom을 써서 지름 0.5 m의 고정 영역에서 스캔 반환과 지도 셀을 집계했다. |
 
 S4에서는 첫 640×480 RGB 프레임에서 OpenCV로 코너를 최대 250개 검출하고 마지막 프레임까지 Lucas–Kanade로 추적했다. 양방향 추적이 성공하고 원래 지점까지의 복귀 오차가 1 px 미만인 247개를 집계했다. 카메라 영상은 odom 이상을 확인하는 정성적 근거이며, 차체 자세의 실측값이나 피드백이 정상일 때의 도달 여부는 이 기록으로 구할 수 없다. [S4 재생성 코드](render_evidence_figures.py)
 
 계획 실패 다섯 건 모두 초기화 요청과 같은 목표를 향하는 전역 경로가 91 ms 이내에 다시 기록됐다. S5에서는 실패 약 19 ms 뒤에 초기화 요청, 약 29 ms 뒤에 다음 경로가 저장됐다. 다른 네 실패의 직전 지도는 1.74–15.63 s 앞선 표본이다. 구름다리에서 어떤 물리 물체나 센서 반환이 높은 비용을 만들었는지는 확인되지 않았다. Nav2가 내보낸 `OccupancyGrid`에서 99는 차량의 내접 반경에 해당하는 장애물 비용이고 100은 장애물 셀이다. [실패 전후 집계](evidence/pilot_planner_costmaps.csv) · [재생성 코드](audit_planner_costmaps.py) · [Nav2 비용 변환 공식 소스](https://github.com/ros-navigation/navigation2/blob/humble/nav2_costmap_2d/src/costmap_2d_publisher.cpp#L81-L93)
 
-원고에는 그림 S1–S5를 Online Resource 1로 인용했다. 투고 시 [보충 자료 `ESM_1.pdf`](evidence/ESM_1.pdf)를 LaTeX 소스 ZIP과 별도 파일로 올린다. 기존 원고에 있는 정지 2.50 m 거리 그래프는 독립 실측 원점과 원본 프레임별 값이 확인되면 거리 정확도의 근거로 재검토할 수 있다. [기존 거리 그림](../../paper/workspace/IEEE_Access/figures/experiment1_results.png) · [좌표 원점 민감도](evidence/scan_origin_reference_sensitivity.csv)
+S6의 시간축은 rosbag 기록 시각이다. 영역 내 스캔 반환의 마지막 기록은 22.336 s이고, 비용 100인 셀은 22.497 s 지도에 마지막으로 남았다. 24.697 s 지도에도 비용 99인 셀이 두 개 있었다. 23.016 s RGB에서는 통의 바닥 접점이 프레임 밑으로 잘려 있다. 설정의 최소 ray-clearing 거리는 관측 레이의 삭제 시작점을 제한한다. 기록된 지도에는 팽창 비용도 포함돼 이 구간에서 두 효과가 각각 얼마나 기여했는지는 알 수 없다. [스캔·costmap 시계열](evidence/pilot_near_field_trace.csv) · [재생성 코드](audit_near_field_costmap.py) · [Nav2의 ray-clearing 구현](https://github.com/ros-navigation/navigation2/blob/humble/nav2_costmap_2d/include/nav2_costmap_2d/costmap_2d.hpp#L389-L423)
+
+원고에는 그림 S1–S6을 Online Resource 1로 인용했다. 투고 시 [보충 자료 `ESM_1.pdf`](evidence/ESM_1.pdf)를 LaTeX 소스 ZIP과 별도 파일로 올린다. 기존 원고에 있는 정지 2.50 m 거리 그래프는 독립 실측 원점과 원본 프레임별 값이 확인되면 거리 정확도의 근거로 재검토할 수 있다. [기존 거리 그림](../../paper/workspace/IEEE_Access/figures/experiment1_results.png) · [좌표 원점 민감도](evidence/scan_origin_reference_sensitivity.csv)
 
 `JINT/analysis/`에서 아래 명령으로 세 그림을 재생성할 수 있다.
 

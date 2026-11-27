@@ -15,6 +15,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import MultipleLocator
 import numpy as np
 
+from audit_near_field_costmap import near_field_page
 from audit_planner_costmaps import planner_snapshot_page
 from bag_sqlite import bag_metadata
 from plot_pilot_odometry import align_to_start, read_poses
@@ -267,6 +268,10 @@ def supplementary_pages(archive, bags):
         plt.close(figure)
 
         figure = planner_snapshot_page(bags, EVIDENCE)
+        pdf.savefig(figure, dpi=300)
+        plt.close(figure)
+
+        figure = near_field_page(bags / "nav_bridge_02", EVIDENCE)
         pdf.savefig(figure, dpi=300)
         plt.close(figure)
 

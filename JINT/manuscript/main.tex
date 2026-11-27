@@ -154,7 +154,7 @@ For a model-only check, we compared the lookup table against joint ray rotation 
 
 \subsection{Temporal filtering and navigation integration}\label{sec:deployed-setup}
 
-Finite detections are confirmed across two processed frames. A tracked range is smoothed with an exponential moving average ($\alpha=0.6$), and clearing a track also requires two frames. The scan header preserves image acquisition time. Nav2 uses the scan to update its local obstacle map and uses wheel odometry for short-range relative motion. The costmap's near-field ray-clearing limit preserves previously marked regions when their ground contact leaves the camera's field of view. Protection depends on earlier valid observations and the geometry of the maneuver.
+Finite detections are confirmed across two processed frames. A tracked range is smoothed with an exponential moving average ($\alpha=0.6$), and clearing a track also requires two frames. The scan header preserves image acquisition time. Nav2 uses the scan to update its local obstacle map and uses wheel odometry for short-range relative motion. The reference costmap configuration limits ray clearing near the sensor. Whether a high cost persists after ground contact leaves the image depends on prior range observations, robot motion, and costmap updates.
 
 Recorded transforms in the pilot and archived benchmark bags placed the virtual scan frame \texttt{lidar\_link} at $(-0.55,0,0)\m$ relative to \texttt{base\_link}. The RGB header used \texttt{camera\_frame}. The recorded values specify software frames and should be distinguished from the physical optical-center calibration.
 
@@ -261,6 +261,8 @@ Figure~\ref{fig:formal-outcomes} shows the success estimates and their descripti
 
 A pair of archived bridge bags shows the robot passing a stationary bin. The recorded Nav2 logs show success messages 61.1 and 44.9~s after navigation began, respectively. The trials were recorded before the present reset and wheel feedback changes. No independent physical contact or goal label is recorded for those pilot runs. Figure~\ref{fig:pilot} links three recorded images from the second bag to the nearest recorded odometry poses and shows both paths after alignment to their initial poses. The maximum magnitudes of lateral displacement were 0.51 and 0.56~m relative to each starting heading. The 20 earlier single-hall runs provide additional archived odometry diagnostics in Online Resource~1, Fig.~S3.
 
+In the second bridge pilot, we tracked a fixed $0.25\m$ radius region centered at the median of five earlier scan endpoints projected into the odometry frame (Online Resource~1, Fig.~S6). The last scan with endpoints in this region was recorded at 22.336~s. The image at 23.016~s shows the bin with its base outside the frame. Two cells with the inscribed obstacle cost (99) remained in the published local costmap at 24.697~s, 2.36~s after the last nearby scan return. The contributions of clearing and inflation to the retained costs remain unresolved.
+
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{bridge_pilot_odom.pdf}
@@ -362,7 +364,7 @@ In the archived scene with a box and window glare (Fig.~\ref{fig:floor-reflectio
 
 The archived nominal obstacle coordinates lack a documented measurement origin. If those coordinates are held fixed in the odometry frame, using the logged virtual scan offset instead of a zero sensor offset changes the nominal reference distances by $0.51$--$0.55\m$ on 59 previously selected frames. This sensitivity shows why absolute range evaluation requires an independently surveyed obstacle reference in the appropriate frame.
 
-The offline comparisons characterize computational cost and scan stability in fixed scenes. The physical trials address how the full sensing and control stack behaves in the tested configurations. The ablation leaves the recorded viewpoints unchanged, so it cannot establish a change in closed-loop success or quantify the effect of waiting for confirmation when approaching an obstacle. Cross-site results should be interpreted alongside the observed layouts, floor appearances, and illumination, which can vary together. The protocol focuses on stationary obstacle avoidance with wheel odometry in the stated operating conditions.
+The offline comparisons characterize computational cost and scan stability in stationary and moving clips. The physical trials address how the full sensing and control stack behaves in the tested configurations. The ablation leaves the recorded viewpoints unchanged, so it cannot establish a change in closed-loop success or quantify the effect of waiting for confirmation when approaching an obstacle. Cross-site results should be interpreted alongside the observed layouts, floor appearances, and illumination, which can vary together. The protocol focuses on stationary obstacle avoidance with wheel odometry in the stated operating conditions.
 
 \pending{R4}{Tie the operating limits to observed failures and state the uncertainty in their attribution.}
 
@@ -371,7 +373,7 @@ The offline comparisons characterize computational cost and scan stability in fi
 \vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
 
 \bmhead{Supplementary information}
-Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, terminal odometry diagnostics, an image--odometry comparison, and a before--after global-costmap comparison around a planning failure.
+Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, terminal odometry diagnostics, an image--odometry comparison, a global-costmap comparison around a planning failure, and a local-costmap trace around earlier scan observations.
 
 Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and scripts to recalculate the numerical summaries.
 
