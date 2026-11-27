@@ -1,5 +1,6 @@
 # JINT
 
+- [JINT 투고를 위한 비교 실험·원고 마감 계획](planning/2026-11-27_JINT_completion_plan.md)
 - [11월 27일 팀 인수인계와 현장 체크리스트](planning/2026-11-27_plan.md)
 - [11월 27일 구름다리 20회 결과와 코드 점검](planning/2026-11-27_bridge_review.md)
 - [11월 27일 5열람실 17개 rosbag 결과와 odom 점검](planning/2026-11-27_class5_review.md)
