@@ -1,0 +1,3 @@
+bag_id,requested_s,rgb_scan_acquisition_ns,first_bin_index,last_bin_index,recorded_min_m,recorded_max_m,max_abs_difference_to_unfiltered_lut_m,median_endpoint_lateral_m,median_endpoint_forward_m,radius_m,grid_cells,inscribed_cells,lethal_cells
+nav_c_bridge_02,9.8,1795754055816735954,52,62,3.246338,3.276162,0.057484,-0.367525,2.678554,0.25,20,12,8
+nav_c_bridge_02,12.8,1795754058748662494,97,114,2.41736,2.482187,0.024267,0.743478,1.77258,0.25,20,11,9

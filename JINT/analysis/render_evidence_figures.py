@@ -15,6 +15,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.ticker import MultipleLocator
 import numpy as np
 
+from audit_bridge_cart_scan import cart_scan_page
 from audit_near_field_costmap import near_field_page
 from audit_planner_costmaps import planner_snapshot_page
 from bag_sqlite import bag_metadata
@@ -273,6 +274,10 @@ def supplementary_pages(archive, bags):
 
         figure = near_field_page(bags / "nav_bridge_02", EVIDENCE)
         pdf.savefig(figure, dpi=300)
+        plt.close(figure)
+
+        figure = cart_scan_page(bags / "nav_c_bridge_02", EVIDENCE)
+        pdf.savefig(figure, dpi=320)
         plt.close(figure)
 
 

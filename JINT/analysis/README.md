@@ -182,7 +182,7 @@ S4에서는 첫 640×480 RGB 프레임에서 OpenCV로 코너를 최대 250개 �
 
 S6의 시간축은 rosbag 기록 시각이다. 영역 내 스캔 반환의 마지막 기록은 22.336 s이고, 비용 100인 셀은 22.497 s 지도에 마지막으로 남았다. 24.697 s 지도에도 비용 99인 셀이 두 개 있었다. 23.016 s RGB에서는 통의 바닥 접점이 프레임 밑으로 잘려 있다. 설정의 최소 ray-clearing 거리는 관측 레이의 삭제 시작점을 제한한다. 기록된 지도에는 팽창 비용도 포함돼 이 구간에서 두 효과가 각각 얼마나 기여했는지는 알 수 없다. [스캔·costmap 시계열](evidence/pilot_near_field_trace.csv) · [재생성 코드](audit_near_field_costmap.py) · [Nav2의 ray-clearing 구현](https://github.com/ros-navigation/navigation2/blob/humble/nav2_costmap_2d/include/nav2_costmap_2d/costmap_2d.hpp#L389-L423)
 
-원고에는 그림 S1–S6을 Online Resource 1로 인용했다. 투고 시 [보충 자료 `ESM_1.pdf`](evidence/ESM_1.pdf)를 LaTeX 소스 ZIP과 별도 파일로 올린다. 기존 원고에 있는 정지 2.50 m 거리 그래프는 독립 실측 원점과 원본 프레임별 값이 확인되면 거리 정확도의 근거로 재검토할 수 있다. [기존 거리 그림](../../paper/workspace/IEEE_Access/figures/experiment1_results.png) · [좌표 원점 민감도](evidence/scan_origin_reference_sensitivity.csv)
+원고에는 그림 S1–S7을 Online Resource 1로 인용했다. S7은 11월 27일 카트 주행의 RGB·scan·costmap을 대조한 그림이다. 투고 시 [보충 자료 `ESM_1.pdf`](evidence/ESM_1.pdf)를 LaTeX 소스 ZIP과 별도 파일로 올린다. 기존 원고에 있는 정지 2.50 m 거리 그래프는 독립 실측 원점과 원본 프레임별 값이 확인되면 거리 정확도의 근거로 재검토할 수 있다. [카트 대조 수치](evidence/bridge_session_2026-11-27_cart_scan.csv) · [기존 거리 그림](../../paper/workspace/IEEE_Access/figures/experiment1_results.png) · [좌표 원점 민감도](evidence/scan_origin_reference_sensitivity.csv)
 
 `JINT/analysis/`에서 아래 명령으로 세 그림을 재생성할 수 있다.
 

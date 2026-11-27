@@ -267,6 +267,8 @@ A follow-up bridge session on November 27 contained 20 recordings with three vis
   \label{fig:pilot}
 \end{figure}
 
+For the open-frame cart in run 02, two RGB frames were paired to scans by acquisition timestamp (Online Resource~1, Fig.~S7). Replayed boundary pixels along the lower cart frame contributed the minimum lookup-table range in 11 selected adjacent bins at 9.923~s and 18 at 12.865~s after recording began. Recorded ranges in those bins were 3.25--3.28~m and 2.42--2.48~m, respectively. In the nearest published costmap for each frame, the 20 cells within 0.25~m of the median projected return had inscribed or lethal costs. The sampled costmaps preceded the paired camera frames in recorder time, so the correspondence describes the local map state around the selected observations.
+
 Other recordings from this session show conflicting camera and wheel-odometry signals. Before an operator interrupt in run 03, reported odometry changed by 1.51~m and $19.50^\circ$ between two RGB frames 5.10~s apart. The median corresponding feature displacement was 1.38~pixels across 242 forward--backward consistent tracks. In run 01, a separate 9.99~s interval showed 2.49~m of reported translation and a median image displacement of 0.14~pixels across 250 such tracks. Each pair was selected within a period of identical nonzero odometry twist. These discrepancies support flagging the odometric intervals. They leave the cause and the operator's reason for interruption unconfirmed.
 
 Six interrupted bin runs ended in the vicinity of the bridge exit. In the last five seconds before interruption, run 05 registered effectively zero forward and angular commands in all 100 samples. In runs 11, 13, 15, 16, and 19, 69--98 of 100 commands exceeded $0.02$~rad/s in angular magnitude, while each path stayed within 0.18~m of its first odometry position in that window. The last published local grids contained zero to eight inscribed or lethal cells out of 16 in a 0.25~m radius around the nominal goal. The command traces document distinct behaviors near the exit. The published grids do not establish why the controller chose a particular command or why the operator ended a run.
@@ -378,7 +380,7 @@ The offline comparisons characterize computational cost and scan stability in st
 \vlidar{} provides a calibrated planar observation from monocular RGB images for indoor reactive avoidance on a wheeled robot. Archived data support pilot demonstrations and an offline computation comparison. \pending{R4}{Conclude using observed condition-level performance and observed limits after verification of the formal trials.}
 
 \bmhead{Supplementary information}
-Online Resource~1 contains selected archived camera frames, empirical CPU timing distributions, terminal odometry diagnostics, an image--odometry comparison, a global-costmap comparison around a planning failure, and a local-costmap trace around earlier scan observations.
+Online Resource~1 contains selected camera frames, empirical CPU timing distributions, terminal odometry diagnostics, an image--odometry comparison, a global-costmap comparison around a planning failure, a local-costmap trace around earlier scan observations, and an RGB--scan--costmap comparison for the open-frame cart.
 
 Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and scripts to recalculate the numerical summaries.
 
