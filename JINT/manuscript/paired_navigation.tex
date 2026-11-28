@@ -32,3 +32,12 @@ The field protocol specified a goal 10~m ahead and a stationary box on the route
   \midrule\JINTPairedMeasures\bottomrule
   \end{tabular}
 \end{table}
+
+\IfFileExists{paired_endpoint_errors.pdf}{%
+Figure~\ref{fig:paired-endpoints} shows individual measurements for the started pairs.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{paired_endpoint_errors.pdf}
+  \caption{Final axle-midpoint distance to the marked goal center. Each row is one matched pair. A line joins the two recorded distances where both are available. Single markers indicate one measurement and a dash indicates none. The vertical line marks the 0.50~m endpoint criterion. Physical success also required obstacle passage without contact or intervention. The comparison input was \JINTComparator{}}
+  \label{fig:paired-endpoints}
+\end{figure}}{}

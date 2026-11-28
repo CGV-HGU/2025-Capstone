@@ -56,6 +56,8 @@ python3 render_box_approach.py
 
 ## 수치 보충 자료
 
+필터의 확인·소실 사례는 `JINT/analysis/`에서 `python3 render_filter_examples.py`로 재생성한다. 저장소의 Online Resource 2에 담긴 배열과 취득 시각만 사용한다. [사례 선택 규칙과 현장 그림 계획](../planning/2026-11-28_figures_and_writing.md) · [필터 그림](../manuscript/figures/filter_examples.pdf)
+
 [Online Resource 2](evidence/ESM_2.zip)에는 CPU 프레임별 처리 시간, RGB·스캔 상대 시각, 필터 전후 스캔 배열, 기존 홀·구름다리·5열람실의 회차별 진단값이 있다. 압축을 푼 뒤 NumPy 환경에서 `python3 recompute_numeric_supplement.py`를 실행하면 CPU·스캔 시각·필터·박스 접근 신호의 네 CSV를 다시 계산한다. 필터 결과에는 보류된 신호의 확인·소실·관측 종료 횟수와 확인된 신호의 지연이 담긴다. 클래스 ID별 배포 스캔 재현 수치는 `floor_class_scan_replay.csv`에 있다. 원본 rosbag, RGB 영상, 본 주행의 현장 판정은 별도 자료다.
 
 현재 PC의 원본에서 이 ZIP을 다시 만들 때는 `JINT/analysis/`에서 아래 명령을 실행한다. 투고할 때 [그림 `ESM_1.pdf`](evidence/ESM_1.pdf)와 [수치 `ESM_2.zip`](evidence/ESM_2.zip)을 원고 소스 ZIP과 별도의 파일로 올린다. [JINT 보충 자료 지침](https://link.springer.com/journal/10846/submission-guidelines#Supplementary%20Information%20(SI))

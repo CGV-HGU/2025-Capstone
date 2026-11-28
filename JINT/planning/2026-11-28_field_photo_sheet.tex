@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=19mm]{geometry}
+\usepackage{fontspec,kotex,tabularx,array,tikz}
+\usetikzlibrary{arrows.meta}
+\setmainfont{TeX Gyre Heros}
+\setmainhangulfont{Noto Sans CJK KR}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\definecolor{ink}{HTML}{203442}
+\definecolor{accent}{HTML}{166968}
+\newcommand{\sectionline}[1]{\par\vspace{4mm}{\large\bfseries\color{accent}#1}\par\vspace{2mm}}
+\newcommand{\blank}{\rule[-2pt]{\linewidth}{0.4pt}}
+\newcommand{\markbox}{\tikz\draw[ink] (0,0) rectangle (.22,.22);}
+\begin{document}\color{ink}
+{\LARGE\bfseries 비교 주행 배치와 촬영 기록}\par
+\vspace{1mm}장소당 한 장을 작성한다. 회차별 도달·접촉·개입 판정은 현장 CSV에 적는다.
+\sectionline{장소와 기준점}
+\renewcommand{\arraystretch}{1.48}
+\begin{tabularx}{\linewidth}{@{}lX@{\hspace{6mm}}lX@{}}
+장소 & \blank & 날짜·시각 & \blank \\
+촬영자 & \blank & 배치 사진 ID & \blank \\
+V-LiDAR 설정 ID & \blank & 비교 방법·설정 ID & \blank
+\end{tabularx}
+\vspace{3mm}
+\begin{center}
+\begin{tikzpicture}[x=1.18cm,y=.95cm,>=Stealth,font=\small]
+\draw[ink!45,dashed] (-.7,0)--(11,0);
+\draw[accent,thick,->] (0,-.15)--(0,.28)--(.45,.28);
+\draw[ink,thick,fill=white] (3.78,-.28) rectangle (4.22,.28);
+\fill[ink] (4,0) circle (1.3pt);
+\draw[accent,thick,dashed] (10,0) ellipse (.50 and .62);
+\draw[accent] (9.91,0)--(10.09,0) (10,-.09)--(10,.09);
+\node[above] at (0,.38) {차축 중앙};
+\node[above] at (4,.38) {박스 중심};
+\node[above] at (10,.76) {목표 반경 0.50 m};
+\draw[<->] (0,-.83)--node[fill=white]{4.00 m} (4,-.83);
+\draw[<->] (0,-1.48)--node[fill=white]{10.00 m} (10,-1.48);
+\draw[ink!50] (0,-.32)--(0,-1.58) (4,-.37)--(4,-.94) (10,-.72)--(10,-1.58);
+\end{tikzpicture}
+\end{center}
+{\small 도식은 계획 위치다. 줄자로 잰 실제 값과 단위를 아래에 기록한다.}\par
+\begin{tabularx}{\linewidth}{@{}lX@{\hspace{5mm}}lX@{}}
+출발점–목표 (m) & \blank & 출발점–박스 중심 (m) & \blank \\
+박스 폭·깊이·높이 (m) & \blank & 사용 가능 복도 폭 (m) & \blank \\
+바닥·조명 상태 & \blank & 카메라 위치·방향 & \blank
+\end{tabularx}
+\sectionline{촬영자가 남길 세 장면}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\linewidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\markbox & 배치 전경 & 첫 주행 전에 출발선·박스·목표 표시가 연결되는 방향으로 촬영한다. 장소와 촬영 위치를 적는다. \\
+\markbox & 장애물 통과 & 매회 영상 시작 때 회차 ID를 말하고, 장애물 가까운 쪽 차체와 박스가 함께 보이도록 정지까지 연속 촬영한다. 가려진 구간은 기록한다. \\
+\markbox & 종점 실측 & 재배치 전에 목표 중심과 차축 중앙의 바닥 투영점을 연결한 줄자의 양끝과 눈금을 촬영한다. 실측값은 m로 기록한다.
+\end{tabularx}
+\sectionline{파일 대조}
+첫 회차 ID \rule{.32\linewidth}{.4pt}\hfill 외부 영상 파일 \rule{.31\linewidth}{.4pt}\par
+\vspace{2mm}
+\markbox\ 같은 ID의 외부 영상·rosbag·JSON·현장 CSV 행을 대조했다.\par
+\vspace{2mm}
+시야 가림·중단·배치 변경 시각과 사유\par\vspace{5mm}\blank\par
+\sectionline{실제 배치 스케치}
+{\small 통행 경계, 박스, 외부 카메라 위치와 촬영 방향을 표시한다.}\par
+\vspace{1mm}
+\noindent\fbox{\rule{0pt}{31mm}\hspace{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}}
+\end{document}

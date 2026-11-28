@@ -28,7 +28,8 @@ done < <(sed -n 's/.*\\includegraphics\[[^]]*\]{\([a-zA-Z0-9_]*\.pdf\)}.*/\1/p' 
 
 if [[ -n $paired_log ]]; then
   python3 ../analysis/paired_field_results.py "$paired_log" \
-    --tex "$staging/source/paired_field_rows.tex" --public-csv "$staging/source/paired_trials.csv"
+    --tex "$staging/source/paired_field_rows.tex" --public-csv "$staging/source/paired_trials.csv" \
+    --endpoint-figure "$staging/source/paired_endpoint_errors.pdf"
   cp paired_navigation.tex "$staging/source/"
 elif [[ -n $field_log ]]; then
   python3 ../analysis/summarize_trials.py "$field_log" \

@@ -105,7 +105,7 @@ def metric(rows, key, digits):
     return f"{len(values)}: {median(values):.{digits}f} [{min(values):.{digits}f}, {max(values):.{digits}f}]"
 
 
-def make_tex(attempts):
+def make_tex(attempts, endpoint_figure=None):
     groups, pairs = defaultdict(list), defaultdict(dict)
     names = {}
     for row in attempts:
@@ -122,6 +122,9 @@ def make_tex(attempts):
         groups[site, arm].append(row)
     if len(names) > 1:
         raise ValueError("multiple comparator methods were used; report these configurations separately")
+    if endpoint_figure is not None:
+        from render_paired_endpoints import render
+        render(pairs, SITES, endpoint_figure)
     comparator = tex(next(iter(names.values()))) if names else "Comparator (not yet run)"
     outcomes, measures, pair_rows = [], [], []
     for site, label in SITES.items():
@@ -175,10 +178,11 @@ def main():
     parser.add_argument("field_log", type=Path)
     parser.add_argument("--tex", type=Path, required=True)
     parser.add_argument("--public-csv", type=Path, required=True)
+    parser.add_argument("--endpoint-figure", type=Path)
     args = parser.parse_args()
     try:
         attempts = read_attempts(args.field_log)
-        tables = make_tex(attempts)
+        tables = make_tex(attempts, args.endpoint_figure)
     except (ValueError, OSError) as error:
         parser.exit(1, f"{error}\n")
     args.tex.write_text(tables, encoding="utf-8")

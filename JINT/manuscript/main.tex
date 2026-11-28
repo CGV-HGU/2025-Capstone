@@ -108,7 +108,7 @@ The OMO-R1 mobile base uses a fixed RGB camera and onboard CPU inference. A ligh
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\linewidth]{pipeline.pdf}
-  \caption{V-LiDAR system architecture illustrated with a bridge pilot. (a) The recorded RGB image and its offline-replayed floor mask. Dashed guides mark the scan band and the highlighted pixel column. A side-view schematic shows the calibrated projection. (b) The filtered scan with the same acquisition timestamp. Amber marks the same angular bin before filtering in (a) and in the recorded scan in (b). (c) The recorded local costmap and path in the robot frame. Darker cells indicate higher cost. (d) Velocity commands and wheel-odometry and transform (TF) feedback}
+  \caption{From a camera boundary to a velocity command in a bridge pilot. (a) The amber pixel on the replayed floor boundary projects to 2.56~m at a bin bearing of $-8.5^\circ$. The dashed guides mark the scan band and selected column. (b) The recorded scan with the same acquisition stamp reports 3.01~m in that bin after filtering. (c) The local costmap and path are shown in the robot frame. Darker cells indicate higher cost. (d) The controller issues velocity commands and receives wheel-odometry and transform (TF) feedback}
   \label{fig:pipeline}
 \end{figure}
 
@@ -369,6 +369,8 @@ For the two stationary clips, enabling the filter reduced the mean adjacent-fram
 
 Table~\ref{tab:filter} follows each withheld return until confirmation or loss. In bridge pilot~1, 81 of the 119 confirmed returns appeared on the next sampled frame and 38 appeared later. All 109 unconfirmed returns in this clip lasted one bypass frame. In pilot~2, 58 of 59 confirmed returns appeared on the next frame. Of the 107 returns that disappeared before confirmation, 11 had persisted for at least two bypass frames. All observations resolved before clip end. Adjacent channels can observe the same surface, so the number of physical obstacles missed cannot be inferred from these counts. Online Resource~2 includes the per-frame arrays and the code for this calculation.
 
+Figure~\ref{fig:filter-examples} shows what confirmation means for an individual channel. In pilot~1, the bypass range stayed near 2.33~m through the first filtered return, which was still 7.38~m. In pilot~2, the bypass supplied two successive in-range samples before the return was lost.
+
 \begin{table}[htbp]
 \caption{Temporal filtering in paired replay. Range steps use adjacent-frame channel pairs valid in both variants at both times (13,835, 8,945, 60,604 and 40,291 pairs in row order). In the moving clips, each initially withheld channel return was followed until it appeared in the filtered scan or disappeared from the bypass. Delays summarize confirmed returns.}
 \label{tab:filter}
@@ -393,6 +395,13 @@ Bridge pilot 2 & 166 & 59 & 107 & 100 & 136 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{filter_examples.pdf}
+  \caption{Two withheld returns in the moving replays. Each mark is a sampled acquisition in one angular channel, with time measured from its first withheld return. Shading ends at the first filtered in-range sample or the loss of the bypass return. (a) A confirmation at the 95th-percentile delay for pilot~1. (b) The earliest multi-frame bypass return lost before confirmation in pilot~2. The valid scan range was 0.1--10~m}
+  \label{fig:filter-examples}
+\end{figure}
 
 \section{Discussion}\label{sec:discussion}
 

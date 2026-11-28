@@ -208,9 +208,10 @@ def projection(figure, raw, bearing):
     axis.text(.42, .16, r"$x(v)$", color=TEAL, fontsize=8.2, ha="center", va="center",
               bbox={"facecolor": "#e0eee9", "edgecolor": "none", "pad": 2})
     bearing_label = f"{bearing:+.1f}°".replace("-", "−")
-    axis.text(.965, .85, f"{raw:.2f} m  /  {bearing_label}", ha="right", va="center",
+    axis.text(.965, .85, f"{raw:.2f} m", ha="right", va="center",
               fontsize=8.3, color=DARK_AMBER, fontweight="semibold")
-    axis.text(.965, .65, "LUT range / bin bearing", ha="right", va="center", fontsize=7.4, color=INK)
+    axis.text(.965, .65, f"Before filtering  ·  {bearing_label}", ha="right", va="center",
+              fontsize=7.4, color=INK)
 
 
 def scan_panel(axis, scan, channel):
@@ -293,6 +294,11 @@ def navigation(axis, costmap, path, odom, transform):
     lateral = .5 * (forward[1] - forward[0]) * aspect
     axis.set(xlim=(lateral, -lateral), ylim=forward, aspect="equal")
     axis.set_facecolor("#f3f1f7")
+    bar_start = lateral - .18
+    white_halo = [patheffects.withStroke(linewidth=2.8, foreground="white")]
+    axis.plot([bar_start, bar_start - 1], [2.80, 2.80], color=INK, lw=1.2, path_effects=white_halo)
+    axis.text(bar_start - .5, 2.67, "1 m", ha="center", va="top", fontsize=7.4,
+              color=INK, path_effects=white_halo)
     axis.annotate("Local path", (px[len(px) // 2], py[len(py) // 2]), xytext=(14, -4),
                   textcoords="offset points", va="center", fontsize=7.2, color=TEAL,
                   bbox={"facecolor": "white", "edgecolor": "none", "boxstyle": "round,pad=.2"},
@@ -309,7 +315,7 @@ def draw(rgb, scan, costmap, path, odom, transform, destination):
     bearing = math.degrees(scan.angle_min + channel * scan.angle_increment)
 
     heading(figure, SCENE[0], .952, "(a) From image to ground")
-    heading(figure, SCAN[0], .952, "(b) Virtual scan")
+    heading(figure, SCAN[0], .952, "(b) Filtered scan")
     heading(figure, COSTMAP[0], .545, "(c) Nav2 costmap")
     scene(figure, rgb, floor, rows, band, u, v)
     figure.text(SCENE[0], .495, "Calibrated ground projection", va="center", fontsize=8.5,
@@ -318,7 +324,7 @@ def draw(rgb, scan, costmap, path, odom, transform, destination):
     scan_panel(tile(figure, SCAN), scan, channel)
     navigation(tile(figure, COSTMAP), costmap, path, odom, transform)
     connector(figure, ((.558, .363), (.589, .363), (.589, .755), (.628, .755)), color=DARK_AMBER)
-    figure.text(.634, .602, "Binning + temporal filter", va="center", fontsize=7.9, color=BLUE)
+    figure.text(.634, .602, "Published on /scan", va="center", fontsize=7.9, color=BLUE)
     connector(figure, ((.949, .631), (.949, .510)))
 
     heading(figure, .028, .219, "(d) Drive and feedback")
