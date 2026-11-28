@@ -234,6 +234,15 @@ The earlier conference abstract reported 39 completions in 50 attempts with mono
 
 The same 18 runs ended within the $0.50\m$ nominal radius in wheel odometry, at distances of 0.220--0.242~m. Tightening this descriptive radius to $0.25\m$ gives the same 18 hall endpoints. The two timed-out runs ended 6.36~m and 7.17~m from the nominal goal. Per-run poses and console-event timings are in Online Resource~2. Online Resource~1, Fig.~S3 shows additional terminal odometry diagnostics. The bags preserve virtual scans and wheel odometry. They contain no RGB, and the recovered console logs provide no separate measurement of physical contact or intervention. Separate evening recordings of box approaches on a reflective floor supply the images for the offline CPU comparison.
 
+Figure~\ref{fig:hall-paths} shows wheel odometry for all 20 active goals. The earlier setup description places the box on the route centerline at approximately $x=4.0$--$4.5\m$. For each run we interpolated the lateral coordinate between the two wheel poses bracketing the first forward crossing of $x=4.0\m$. All 18 completed runs crossed this station on the same side of the centerline, at a median $y=0.96\m$ (range $0.70$--$2.40\m$), before returning toward the goal. The two timed-out runs ended at $x=3.70\m$ and $2.91\m$ and never reached that station in odometry. The offset is measured from the nominal route centerline. Body-to-box clearance would require the box pose and the robot footprint in a common independently measured frame.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{hall_goal_paths.pdf}
+  \caption{Hall trajectories from goal acceptance to the client result. Each line is one run in the recorded wheel-odometry frame. Crosses mark the two timeout endpoints. The shaded band marks the approximate longitudinal position reported for the box in the earlier setup description}
+  \label{fig:hall-paths}
+\end{figure}
+
 \subsection{Exploratory bridge trials}
 
 A follow-up bridge session on November 27 contained 20 recordings with three visibly different obstacles. The run with a chair timed out, one of three runs with an open-frame cart completed according to Nav2, and six of sixteen runs with a bin completed according to Nav2. Across the session, the client logged seven Nav2 completions, three 90~s timeouts and ten operator interrupts. Figure~\ref{fig:pilot} shows passage around the cart and bin in runs 02 and 08, in which Nav2 reported completion 38.86 and 47.16~s after goal acceptance, respectively.
@@ -403,7 +412,7 @@ The progress analysis links renewed commands to logged recovery events across th
 \bmhead{Supplementary information}
 Online Resource~1 contains selected camera frames, empirical CPU timing distributions, terminal odometry diagnostics, an image--odometry comparison, a global-costmap comparison around a planning failure, a local-costmap trace around earlier scan observations, and an RGB--scan--costmap comparison for the open-frame cart.
 
-Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and trial diagnostics for the archived hall, daylit bridge, and Fifth Reading Room corridor. The corridor files include the chair scan, detailed run-20 recoveries, and the event-level analysis of all recorded progress failures. It also includes the follow-up RGB review and the box annotations and model readouts. Included scripts recalculate CPU timing, scan cadence, filter statistics and within-clip cue ordering.
+Online Resource~2 contains per-frame CPU timings, relative scan and camera timestamps, paired filter replay arrays, and trial diagnostics for the archived hall, daylit bridge, and Fifth Reading Room corridor. The corridor files include the chair scan, detailed run-20 recoveries, and the event-level analysis of all recorded progress failures. It also includes the 20 hall paths and lateral offsets, the follow-up RGB review and the box annotations and model readouts. Included scripts recalculate CPU timing, scan cadence, filter statistics and within-clip cue ordering.
 
 \bibliography{references}
 

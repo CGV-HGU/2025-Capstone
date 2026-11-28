@@ -34,7 +34,7 @@ TRIAL_CSVS = (
     "class5_session_2026-11-27.csv", "class5_20_recovery_costmap.csv", "class5_20_chair_scan.csv",
     "class5_session_2026-11-27_progress.csv", "bridge_session_2026-11-27_end_states.csv",
     "bridge_session_2026-11-27_cart_scan.csv", "followup_rgb_samples.csv", "followup_rgb_review.csv",
-    "box_approach_cues.csv",
+    "box_approach_cues.csv", "hall_goal_paths.csv", "hall_goal_excursions.csv",
 )
 
 
@@ -137,6 +137,13 @@ entries indicate observations outside the stated time windows. Trial
 times for the bridge audit and Fifth Reading Room are relative to goal acceptance
 unless the column specifies otherwise. These trial tables contain recorded
 navigation diagnostics. External field assessments are separate.
+
+hall_goal_paths.csv gives every wheel x and y sample in the active hall goal
+interval, with nanoseconds from the logged client acceptance. The excursions
+CSV gives peak absolute lateral position, linearly interpolated first forward
+crossings of x=4.0 and 4.5 m, and the last active-goal pose. Blank crossings
+indicate the station was never reached. Lateral position is relative to the
+nominal centerline.
 
 followup_rgb_samples.csv lists the recorder timestamps of the sampled forward
 views. followup_rgb_review.csv describes the initial object and last view of

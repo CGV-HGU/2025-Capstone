@@ -2,6 +2,8 @@
 
 ## 11월 28일 추가 주행 없이 검증한 결과
 
+팔각정의 목표 수락과 클라이언트 종료 사이에서 20회 전체의 바퀴 궤적을 다시 추출했다. IEEE 원고가 박스의 종방향 위치를 약 4.0–4.5 m로 기술하므로 4.0 m 지점을 처음 통과할 때의 횡좌표를 이웃 odom 표본 사이에서 선형 보간했다. 완료 18회 모두 같은 방향으로 중앙선을 벗어났고 횡좌표 중앙값은 0.96 m, 범위는 0.70–2.40 m였다. 시간 초과 2회는 해당 지점에 이르기 전에 끝났다. 이 값은 추정 궤적의 횡이동이며 차체와 장애물 사이의 실측 여유거리는 별도 측정 대상이다. [20회 궤적 그림](../manuscript/figures/hall_goal_paths.pdf) · [회차별 수치](evidence/hall_goal_excursions.csv) · [추출 코드](audit_hall_paths.py)
+
 - **종료 결과.** 팔각정 20회의 ROS 클라이언트·서버 로그를 bag 구간에 대조했다. 구름다리와 5열람실은 보존된 JSON과 따로 집계한다. 정지 규칙이 다른 그룹은 표에서 나누었다. [팔각정 로그](evidence/hall_session_2026-09-21_nav_logs.csv)
 - **후속 주행 RGB.** 구름다리 20건과 5열람실 보존 17건의 목표 활성 구간에서 고정 시각을 정해 총 400장과 마지막 시야를 대조했다. 각 프레임은 목표 수락 후 0~32초까지 4초 간격, 종료 5초 전, 종료 시점에 대응한다. 가장 가까운 구간 내 표본을 사용한다. 구름다리 10건의 운영자 중단 동기는 미기록이며 5열람실 19번은 현장 안전 중단 진술이 있다. 전방 영상만으로 실제 반경·차체 측면 접촉을 확정할 수 없다. [회차별 장면](evidence/followup_rgb_review.csv) · [400장 타임스탬프](evidence/followup_rgb_samples.csv)
 - **외부 방법 비교.** 기존 박스 영상 두 개의 움직이는 구간에서 이전 벤치마크의 명목 거리·시야 선택 조건을 만족한 27장 전부를 사용했다. 원본 640×480 영상에서 박스 몸통의 수평 단면 양끝을 표시했다. 근처의 밝기 경계로 좌우 표시를 맞추고 전체 오버레이를 눈으로 확인했다. 중앙 절반 너비에서 V-LiDAR는 유한 스캔 거리 중앙값의 역수, 두 깊이 모델은 해당 행 주위 세 줄의 상대 disparity 중앙값을 사용했다. 입력 시각·좌표와 수치가 보충 ZIP에 있다. 같은 영상 쌍이 반복 사용되므로 독립 실험 횟수로 해석할 수 없다. [표시 좌표](evidence/box_approach_annotations.csv) · [모델 출력](evidence/box_approach_cues.csv) · [비교 그림](../manuscript/figures/box_approach.pdf)
@@ -11,6 +13,7 @@
 ```bash
 cd ~/ros2_ws/JINT/analysis
 source /opt/ros/humble/setup.bash
+python3 audit_hall_paths.py
 python3 sample_navigation_rgb.py /tmp/jint-followup-views
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python3 replay_box_approach.py
 python3 render_box_approach.py
