@@ -12,7 +12,6 @@ import matplotlib
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
-from matplotlib.patches import Patch
 
 from audit_hall_archive import pose
 from audit_hall_navigation_logs import LINE, NANOSECONDS
@@ -60,7 +59,6 @@ def render(runs, destination):
     color, timeout = "#397b8d", "#aa4d28"
     fig, ax = plt.subplots(figsize=(5.1, 2.42))
     fig.subplots_adjust(left=.105, right=.986, bottom=.20, top=.80)
-    ax.axvspan(4, 4.5, color="#dfdacf", alpha=.70, lw=0)
     for trial, status, points in runs:
         _, xs, ys = zip(*points)
         if status == "SUCCEEDED":
@@ -80,9 +78,8 @@ def render(runs, destination):
     ax.grid(axis="y", lw=.4, color=".89")
     handles = [Line2D([],[],color=color,label="Completed (18)"),
                Line2D([],[],color=timeout, ls="--", marker="x", label="Timed out (2)"),
-               Patch(color="#dfdacf", label="Reported box x"),
                Line2D([],[],color="#113d46",ls="",marker="*",label="Goal")]
-    fig.legend(handles=handles, ncol=4, loc="upper center", fontsize=7.3, frameon=False,
+    fig.legend(handles=handles, ncol=3, loc="upper center", fontsize=7.3, frameon=False,
                columnspacing=1.25, handlelength=1.7)
     fig.savefig(destination, metadata={"CreationDate":None, "ModDate":None})
     plt.close(fig)
