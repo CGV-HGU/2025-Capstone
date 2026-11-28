@@ -7,6 +7,7 @@
 팔각정 20회의 목표 활성 구간을 겹친 그림에는 완료 18회와 시간 초과 2회의 경로가 모두 들어 있다. 이 그림은 10 m 목표에 대한 Nav2 결과와 바퀴 odom 경로를 보여준다. 개별 회차의 박스 위치와 접촉 여부는 미확인이다. [전 회차 궤적](manuscript/figures/hall_goal_paths.pdf) · [회차별 횡이동](analysis/evidence/hall_goal_excursions.csv)
 
 - [기존 rosbag으로 작성한 원고의 제출 전 체크리스트](planning/JINT_draft_checklist.md)
+- [팔각정 한 세션에서 실제 회피·도달을 확인하는 방법과 현장 기록표](planning/2026-11-28_hall_confirmation.md)
 - [추가 비교 실험이 필요할 때의 계획](planning/2026-11-27_JINT_completion_plan.md)
 - [11월 27일 팀 인수인계와 현장 체크리스트](planning/2026-11-27_plan.md)
 - [11월 27일 구름다리 20회 결과와 코드 점검](planning/2026-11-27_bridge_review.md)

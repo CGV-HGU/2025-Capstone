@@ -1,0 +1,11 @@
+trial_id,start_time_iso8601,end_time_iso8601,site,method,target_distance_m,target_radius_m,observer,configuration_id,obstacle_passed,end_distance_measured_m,contact,manual_intervention,physical_outcome,end_reason,nav2_status,video_file,bag_path,result_json,notes
+hallcheck_20261128_01,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_02,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_03,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_04,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_05,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_06,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_07,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_08,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_09,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
+hallcheck_20261128_10,,,palgakjeong,V-LiDAR,10.00,0.50,,,,,,,,,,,,,
