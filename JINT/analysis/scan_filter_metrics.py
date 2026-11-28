@@ -30,17 +30,37 @@ def flicker_and_delta(raw, filtered):
 
 
 def onset_timing(raw, filtered, stamps):
-    """Count withheld onsets and measure the delay to next-frame confirmation."""
+    """Follow an initially withheld bin until confirmation, loss, or clip end."""
     raw_valid, filtered_valid = valid_ranges(raw), valid_ranges(filtered)
     withheld = ~raw_valid[:-2] & raw_valid[1:-1] & ~filtered_valid[1:-1]
     confirmed = withheld & raw_valid[2:] & filtered_valid[2:]
     isolated = withheld & ~raw_valid[2:] & ~filtered_valid[2:]
     intervals_ms = np.diff(stamps[1:]) / 1e6
     delays_ms = intervals_ms[np.where(confirmed)[0]]
+    episode_delays = []
+    ended = ended_multiframe = censored = 0
+    for previous_frame, channel in zip(*np.nonzero(withheld)):
+        start = previous_frame + 1
+        frame = start + 1
+        while frame < len(stamps) and raw_valid[frame, channel] and not filtered_valid[frame, channel]:
+            frame += 1
+        if frame == len(stamps):
+            censored += 1
+        elif raw_valid[frame, channel]:
+            episode_delays.append((stamps[frame] - stamps[start]) / 1e6)
+        else:
+            ended += 1
+            ended_multiframe += int(frame - start > 1)
     return {
         "withheld_onsets": int(withheld.sum()),
         "withheld_single_frame_onsets": int(isolated.sum()),
         "confirmed_next_frame_onsets": int(confirmed.sum()),
         "confirmation_delay_median_ms": np.median(delays_ms) if delays_ms.size else "",
         "confirmation_delay_p95_ms": np.percentile(delays_ms, 95) if delays_ms.size else "",
+        "confirmed_during_raw_episode": len(episode_delays),
+        "raw_episode_ended_unconfirmed": ended,
+        "multiframe_ended_unconfirmed": ended_multiframe,
+        "right_censored_unconfirmed": censored,
+        "episode_confirmation_median_ms": np.median(episode_delays) if episode_delays else "",
+        "episode_confirmation_p95_ms": np.percentile(episode_delays, 95) if episode_delays else "",
     }

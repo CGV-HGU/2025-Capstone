@@ -35,6 +35,7 @@ TRIAL_CSVS = (
     "class5_session_2026-11-27_progress.csv", "bridge_session_2026-11-27_end_states.csv",
     "bridge_session_2026-11-27_cart_scan.csv", "followup_rgb_samples.csv", "followup_rgb_review.csv",
     "box_approach_cues.csv", "hall_goal_paths.csv", "hall_goal_excursions.csv",
+    "floor_class_scan_replay.csv",
 )
 
 
@@ -119,6 +120,14 @@ float arrays with frames as rows and internal scan channels as columns. Bounds
 for valid observations are 0.1 to 10 m. acquisition_elapsed_ns contains elapsed
 image acquisition times for the moving clips, where frames match recorded scan
 source stamps. It is empty for the fixed-scene clips sampled by recorder time.
+For each initially withheld bin with a preceding and a following sample,
+recomputed_filter_timing.csv counts confirmation while the bypass remains valid,
+loss of the bypass return before confirmation, and right censoring at clip end.
+Episode delays use only confirmed returns. An episode occupies one angular bin.
+
+floor_class_scan_replay.csv compares the scans reproduced using each candidate
+floor-class ID with recorded scans at matching acquisition times in two bags.
+Agreement measures reproducibility of the deployed output.
 
 This archive supports recalculation of the reported scan and timing statistics.
 hall_session_2026-09-21.csv gives the 20 historical hall endpoints relative to
@@ -158,7 +167,7 @@ recomputation counts within-clip pairs with strictly different widths above the
 specified margin and with increasing cue for the larger image. Pairs share
 frames. The resulting counts describe these two approaches.
 
-Raw RGB and separate field observations are held by the authors.
+The underlying sensor recordings are held by the authors.
 """
 
 

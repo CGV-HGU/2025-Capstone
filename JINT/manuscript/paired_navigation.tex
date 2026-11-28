@@ -1,0 +1,34 @@
+\subsection{Field-observed obstacle passage on matched routes}\label{sec:paired-field}
+The field protocol specified a goal 10~m ahead and a stationary box on the route. Success required observed passage beyond the box, a final axle midpoint within $0.50\m$ of the marked goal center, and no contact or manual intervention. The endpoint measure is the planar distance measured on the floor after the robot stopped. The comparison input in the field sheet is \JINTComparator{}. Each pair identifies two attempts assigned to the same start and obstacle placement. The tables count started attempts and retain incomplete pairs.
+
+\begin{table}[htbp]
+  \caption{Field outcomes by site and actual scan input. $N$ counts started attempts. $S$, $F$ and $U$ count success, failure and unresolved outcomes. Contact and intervention are counts over attempts with a known observation for that event.}
+  \label{tab:paired-outcomes}\centering\small
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}llrrrrrr@{}}\toprule
+  Site & Input & $N$ & $S$ & $F$ & $U$ & Contact & Intervention \\
+  \midrule\JINTPairedOutcomes\bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \caption{Physical outcomes within matched pairs. The two middle outcome columns count success for one input and observed failure for the other. Open pairs include a missing attempt or an unresolved verdict.}
+  \label{tab:paired-agreement}\centering\small
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabular}{@{}lrrrrrr@{}}\toprule
+  & & \multicolumn{4}{c}{Observed outcomes} & \\
+  \cmidrule(lr){3-6}
+  Site & Pairs & Both pass & V-LiDAR only & Comparator only & Both fail & Open \\
+  \midrule\JINTPairedPairs\bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \caption{Field endpoint error over all measured attempts and Nav2 client elapsed time over physically successful attempts with a logged time. Each cell gives sample count, median and range.}
+  \label{tab:paired-measures}\centering\small
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}llll@{}}\toprule
+  Site & Input & Endpoint error (m) & Client time (s) \\
+  \midrule\JINTPairedMeasures\bottomrule
+  \end{tabular}
+\end{table}

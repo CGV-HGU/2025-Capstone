@@ -46,8 +46,8 @@ python3 render_box_approach.py
 
 ## 남은 현장 작업
 
-1. 수정된 odom으로 정지, 이전 목표 종료, 리셋, 다음 회차 시작을 실차에서 확인한다. 이 PC의 ROS 2 설치 환경에서 로드되는 MCU 모듈은 0.25초 피드백 타임아웃이 적용된 현재 소스를 가리킨다. 카메라 광학 중심의 높이·기울기와 실제 사용하는 스캔 원점을 첫 세팅 때 기록한다. 같은 설정으로 기존 장소 낮·밤, 새 인공조명 실내, 자연광 구름다리의 4조건을 취득한다.
-2. [기존 현장 CSV 양식](../../paper/review/planning/templates/field_log.csv)에 각 시도의 실제 목표 구역 도달, 접촉, 수동 개입, bag ID, 실패 사유를 기록한다. 자료 이상으로 판정할 수 없는 시도도 행과 사유를 보존한다. 결과 집계에는 이 디렉터리의 summarize_trials.py에 작성한 현장 CSV를 넘긴다.
+1. 두 방법의 스캔 프레임·좌우 방향·거리·취득 시각, odom 정지와 리셋을 확인한다. 거리 보정에 사용한 장면과 별도 실측 장면에서 비교 입력을 검증한 뒤 두 방법의 설정을 고정한다. [현재 실험 절차](../planning/2026-11-28_hall_confirmation.md)
+2. 팔각정과 5열람실의 비교 주행은 각각 5쌍이다. 실제 설정·독립적인 목표 도달·접촉·개입과 측정 누락을 같은 행에 기록한다. 두 장소용 작업표와 `--paired-log` 빌드 명령은 [현장 인수인계](../planning/2026-11-28_hall_confirmation.md#기록표에서-논문까지)에 있다.
 3. 성공과 실패를 대표하는 bag의 RGB·scan·경로·odom을 맞춰 지연 감지, 경로 생성, 이동 실행을 검토한다. 11월 26일 파일럿에서는 구름다리 01·02의 Nav2 완료, 03·04의 전역 경로 생성 실패, 05의 이전 목표 교체와 반복 속도 피드백을 ROS 로그와 원본 bag에서 구분했다. 새 주행에서 근거리 미검출이 반복되거나 독립 거리 결과를 쓰기로 한다면 해당 구간의 정적 클립을 추가한다. [Nav2 사건 CSV](evidence/pilot_nav_events.csv) · [속도 피드백 집계](evidence/pilot_trace_summary.csv)
 
 11월 27일 로봇 PC의 로컬 통합 러너(`scripts/run_trial.sh`)에서 녹화 DB 생성 확인을 보완했다. 녹화 프로세스가 살아 있어도 10초 안에 DB 파일이 생기지 않으면 목표 전송 단계 전에 종료한다. DB 생성·미생성 분기는 모의 테스트로 확인했다. 첫 실차 파일럿에서는 저장된 bag의 RGB·scan·odom 메시지를 확인한다.
@@ -56,7 +56,7 @@ python3 render_box_approach.py
 
 ## 수치 보충 자료
 
-[Online Resource 2](evidence/ESM_2.zip)에는 CPU 프레임별 처리 시간, RGB·스캔 상대 시각, 필터 전후 스캔 배열, 기존 홀·구름다리·5열람실의 회차별 진단값이 있다. 압축을 푼 뒤 NumPy 환경에서 `python3 recompute_numeric_supplement.py`를 실행하면 CPU·스캔·필터 세 표의 수치를 다시 계산한다. 원본 rosbag, RGB 영상, 본 주행의 현장 판정은 별도 자료다.
+[Online Resource 2](evidence/ESM_2.zip)에는 CPU 프레임별 처리 시간, RGB·스캔 상대 시각, 필터 전후 스캔 배열, 기존 홀·구름다리·5열람실의 회차별 진단값이 있다. 압축을 푼 뒤 NumPy 환경에서 `python3 recompute_numeric_supplement.py`를 실행하면 CPU·스캔 시각·필터·박스 접근 신호의 네 CSV를 다시 계산한다. 필터 결과에는 보류된 신호의 확인·소실·관측 종료 횟수와 확인된 신호의 지연이 담긴다. 클래스 ID별 배포 스캔 재현 수치는 `floor_class_scan_replay.csv`에 있다. 원본 rosbag, RGB 영상, 본 주행의 현장 판정은 별도 자료다.
 
 현재 PC의 원본에서 이 ZIP을 다시 만들 때는 `JINT/analysis/`에서 아래 명령을 실행한다. 투고할 때 [그림 `ESM_1.pdf`](evidence/ESM_1.pdf)와 [수치 `ESM_2.zip`](evidence/ESM_2.zip)을 원고 소스 ZIP과 별도의 파일로 올린다. [JINT 보충 자료 지침](https://link.springer.com/journal/10846/submission-guidelines#Supplementary%20Information%20(SI))
 

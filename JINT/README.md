@@ -18,4 +18,6 @@
 - [주석이 있는 내부 검토본 PDF](planning/JINT_author_review.pdf) · [이전 투고 전략](planning/2026-11-27_JINT_submission_strategy.md) · [커버레터](planning/cover_letter_draft.md)
 - [실험 분석과 재현 방법](analysis/README.md) · [rosbag RGB로 논문 사진 만들기](analysis/README.md#실험-환경-사진과-기존-원고-그림) · [보충 그림 PDF](analysis/evidence/ESM_1.pdf) · [수치 근거 ZIP](analysis/evidence/ESM_2.zip)
 
-현재 원고는 팔각정·구름다리·5열람실의 기록과 오프라인 재생을 사용한다. `JINT/`에서 `bash manuscript/build_manuscript.sh`로 초안 PDF, 공저자 검토 PDF와 소스 ZIP을 갱신한다. 회차별 현장 판정 자료가 추가되는 경우 같은 빌드에 현장 CSV를 인수로 줄 수 있다.
+현재 원고는 기존 기록과 영상 재생을 사용한다. 두 구름다리 주행에서 처음 보류된 스캔 신호가 같은 각도에서 실제 출력에 나타나거나 사라질 때까지 추적했다. 필터 지연의 중앙값은 확인된 신호에서 각각 136 ms와 100 ms였다. [결과와 집계 코드](analysis/evidence/ESM_2.zip)
+
+`JINT/`에서 `bash manuscript/build_manuscript.sh`로 현재 원고·내부 검토 PDF·소스 ZIP을 빌드한다. 두 장소 비교 실험을 마치면 `bash manuscript/build_manuscript.sh --paired-log ~/data/jint/paired_field/field_log.csv`로 초록·현장 결과표·배포용 회차 CSV를 함께 만든다. [촬영 당일 작성법과 마감 절차](planning/2026-11-28_hall_confirmation.md#기록표에서-논문까지)

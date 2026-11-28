@@ -2,11 +2,15 @@
 set -euo pipefail
 
 if [[ ${1-} == --help ]]; then
-  echo "Usage: $0 [FIELD_LOG [--configuration ID]]"
+  echo "Usage: $0 [FIELD_LOG [--configuration ID] | --paired-log PAIRED_FIELD_CSV]"
   exit 0
 fi
 field_log=""
-if (( $# > 0 )); then
+paired_log=""
+if [[ ${1-} == --paired-log ]]; then
+  if (( $# != 2 )); then echo "--paired-log needs one field CSV" >&2; exit 2; fi
+  paired_log=$(realpath -e -- "$2")
+elif (( $# > 0 )); then
   field_log=$(realpath -e -- "$1")
   shift
 fi
@@ -22,7 +26,11 @@ while IFS= read -r figure; do
   cp "figures/$figure" "$staging/source/"
 done < <(sed -n 's/.*\\includegraphics\[[^]]*\]{\([a-zA-Z0-9_]*\.pdf\)}.*/\1/p' main.tex | sort -u)
 
-if [[ -n $field_log ]]; then
+if [[ -n $paired_log ]]; then
+  python3 ../analysis/paired_field_results.py "$paired_log" \
+    --tex "$staging/source/paired_field_rows.tex" --public-csv "$staging/source/paired_trials.csv"
+  cp paired_navigation.tex "$staging/source/"
+elif [[ -n $field_log ]]; then
   python3 ../analysis/summarize_trials.py "$field_log" \
     --latex-output "$staging/source/formal_trial_rows.tex" \
     --figure-output "$staging/source/formal_trial_outcomes.pdf" "$@"
