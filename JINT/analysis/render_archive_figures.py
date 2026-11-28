@@ -61,8 +61,8 @@ def bag_frame(bag, seconds):
 
 def load_layout(layout):
     panels = json.loads(layout.read_text(encoding="utf-8"))
-    if not isinstance(panels, list) or len(panels) != 4:
-        raise ValueError("the draft site layout requires four panels in manuscript order")
+    if not isinstance(panels, list) or len(panels) not in (3, 4):
+        raise ValueError("the site layout requires three or four panels in manuscript order")
     images = []
     for panel in panels:
         if panel is None:
@@ -100,8 +100,9 @@ def show_photo(axis, image, panel):
 
 
 def save_panels(images, destination, panels=None):
-    rows = (len(images) + 1) // 2
-    figure, axes = plt.subplots(rows, 2, figsize=(4.18, 1.79 * rows), squeeze=False)
+    columns = 3 if panels is not None and len(images) == 3 else 2
+    rows = (len(images) + columns - 1) // columns
+    figure, axes = plt.subplots(rows, columns, figsize=(2.09 * columns, 1.79 * rows), squeeze=False)
     figure.subplots_adjust(left=0.006, right=0.994, top=0.992, bottom=0.132 / rows,
                            wspace=0.035, hspace=0.20)
     for axis in axes.flat:
@@ -134,7 +135,7 @@ def main():
     inputs.add_argument("--frame", action="append", nargs=2, metavar=("BAG", "SECONDS"),
                         help="use the first recorded RGB frame at or after this time from bag start")
     inputs.add_argument("--placeholder", action="store_true", help="render four empty RGB panels marked TBD")
-    inputs.add_argument("--layout", type=Path, help="render a four-panel draft from a JSON layout")
+    inputs.add_argument("--layout", type=Path, help="render site panels from a JSON layout")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.placeholder:

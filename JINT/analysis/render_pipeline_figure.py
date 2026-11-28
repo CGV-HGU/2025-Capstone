@@ -44,7 +44,7 @@ def header_ns(message):
     return stamp.sec * 1_000_000_000 + stamp.nanosec
 
 
-def read_snapshot(bag, seconds):
+def read_snapshot(bag, seconds, timing=None):
     info = bag_metadata(bag)
     start = info["starting_time"]["nanoseconds_since_epoch"]
     target = start + round(seconds * 1e9)
@@ -64,12 +64,18 @@ def read_snapshot(bag, seconds):
         raise ValueError(f"{bag.name}: no exact RGB/scan acquisition match after {seconds:g} s")
     time, image, scan = matches[0]
     nearby = []
-    print(f"{bag.name}: RGB at {(time - start) / 1e9:.3f} s ({time} ns); matching acquisition {header_ns(image)} ns")
+    elapsed = (time - start) / 1e9
+    print(f"{bag.name}: RGB at {elapsed:.3f} s ({time} ns); matching acquisition {header_ns(image)} ns")
+    if timing is not None:
+        timing.update(rgb_elapsed_s=round(elapsed, 6), acquisition_ns=header_ns(image))
     for topic in ("/local_costmap/costmap", "/local_plan", "/odom"):
         stamp, msg = min(messages[topic], key=lambda row: abs(row[0] - time))
         if abs(stamp - time) > 300_000_000:
             raise ValueError(f"{bag.name}: {topic} is more than 300 ms from the RGB recorder time")
-        print(f"{topic}: {(stamp - time) / 1e6:+.1f} ms from the RGB recorder time")
+        offset_ms = (stamp - time) / 1e6
+        if timing is not None:
+            timing[topic + "_minus_rgb_ms"] = round(offset_ms, 3)
+        print(f"{topic}: {offset_ms:+.1f} ms from the RGB recorder time")
         nearby.append(msg)
 
     costmap, path, odom = nearby

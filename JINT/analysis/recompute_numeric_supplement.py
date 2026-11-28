@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Recompute the three numerical tables in Online Resource 2 with NumPy."""
+"""Recompute numerical results in Online Resource 2 with NumPy."""
 
 from collections import defaultdict
 import csv
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
@@ -53,8 +54,28 @@ def filter_timing(directory):
     return results
 
 
+def box_approach_order(path):
+    clips = defaultdict(list)
+    for row in csv_rows(path):
+        clips[row["clip"]].append(row)
+    results = []
+    for clip, rows in clips.items():
+        for margin in (0, 4, 8):
+            pairs = [(a, b) for a, b in combinations(rows, 2)
+                     if abs(int(b["width_px"]) - int(a["width_px"])) > margin]
+            for cue in ("vl_inverse_range", "midas_disparity", "da_disparity"):
+                signs = [(int(b["width_px"]) - int(a["width_px"])) * (float(b[cue]) - float(a[cue]))
+                         for a, b in pairs if a[cue] and b[cue]]
+                results.append({"clip": clip, "frames": len(rows), "width_margin_px": margin,
+                                "cue": cue, "eligible_pairs": len(pairs), "finite_pairs": len(signs),
+                                "matched_order": sum(value > 0 for value in signs),
+                                "tied_output": sum(value == 0 for value in signs)})
+    return results
+
+
 def main():
     directory = Path(__file__).resolve().parent
+    write_rows(directory / "recomputed_box_approach.csv", box_approach_order(directory / "box_approach_cues.csv"))
     write_rows(directory / "recomputed_cpu_timing.csv", cpu_timing(directory / "cpu_frames.csv"))
     write_rows(directory / "recomputed_scan_timing.csv", scan_timing(directory / "scan_messages.csv"))
     write_rows(directory / "recomputed_filter_timing.csv", filter_timing(directory))

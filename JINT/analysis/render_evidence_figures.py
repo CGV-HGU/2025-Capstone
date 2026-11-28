@@ -30,8 +30,8 @@ PDF_METADATA = {"CreationDate": None, "ModDate": None}
 BLUE, ORANGE = "#175676", "#a14c12"
 
 # Match the title page in manuscript/main.tex.
-SUPPLEMENT_TITLE = ("V-LiDAR: Monocular Virtual Scans for Reactive\n"
-                    "Obstacle Avoidance in Structured Indoor Environments")
+SUPPLEMENT_TITLE = ("From Monocular Floor Boundaries to Local\n"
+                    "Navigation with V-LiDAR")
 SUPPLEMENT_AUTHORS = "Hyunwoo Gu, Gunmin Yoo, Hyunseo Lee, Hyunmo Kang, Minseok Lee, and Sung Soo Hwang"
 SUPPLEMENT_JOURNAL = "Journal of Intelligent & Robotic Systems"
 SUPPLEMENT_AFFILIATION = ("School of Artificial Intelligence, Computer and Electrical Engineering,\n"

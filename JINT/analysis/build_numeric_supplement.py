@@ -29,9 +29,12 @@ TIMING_BAGS = (
     "nav_bridge_03", "nav_bridge_04", "nav_bridge_05", "vlidar_run01", "vlidar_run02",
 )
 TRIAL_CSVS = (
-    "hall_session_2026-09-21.csv", "bridge_session_2026-11-27_audit.csv",
+    "hall_session_2026-09-21.csv", "hall_session_2026-09-21_nav_logs.csv", "bridge_session_2026-11-27_audit.csv",
     "bridge_session_2026-11-27_rgb_odom_pairs.csv", "bridge_session_2026-11-27_image_continuity.csv",
-    "class5_session_2026-11-27.csv",
+    "class5_session_2026-11-27.csv", "class5_20_recovery_costmap.csv", "class5_20_chair_scan.csv",
+    "class5_session_2026-11-27_progress.csv", "bridge_session_2026-11-27_end_states.csv",
+    "bridge_session_2026-11-27_cart_scan.csv", "followup_rgb_samples.csv", "followup_rgb_review.csv",
+    "box_approach_cues.csv",
 )
 
 
@@ -98,7 +101,7 @@ Numerical data for offline CPU timing, recorded scan cadence, paired temporal
 filter results, and the recorded navigation diagnostics.
 
 Unzip this archive and run `python3 recompute_numeric_supplement.py` with NumPy
-installed. It creates three recomputed_*.csv files beside the script.
+installed. It creates four recomputed_*.csv files beside the script.
 
 cpu_frames.csv contains the retained per-frame processing times in milliseconds.
 The first sample from each of the two recordings was excluded before export.
@@ -120,14 +123,35 @@ source stamps. It is empty for the fixed-scene clips sampled by recorder time.
 This archive supports recalculation of the reported scan and timing statistics.
 hall_session_2026-09-21.csv gives the 20 historical hall endpoints relative to
 nominal goals reconstructed from the first recorded odometry pose. Its entry
-times are relative to recording start. The bridge session CSVs contain client
+times are relative to recording start. The corresponding hall nav_logs CSV
+joins goal client and navigator console results to the 20 bag intervals. Its
+result duration starts at acceptance. The bridge session CSVs contain client
 outcomes and RGB-odometry comparisons. The Fifth Reading Room session CSV
-contains client outcomes, odometric goal distances, and recovery events. Trial
+contains client outcomes, odometric goal distances, and recovery events. The
+run-20 costmap CSV gives pre/post grid counts and forward-motion timing. The
+chair scan CSV gives sample selection, recorder offsets, projected ranges and
+nearby grid costs for the two chair views. The corridor progress CSV covers all
+logged failures. The event times use goal acceptance; command and grid offsets
+use the local-clear time when present and the failure time otherwise. Blank
+entries indicate observations outside the stated time windows. Trial
 times for the bridge audit and Fifth Reading Room are relative to goal acceptance
 unless the column specifies otherwise. These trial tables contain recorded
 navigation diagnostics. External field assessments are separate.
 
-Raw RGB, robot control logs, and adjudicated outcomes are separate records.
+followup_rgb_samples.csv lists the recorder timestamps of the sampled forward
+views. followup_rgb_review.csv describes the initial object and last view of
+every retained follow-up recording. Operator motives use a field report only
+where available. These annotations do not determine clearance or physical arrival.
+
+box_approach_cues.csv includes recorder timestamps and horizontal box annotations
+on 640 by 480 RGB frames. Pixel width is right_x_px minus left_x_px. The V-LiDAR
+cue is the inverse of median finite range over the inner half of the box width.
+Depth models report median relative disparity over a three-row strip. The
+recomputation counts within-clip pairs with strictly different widths above the
+specified margin and with increasing cue for the larger image. Pairs share
+frames. The resulting counts describe these two approaches.
+
+Raw RGB and separate field observations are held by the authors.
 """
 
 

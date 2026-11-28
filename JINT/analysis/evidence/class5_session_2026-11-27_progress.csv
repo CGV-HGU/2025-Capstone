@@ -1,0 +1,10 @@
+trial_id,nav_status,failure_from_goal_acceptance_s,local_clear_from_failure_ms,post_anchor_observation_ms,pre_failure_cmd_samples,pre_failure_forward_cmd_samples,next_forward_cmd_from_anchor_ms,next_forward_odom_from_anchor_ms,before_grid_ms,before_full_disk,before_goal_cells,before_cost_99_100,before_unknown,after_grid_ms,after_full_disk,after_goal_cells,after_cost_99_100,after_unknown
+class5_07,TIMEOUT,85.916945,13.616,2000.0,10,0,183.972,246.33,-119.295,0,0,0,0,180.268,0,0,0,0
+class5_14,SUCCEEDED,75.719652,10.263,2000.0,10,0,187.515,267.829,-27.308,0,0,0,0,272.872,0,0,0,0
+class5_14,SUCCEEDED,163.617598,12.375,1550.338,10,0,138.327,178.14,-127.448,1,80,12,0,172.576,1,80,0,0
+class5_15,SUCCEEDED,131.705036,15.473,2000.0,10,0,93.097,149.013,-126.116,1,80,40,0,173.877,1,80,0,0
+class5_18,SUCCEEDED,91.844619,15.595,2000.0,10,0,102.686,183.41,-221.667,1,80,27,0,78.255,1,80,2,0
+class5_18,SUCCEEDED,148.100605,,2000.0,10,0,,,-162.282,1,80,2,0,137.749,1,80,2,0
+class5_18,SUCCEEDED,202.170977,19.185,840.636,10,0,73.433,113.419,-51.906,1,80,2,0,248.365,1,80,0,0
+class5_20,SUCCEEDED,90.02047,19.252,2000.0,10,0,40.186,96.629,-188.726,1,80,7,0,111.345,1,80,7,0
+class5_20,SUCCEEDED,145.940637,19.107,1670.073,10,0,120.568,176.792,-208.757,1,80,6,0,91.269,1,80,0,0

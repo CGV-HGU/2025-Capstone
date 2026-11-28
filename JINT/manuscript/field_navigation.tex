@@ -1,0 +1,37 @@
+\newcommand{\showtrialsequence}[1]{%
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\linewidth]{#1.pdf}
+    \caption{Recorded views and wheel-odometry path for the indicated formal trial. Times are measured from the start of the recording. The lettered markers identify the nearest odometry samples in recorder time, relative to the first plotted pose. The path axes are scaled independently}
+    \label{fig:#1}
+  \end{figure}}
+\newcommand{\loadtrialsequence}[1]{%
+  \IfFileExists{figures/#1.pdf}{\showtrialsequence{#1}}{%
+    \IfFileExists{#1.pdf}{\showtrialsequence{#1}}{}}}
+
+\subsection{Independently observed navigation outcomes}
+The condition-level outcomes for the selected configuration are reported in Table~\ref{tab:formal-navigation}.
+\begin{table}[htbp]
+  \caption{Physical navigation outcomes by condition and obstacle layout. Success is reported as successes over evaluated attempts with a descriptive 95\% Wilson interval. The total number of attempts $N$ includes invalid and unresolved attempts. A dash indicates unavailable data.}
+  \label{tab:formal-navigation}
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}llrrrrr@{}}
+  \toprule
+  Environment & Layout & $N$ & Success & 95\% CI & Invalid & Pending \\
+  \midrule
+  \input{formal_trial_rows.tex}
+  \end{tabular}
+\end{table}
+\ifdefined\JINTFormalOutcomesFigure
+Figure~\ref{fig:formal-outcomes} shows the success estimates and their descriptive uncertainty.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{\JINTFormalOutcomesFigure}
+  \caption{Physical avoidance success by condition and obstacle layout. Points show success among evaluated attempts and lines show descriptive 95\% Wilson intervals. Fractions give successful over evaluated attempts. ``n/a'' indicates an unrecorded group and ``0 eval.'' indicates that recorded attempts remained invalid or unadjudicated}
+  \label{fig:formal-outcomes}
+\end{figure}
+\fi
+\loadtrialsequence{formal_trial_sequence}
+\loadtrialsequence{formal_trial_sequence_2}

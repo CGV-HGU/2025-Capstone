@@ -12,48 +12,34 @@ if (( $# > 0 )); then
 fi
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+manuscript=$PWD
 staging=$(mktemp -d)
 trap 'rm -rf -- "$staging"' EXIT
+mkdir "$staging/source"
+cp main.tex references.bib sn-jnl.cls sn-mathphys-num.bst figures/orcid_mark.png "$staging/source/"
+# The flattened submission archive uses only figures referenced by this manuscript.
+while IFS= read -r figure; do
+  cp "figures/$figure" "$staging/source/"
+done < <(sed -n 's/.*\\includegraphics\[[^]]*\]{\([a-zA-Z0-9_]*\.pdf\)}.*/\1/p' main.tex | sort -u)
+
 if [[ -n $field_log ]]; then
   python3 ../analysis/summarize_trials.py "$field_log" \
-    --latex-output "$staging/formal_trial_rows.tex" \
-    --figure-output "$staging/formal_trial_outcomes.pdf" "$@"
-  mv "$staging/formal_trial_rows.tex" formal_trial_rows.tex
-  mv "$staging/formal_trial_outcomes.pdf" formal_trial_outcomes.pdf
+    --latex-output "$staging/source/formal_trial_rows.tex" \
+    --figure-output "$staging/source/formal_trial_outcomes.pdf" "$@"
+  cp field_navigation.tex "$staging/source/"
+  for sequence in figures/formal_trial_sequence{,_2}.pdf; do
+    if [[ -f $sequence ]]; then cp "$sequence" "$staging/source/"; fi
+  done
 fi
 
-shopt -s nullglob
-sources=(main.tex references.bib sn-jnl.cls sn-mathphys-num.bst figures/orcid_mark.png)
-for figure in figures/*.pdf; do
-  if [[ $figure == figures/reference_sites.pdf ||
-        ( $figure == figures/site_views_draft.pdf && -f figures/formal_sites.pdf ) ]]; then
-    continue
-  fi
-  sources+=("$figure")
-done
-if [[ -f formal_trial_rows.tex ]]; then
-  sources+=(formal_trial_rows.tex)
-  if grep -Fq '\JINTFormalOutcomesFigure{formal_trial_outcomes.pdf}' formal_trial_rows.tex; then
-    sources+=(formal_trial_outcomes.pdf)
-  fi
-fi
-
-# Rebuild when the optional formal-results file appears or disappears.
-latex_options=(-g -pdf -interaction=nonstopmode -halt-on-error -outdir=.build)
-latexmk "${latex_options[@]}" main.tex
-latexmk "${latex_options[@]}" -jobname=author_review -usepretex='\def\JINTAuthorReview{}' main.tex
-
-zip -qj "$staging/JINT_draft_source.zip" "${sources[@]}"
+cd "$staging/source"
+zip -q "$staging/JINT_draft_source.zip" ./*
 unzip -tq "$staging/JINT_draft_source.zip"
 unzip -q "$staging/JINT_draft_source.zip" -d "$staging/check"
-(
-  cd "$staging/check"
-  latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex >compile.log 2>&1 || {
-    tail -n 50 compile.log >&2
-    exit 1
-  }
-)
-
-cp .build/main.pdf ../JINT_first_draft.pdf
-cp .build/author_review.pdf ../planning/JINT_author_review.pdf
-mv "$staging/JINT_draft_source.zip" JINT_draft_source.zip
+cd "$staging/check"
+latex_options=(-pdf -interaction=nonstopmode -halt-on-error)
+latexmk "${latex_options[@]}" main.tex
+latexmk "${latex_options[@]}" -jobname=author_review -usepretex='\def\JINTAuthorReview{}' main.tex
+cp main.pdf "$manuscript/../JINT_first_draft.pdf"
+cp author_review.pdf "$manuscript/../planning/JINT_author_review.pdf"
+mv "$staging/JINT_draft_source.zip" "$manuscript/JINT_draft_source.zip"

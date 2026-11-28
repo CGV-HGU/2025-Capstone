@@ -1,0 +1,3 @@
+bag_id,rgb_elapsed_s,acquisition_ns,/local_costmap/costmap_minus_rgb_ms,/local_plan_minus_rgb_ms,/odom_minus_rgb_ms,first_bin,last_bin,region_px,recorded_range_min_m,recorded_range_max_m,max_delta_to_unfiltered_lut_m,sequential_replay_frames,replay_channels_matching_at_0_1mm,replay_total_channels,grid_patch_radius_m,grid_cells,cost_99,cost_100
+nav_class5_20,13.508681,1795766760867189938,86.767,292.729,2.244,68,75,290 330 400 415,3.334826,3.788553,0.692599,106,141,141,0.25,20,17,0
+nav_class5_20,16.208427,1795766763567534985,-32.972,42.101,2.352,119,127,39 88 409 430,2.793293,3.009214,0.356552,129,141,141,0.25,19,15,4

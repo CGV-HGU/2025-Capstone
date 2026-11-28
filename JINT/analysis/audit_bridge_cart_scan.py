@@ -62,7 +62,7 @@ def select_boundary(replay, model, rgb, scan, indices, region):
     inside = (x0 <= px) & (px <= x1) & (y0 <= py) & (py <= y1)
     select = inside & np.isin(bins, indices) & (distances == minima[bins])
     if set(bins[select]) != set(indices):
-        raise ValueError("the annotated cart region no longer accounts for all selected LUT bins")
+        raise ValueError("the annotated region no longer accounts for all selected LUT bins")
     return px[select], py[select], minima[indices]
 
 

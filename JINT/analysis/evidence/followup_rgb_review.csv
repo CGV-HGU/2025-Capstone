@@ -1,0 +1,38 @@
+trial_id,initial_object,sampled_frames,first_rgb_ns,last_rgb_ns,terminal_view,client_event,operator_reason,physical_contact_and_arrival
+c_bridge_01,black chair,11,1795753681593115573,1795753771552247738,Two people in a side room,timeout,,unadjudicated
+c_bridge_02,white open-frame cart,11,1795754049760485854,1795754088581847239,Interior corridor with copier and wall sign,nav2_result,,unadjudicated
+c_bridge_03,white open-frame cart,11,1795754150352888845,1795754189738699689,Along bridge toward brick portal,operator_interrupt,not recorded,unadjudicated
+c_bridge_04,white open-frame cart,11,1795754236034951910,1795754325695722588,Facing brick portal and interior corridor,timeout,,unadjudicated
+c_bridge_05,blue bin,11,1795754515749311780,1795754601941486249,Interior corridor with copier and wall sign,operator_interrupt,not recorded,unadjudicated
+c_bridge_06,blue bin,11,1795754640304562698,1795754690334683344,Along bridge toward brick portal,operator_interrupt,not recorded,unadjudicated
+c_bridge_07,blue bin,11,1795755212993843356,1795755280278943601,Interior corridor with glass door and digital display,operator_interrupt,not recorded,unadjudicated
+c_bridge_08,blue bin,11,1795755341740100426,1795755388847083903,Interior corridor with poster wall and glass door,nav2_result,,unadjudicated
+c_bridge_09,blue bin,11,1795755472405660484,1795755562365363954,Along bridge toward brick portal,timeout,,unadjudicated
+c_bridge_10,blue bin,11,1795755618917646076,1795755664558798304,Interior corridor with copier and glass door,nav2_result,,unadjudicated
+c_bridge_11,blue bin,11,1795755737959088404,1795755800799382066,Side glazing and brick at portal,operator_interrupt,not recorded,unadjudicated
+c_bridge_12,blue bin,11,1795755841686498005,1795755879919893403,Interior corridor with poster wall and glass door,nav2_result,,unadjudicated
+c_bridge_13,blue bin,11,1795755923727089987,1795755985682341341,Brick jamb and interior poster wall,operator_interrupt,not recorded,unadjudicated
+c_bridge_14,blue bin,4,1795756062301727979,1795756070090564262,Blue bin ahead on bridge,operator_interrupt,not recorded,unadjudicated
+c_bridge_15,blue bin,11,1795756102734399241,1795756156527714057,Brick jamb and interior poster wall,operator_interrupt,not recorded,unadjudicated
+c_bridge_16,blue bin,11,1795756198028395617,1795756239757472223,Side glazing at brick portal,operator_interrupt,not recorded,unadjudicated
+c_bridge_17,blue bin,11,1795756288044132119,1795756323176760293,Interior corridor with copier and glass door,nav2_result,,unadjudicated
+c_bridge_18,blue bin,11,1795756375916164312,1795756422545167681,Interior corridor with copier and glass door,nav2_result,,unadjudicated
+c_bridge_19,blue bin,11,1795756497272074438,1795756535800402232,Door jamb and interior copier,operator_interrupt,not recorded,unadjudicated
+c_bridge_20,blue bin,11,1795756577743518995,1795756618772627045,Interior corridor with copier and glass door,nav2_result,,unadjudicated
+class5_01,chair,11,1795762162270748686,1795762252067388165,Near locker bank and fire extinguisher,timeout,,unadjudicated
+class5_02,chair,11,1795762414158150436,1795762503923963357,Vending machines ahead and people in corridor,timeout,,unadjudicated
+class5_03,chair,11,1795762697573576749,1795762787504482568,Tactile strip and glass doors,timeout,,unadjudicated
+class5_06,chair,11,1795763113346736958,1795763202880717814,Close view of lockers and door,timeout,,unadjudicated
+class5_07,chair,11,1795763285569887611,1795763375466898806,Vending machines ahead and locker bank,timeout,,unadjudicated
+class5_08,chair,11,1795763431429360729,1795763480190753744,Near locker bank and fire extinguisher,nav2_result,,unadjudicated
+class5_09,chair,11,1795763552687555765,1795763642312582971,Tactile strip and glass doors,timeout,,unadjudicated
+class5_10,chair,11,1795763738174044234,1795763827746141905,Tactile strip and glass doors with a person,timeout,,unadjudicated
+class5_11,chair,11,1795764387149064028,1795764431081540943,Near end lockers and vending machines,nav2_result,,unadjudicated
+class5_13,chair,11,1795764793183352565,1795764834050294014,Near end lockers and vending machines,nav2_result,,unadjudicated
+class5_14,chair,11,1795765068466171971,1795765233383801829,Looking back along corridor with a chair-like object,nav2_result,,unadjudicated
+class5_15,chair,11,1795765407574636247,1795765541963325468,Close view of wall,nav2_result,,unadjudicated
+class5_16,chair,11,1795765679122008605,1795765725350858538,Near end lockers and vending machines,nav2_result,,unadjudicated
+class5_17,chair,11,1795765796010526679,1795765831143278304,Near end lockers and vending machines,nav2_result,,unadjudicated
+class5_18,chair,11,1795766120284722194,1795766322500749618,Near end lockers and fire extinguisher,nav2_result,,unadjudicated
+class5_19,chair,11,1795766525565356321,1795766617780162965,Tactile strip and glass doors,operator_interrupt,safety (field report),unadjudicated
+class5_20,chair,11,1795766751813905810,1795766899390763688,Close view of lockers and door,nav2_result,,unadjudicated

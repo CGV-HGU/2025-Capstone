@@ -1,0 +1,22 @@
+[
+  {
+    "photo": "../../../IJCAS/ICCAS/IJCAS/paper/experiment2_setup.jpeg",
+    "label": "Reference hall",
+    "crop": [224, 128, 4000, 2960],
+    "callout": {"text": "Box", "target": [1920, 2090], "position": [2440, 2300]}
+  },
+  {
+    "bag": "~/data/bags/nav_bridge_01",
+    "seconds": 21.0,
+    "label": "Daylit bridge",
+    "crop": [24, 30, 624, 480],
+    "callout": {"text": "Bin", "target": [458, 384], "position": [371, 410]}
+  },
+  {
+    "bag": "~/data/bags/nav_class5_20",
+    "seconds": 4.133569140,
+    "label": "Reading room corridor",
+    "crop": [8, 6, 632, 474],
+    "callout": {"text": "Chair", "target": [329, 319], "position": [199, 333]}
+  }
+]

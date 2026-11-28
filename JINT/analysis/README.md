@@ -1,5 +1,21 @@
 # JINT 투고 준비 및 자료 대조
 
+## 11월 28일 추가 주행 없이 검증한 결과
+
+- **종료 결과.** 팔각정 20회의 ROS 클라이언트·서버 로그를 bag 구간에 대조했다. 구름다리와 5열람실은 보존된 JSON과 따로 집계한다. 정지 규칙이 다른 그룹은 표에서 나누었다. [팔각정 로그](evidence/hall_session_2026-09-21_nav_logs.csv)
+- **후속 주행 RGB.** 구름다리 20건과 5열람실 보존 17건의 목표 활성 구간에서 고정 시각을 정해 총 400장과 마지막 시야를 대조했다. 각 프레임은 목표 수락 후 0~32초까지 4초 간격, 종료 5초 전, 종료 시점에 대응한다. 가장 가까운 구간 내 표본을 사용한다. 구름다리 10건의 운영자 중단 동기는 미기록이며 5열람실 19번은 현장 안전 중단 진술이 있다. 전방 영상만으로 실제 반경·차체 측면 접촉을 확정할 수 없다. [회차별 장면](evidence/followup_rgb_review.csv) · [400장 타임스탬프](evidence/followup_rgb_samples.csv)
+- **외부 방법 비교.** 기존 박스 영상 두 개의 움직이는 구간에서 이전 벤치마크의 명목 거리·시야 선택 조건을 만족한 27장 전부를 사용했다. 원본 640×480 영상에서 박스 몸통의 수평 단면 양끝을 표시했다. 근처의 밝기 경계로 좌우 표시를 맞추고 전체 오버레이를 눈으로 확인했다. 중앙 절반 너비에서 V-LiDAR는 유한 스캔 거리 중앙값의 역수, 두 깊이 모델은 해당 행 주위 세 줄의 상대 disparity 중앙값을 사용했다. 입력 시각·좌표와 수치가 보충 ZIP에 있다. 같은 영상 쌍이 반복 사용되므로 독립 실험 횟수로 해석할 수 없다. [표시 좌표](evidence/box_approach_annotations.csv) · [모델 출력](evidence/box_approach_cues.csv) · [비교 그림](../manuscript/figures/box_approach.pdf)
+
+로봇 PC의 저장 자료에서 재생하려면 다음 명령을 사용한다. RGB 시트 출력 위치만 지정하면 된다. 명령은 ROS 2 메시지 정의와 저장 모델을 사용한다.
+
+```bash
+cd ~/ros2_ws/JINT/analysis
+source /opt/ros/humble/setup.bash
+python3 sample_navigation_rgb.py /tmp/jint-followup-views
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python3 replay_box_approach.py
+python3 render_box_approach.py
+```
+
 2026-11-26 KST · Journal of Intelligent & Robotic Systems · 내부 검토용
 
 - [투고 전략 및 제출 판단 기준](../planning/2026-11-27_JINT_submission_strategy.md) · [초안 체크리스트](../planning/JINT_draft_checklist.md) · [영문 LaTeX 원고](../manuscript/main.tex) · [검토용 PDF](../JINT_first_draft.pdf) · [검토용 소스 ZIP](../manuscript/JINT_draft_source.zip) · [커버레터 초안](../planning/cover_letter_draft.md)
@@ -155,14 +171,15 @@ python3 replay_scan_filter.py --scan-stamped --start 6.296 --seconds 45.940 \
 
 | 원자료 | 확인한 결과 | JINT에 쓸 수 있는 범위 |
 | --- | --- | --- |
-| IEEE Access Experiment 2, Table III | 단일 박스·10 m·바퀴 odom 주행에서 18/20 완료를 보고했다. Bag 시작 시각은 모두 2026-09-21 08:58–09:43 KST 범위다. 18회에 대해 원고의 운동 시간은 47.8 ± 7.3초이며, 인쇄된 값에서 모집단 표준편차를 쓰면 재현된다. | 원본 odom에서 20회의 종점을 다시 계산했다. 첫 자세 기준 10 m 목표의 0.50 m 안에서 끝난 회차는 18개(최종 거리 0.220–0.242 m)였다. 08·12번은 목표까지 6.36·7.17 m가 남았다. 인쇄된 운동 시간은 새 본 주행에서 정의한 첫 실제 도달 시간과 정의가 달라 별도로 기록한다. [Access 원고](../../paper/workspace/IEEE_Access/main.tex#L479) · [재계산 CSV](evidence/hall_session_2026-09-21.csv) |
-| IJCAS Experiment 2와 ICCAS 확장초록 | 단일 박스·10 m, 단안 SLAM과 Nav2 구성의 39/50(78%)이다. ICCAS에도 같은 수와 구성이 나온다. 원고에는 주행 시간대별 분모·성공 수와 회차별 시간이 없다. | ICCAS로 인용해 과거 연구 결과로 설명한다. 야간 수치나 이번 구성의 결과로 배정할 회차 기록은 확인되지 않았다. [IJCAS 원고](../../IJCAS/ICCAS/IJCAS_Manuscript.pdf) · [ICCAS 확장초록](../../IJCAS/ICCAS/ICCAS_Extended_Abstract.pdf) |
+| IEEE Access Experiment 2, Table III | 회차별 판정표에 18/20 무개입 완료, 08·12번 중도 정지가 있다. 본문은 두 실패에서 물리 충돌을 피했다고 서술한다. 별도 실험 계획에는 10 m 도달, 벽·장애물 무접촉, Nav2 완료가 성공 기준으로 적혀 있다. 해당 계획이 이 20회의 현장 판정에 그대로 적용됐는지는 확인되지 않았다. | 9월 21일 오전 bag 20개를 로컬 ROS의 클라이언트·Nav2 콘솔 로그와 매칭했다. 18회 `SUCCEEDED`, 08·12번은 60초 뒤 클라이언트 타임아웃과 Nav2 `CANCELED`였다. 20회 판정은 Table III와 odom 종점 분류에 모두 일치한다. 로봇 시스템 기록에서 접촉과 수동 개입을 별도로 측정한 자료는 확인되지 않았다. [Access 원고](../../paper/workspace/IEEE_Access/main.tex#L479) · [기존 계획의 판정 기준](../../docs/Obstacle_Avoidance_Experiment_Plan.md#2-판정-기준) · [로그 매칭 CSV](evidence/hall_session_2026-09-21_nav_logs.csv) · [odom 재계산 CSV](evidence/hall_session_2026-09-21.csv) |
+| IJCAS Experiment 2와 ICCAS 확장초록 | 두 원고 모두 단일 박스·10 m, 단안 SLAM과 Nav2 구성의 39/50(78%)을 보고한다. 실패 11회는 장애물 추정 흔들림 8회, 회피 뒤 경로에 너무 빨리 복귀한 경우 3회로 설명한다. | ICCAS로 인용해 과거 결과와 저자들이 보고한 실패 유형을 설명한다. 이 50회에 대응하는 개별 회차 ID·외부 판정·낮밤 구분은 검토한 로컬 자료에서 확인되지 않았다. [IJCAS 원고](../../IJCAS/ICCAS/IJCAS_Manuscript.pdf) · [ICCAS 확장초록](../../IJCAS/ICCAS/ICCAS_Extended_Abstract.pdf) |
 
 두 저널 원고의 Experiment 2는 SHA-256이 같은 세팅 사진을 사용한다. 사진은 장소의 모습을 보여준다. 50회가 밤에 수행됐거나 20회와 같은 종료 기준을 썼다는 근거는 되지 않는다. 기존 자료로 넓은 홀의 과거 주행과 구름다리·5열람실의 관찰 사례를 함께 보고할 수 있다. 팔각정의 낮·밤 성공률을 직접 비교하는 주장을 유지한다면 동일 경로·설정과 실제 도달·접촉·개입을 확인할 기록부터 찾고, 비어 있는 회차만 취득한다.
 
 ```bash
 source /opt/ros/humble/setup.bash
 python3 JINT/analysis/audit_hall_archive.py
+python3 JINT/analysis/audit_hall_navigation_logs.py
 ```
 
 ### 원고에 반영한 장면
@@ -210,20 +227,18 @@ python3 render_archive_figures.py \
 OPENBLAS_NUM_THREADS=4 OMP_NUM_THREADS=4 python3 render_navigation_examples.py
 ```
 
-초안의 Figure 4에는 이전 뉴턴홀 낮 세팅 사진, 5열람실 앞 `nav_class5_20` 4.134 s RGB(의자, 기록 시각 `1795766751503500500` ns), 구름다리 `nav_bridge_01` 21.026 s RGB(파란 통, 기록 시각 `1795676413882222431` ns)를 넣었다. 각 장면은 조명·바닥을 볼 수 있는 4:3 영역을 사용하며 화살표로 실제 장애물을 표시했다. 뉴턴홀 밤 칸은 동일 장소의 RGB를 확인할 때까지 TBD다. 패널 아래에는 세팅 사진과 파일럿 RGB의 출처를 표시했다. [Figure 4 초안](../manuscript/figures/site_views_draft.pdf) · [크롭·표식 설정](evidence/site_views_draft.json) · [5열람실 회차별 결과와 재현 방법](../planning/2026-11-27_class5_review.md)
+Figure 4는 확인된 세 장소를 한 줄에 놓았다. (a)는 기준 홀의 이전 세팅 사진, (b)는 구름다리 `nav_bridge_01` 21.026 s RGB(통, `1795676413882222431` ns), (c)는 5열람실 `nav_class5_20` 4.134 s RGB(의자, `1795766751503500500` ns)다. [Figure 4](../manuscript/figures/site_views_archive.pdf) · [그림의 프레임·크롭 설정](evidence/site_views_archive.json)
 
-본 실험을 마치면 같은 스크립트에 RGB 프레임을 **기준 장소 낮 → 기준 장소 밤 → 인공조명 실내 → 자연광 구름다리** 순서로 지정한다. 네 조건을 비교하기 좋게 같은 박스 배치(`S1`)의 주행에서 우회 직전 박스와 바닥이 함께 보이는 전방 프레임을 우선 고른다. 대표 프레임의 bag ID와 시각을 현장 로그에 남긴다. `formal_sites.pdf`가 있으면 빌드에서 같은 크기의 네 칸에 본 실험 사진이 들어간다.
+5열람실 20번의 의자 분석은 bag 시작 13.509 s와 16.208 s RGB를 같은 획득 시각의 scan과 대조했다. 녹화 시작부터 필터를 켜고 순차 재생한 결과 두 시점의 141개 채널이 모두 기록된 스캔과 0.1 mm 이내에서 일치했다. 의자 좌판 아래에서 수동으로 선택한 영역의 픽셀이 각각 8개, 9개 채널의 필터 전 LUT 최솟값을 만들었고, 해당 채널의 기록 거리 범위는 3.33–3.79 m, 2.79–3.01 m였다. 기록한 scan 끝점 중앙값 반경 0.25 m 안에서 비용 99·100은 17/20, 19/19셀이었다. 로컬 경로와 코스트맵의 RGB 대비 기록 시각 차이를 CSV에 남겼다. 거리값은 가상 스캔의 출력이며 의자 실측 거리나 차체 이격 거리는 확인되지 않았다. [의자 RGB·scan·costmap 그림](../manuscript/figures/class5_chair_scan.pdf) · [원본 시각·수치 CSV](evidence/class5_20_chair_scan.csv)
 
 ```bash
-python3 render_archive_figures.py --layout evidence/site_views_draft.json \
-  --output ../manuscript/figures/site_views_draft.pdf
-python3 render_archive_figures.py \
-  --frame "$bag_original_day" "$time_original_day" \
-  --frame "$bag_original_night" "$time_original_night" \
-  --frame "$bag_indoor_artificial" "$time_indoor_artificial" \
-  --frame "$bag_bridge_daylight" "$time_bridge_daylight" \
-  --output ../manuscript/figures/formal_sites.pdf
-bash ../manuscript/build_manuscript.sh ~/data/jint/field_log.csv
+source /opt/ros/humble/setup.bash
+python3 render_archive_figures.py --layout evidence/site_views_archive.json \
+  --output ../manuscript/figures/site_views_archive.pdf
+python3 audit_class5_chair_scan.py
+python3 audit_class5_recovery_costmap.py
+python3 audit_class5_progress.py
+bash ../manuscript/build_manuscript.sh
 ```
 
 ### 대표 주행의 RGB와 궤적

@@ -1,0 +1,3 @@
+trial_id,clear_from_goal_acceptance_s,before_grid_ms,before_goal_cells,before_goal_cells_99_100,before_goal_cells_unknown,after_grid_ms,after_goal_cells,after_goal_cells_99_100,after_goal_cells_unknown,next_forward_command_ms,next_forward_odom_ms
+class5_20,90.039722,-188.726,80,7,0,111.345,80,7,0,40.186,96.629
+class5_20,145.959743,-208.757,80,6,0,91.269,80,0,0,120.568,176.792
